@@ -1,0 +1,21 @@
+Authentication:
+  key: ""
+  access: ""
+Bucket:
+  name: "my-bucket"
+  region: "us-east-1"
+Options:
+  acl: "private"
+  storage: "STANDARD"
+  prefix: ""
+  overwrite: true
+Dirs:
+- "/Users/forrest/docs/stocks/apple"
+- "/Users/jenny/docs/lyrics"
+Files:
+- "/Users/forrest/docs/job-application-lawn-mower.pdf"
+- "/Users/forrest/docs/dr-pepper-recipe.txt"
+- "/Users/jenny/letters/from-forrest.docx""
+Logging:
+  console: true
+  file: false

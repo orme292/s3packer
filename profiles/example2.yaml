@@ -1,0 +1,18 @@
+Authentication:
+  key: ""
+  access: ""
+Bucket:
+  name: "long-term-bucket"
+  region: "eu-north-1"
+Options:
+  acl: "private"
+  storage: "INTELLIGENT_TIERING"
+  prefix: "logs-"
+  overwrite: false
+Dirs:
+  - "/var/log"
+  - "/root/"
+Logging:
+  console: true
+  file: true
+  path: "/var/log/backup.log"
