@@ -43,16 +43,14 @@ func (c *Configuration) Load(file string) error {
 		return errors.New(err.Error())
 	}
 
-	fmt.Println("Using profile:", file)
+	fmt.Println("Using profile", file)
 
 	err = yaml.Unmarshal(f, &c)
 	if err != nil {
 		return errors.New(err.Error())
 	}
 
-	c.createMissingMaps()
-	c.repairMissingFields()
-	err = c.criticalMissingValues()
+	err = c.Validate()
 	if err != nil {
 		return err
 	}

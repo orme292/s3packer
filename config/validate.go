@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+/*
+isString checks if the given interface{} is a string
+*/
 func isString(s any) bool {
 	switch s.(type) {
 	case string:
@@ -13,6 +16,9 @@ func isString(s any) bool {
 	return false
 }
 
+/*
+isBool checks if the given interface{} is a bool
+*/
 func isBool(b any) bool {
 	switch b.(type) {
 	case bool:
@@ -21,6 +27,20 @@ func isBool(b any) bool {
 	return false
 }
 
+func (c *Configuration) Validate() error {
+	c.createMissingMaps()
+	c.repairMissingFields()
+	err := c.criticalMissingValues()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+createMissingMaps initializes the maps in the configuration file if they are nil.
+The maps will be nil if the fields are not present in the YAML profile.
+*/
 func (c *Configuration) createMissingMaps() {
 	if c.Authentication == nil {
 		c.Authentication = map[string]any{}
@@ -36,6 +56,10 @@ func (c *Configuration) createMissingMaps() {
 	}
 }
 
+/*
+criticalMissingValues() checks if required fields are missing from the profile.
+You must run createMissingMaps() before using this function.
+*/
 func (c *Configuration) criticalMissingValues() error {
 	if c.Authentication["key"].(string) == "" {
 		return errors.New("authentication key is empty")
@@ -55,21 +79,24 @@ func (c *Configuration) criticalMissingValues() error {
 	return nil
 }
 
-func (c *Configuration) sanitizeACL() {
-	/*
-		AWS Canned ACLs
-		c.Options["acl"] takes an aws canned ACL value:
-		- private: Owner gets FULL_CONTROL. No one else has access rights (default).
-		- public-read: Owner gets FULL_CONTROL. The AllUsers group gets READ access.
-		- public-read-write: Owner gets FULL_CONTROL. The AllUsers group gets READ and WRITE access.
-		- authenticated-read: Owner gets FULL_CONTROL. Amazon EC2 gets READ access to GET an AMI bundle.
-		- aws-exec-read: Owner gets FULL_CONTROL. The AuthenticatedUsers group gets READ access.
-		- bucket-owner-read: Object owner gets FULL_CONTROL. Bucket owner gets READ access.
-		- bucket-owner-full-control: Both the object owner and the bucket owner get FULL_CONTROL over the object.
-		- log-delivery-write: The LogDelivery group gets WRITE and READ_ACP permissions on the bucket.
+/*
+sanitizeACL() validates the value for the ACL field in the profile.
 
-		See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl for more information.
-	*/
+	AWS Canned ACLs
+	c.Options["acl"] takes an aws canned ACL value:
+	- private: Owner gets FULL_CONTROL. No one else has access rights (default).
+	- public-read: Owner gets FULL_CONTROL. The AllUsers group gets READ access.
+	- public-read-write: Owner gets FULL_CONTROL. The AllUsers group gets READ and WRITE access.
+	- authenticated-read: Owner gets FULL_CONTROL. Amazon EC2 gets READ access to GET an AMI bundle.
+	- aws-exec-read: Owner gets FULL_CONTROL. The AuthenticatedUsers group gets READ access.
+	- bucket-owner-read: Object owner gets FULL_CONTROL. Bucket owner gets READ access.
+	- bucket-owner-full-control: Both the object owner and the bucket owner get FULL_CONTROL over the object.
+	- log-delivery-write: The LogDelivery group gets WRITE and READ_ACP permissions on the bucket.
+
+	See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl for more information.
+*/
+func (c *Configuration) sanitizeACL() {
+
 	c.Options["acl"] = strings.ToLower(strings.TrimSpace(c.Options["acl"].(string)))
 	switch c.Options["acl"].(string) {
 	case "private":
@@ -91,7 +118,7 @@ func (c *Configuration) sanitizeACL() {
 }
 
 /*
-sanitizeStorageType sanitizes the storage type specified in the configuration file.
+sanitizeStorageType validates the value for the storage field in the profile.
 
 	AWS S3 Storage Classes
 	c.Options["storage"] takes an aws storage class:
@@ -121,6 +148,10 @@ func (c *Configuration) sanitizeStorageType() {
 	c.Logger.Info("Storage Class set to " + c.Options["storage"].(string))
 }
 
+/*
+repairMissingFields() checks if a field is a different type then expected. If it is, it is cleared and set
+to a default value.
+*/
 func (c *Configuration) repairMissingFields() {
 	// Validate the Authentication map: map[string]any
 	_, ok := c.Authentication["key"]
