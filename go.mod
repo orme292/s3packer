@@ -1,11 +1,11 @@
 module github.com/orme292/s3packer
 
-go 1.21.1
+go 1.21.4
 
 require (
-	github.com/aws/aws-sdk-go v1.46.2
+	github.com/aws/aws-sdk-go v1.48.2
 	github.com/rs/zerolog v1.31.0
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
