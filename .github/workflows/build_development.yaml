@@ -1,0 +1,29 @@
+on:
+
+  pull_request:
+    branches: [development]
+  push:
+    branches: [development]
+
+permissions:
+  contents: write
+
+jobs:
+
+  build:
+    strategy:
+      matrix:
+        go-version: [ 1.21.4 ]
+        os: [ ubuntu-latest, macOS-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: |
+            go.sum
+            go.mod
+      - name: Display Go Version
+        run: go version
