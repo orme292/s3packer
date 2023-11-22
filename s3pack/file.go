@@ -32,7 +32,7 @@ func NewFileIterator(c config.Configuration) s3manager.BatchUploadIterator {
 	}
 	return &FileIterator{
 		filePaths: paths,
-		bucket:    c.Bucket["name"],
+		bucket:    c.Bucket["name"].(string),
 		config:    c,
 	}
 }
@@ -81,6 +81,7 @@ input and returns a s3manager.BatchUploadObject struct.
 func (fi *FileIterator) UploadObject() s3manager.BatchUploadObject {
 	f := fi.next.f
 	fi.config.Logger.Info(fmt.Sprintf("Uploading %s...", fi.next.name))
+	uplCount++
 	return s3manager.BatchUploadObject{
 		Object: &s3manager.UploadInput{
 			Bucket:       &fi.bucket,
@@ -111,36 +112,36 @@ UploadObjects takes a config.Configuration struct as input. It returns an error.
     - The After() function closes the file
     - Next() is called again, and the process repeats until there are no more files to upload.
 */
-func UploadObjects(c config.Configuration) error {
+func UploadObjects(c config.Configuration) (error, int) {
 	c.Logger.Info("Starting Individual File Upload Session...")
 
 	// Check to make sure all the files listed in the profile exist locally
 	fileList, err := ListedLocalFileExists(c, c.Files)
 	if err != nil {
-		return err
+		return err, uplCount
 	}
 	c.Files = fileList
 
 	// Check whether there are already objects keys named the same as the file names.
 	objectList, err := ListedObjectsNotExisting(c, c.Files)
 	if err != nil {
-		return err
+		return err, uplCount
 	}
 	c.Files = objectList
 
 	fi := NewFileIterator(c)
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(c.Bucket["region"]),
-		Credentials: credentials.NewStaticCredentials(c.Authentication["key"], c.Authentication["access"], ""),
+		Region:      aws.String(c.Bucket["region"].(string)),
+		Credentials: credentials.NewStaticCredentials(c.Authentication["key"].(string), c.Authentication["secret"].(string), ""),
 	})
 	if err != nil {
-		return errors.New("unable to create AWS session")
+		return errors.New("unable to create AWS session"), uplCount
 	}
 	svc := s3manager.NewUploader(sess)
 
 	if err := svc.UploadWithIterator(aws.BackgroundContext(), fi); err != nil {
-		return err
+		return err, uplCount
 	}
-	return nil
+	return nil, uplCount
 }

@@ -1,6 +1,6 @@
 Authentication:
   key: ""
-  access: ""
+  secret: ""
 Bucket:
   name: "my-bucket"
   region: "us-east-1"

@@ -93,8 +93,10 @@ It will then log the string with the given zerolog.Level.
 If the zerolog.Level is FATAL, the program will exit with status code 1.
 */
 func (lb *LogBot) route(l zerolog.Level, s string) {
-	z := lb.buildZ(l)
-	z.WithLevel(l).Msg(s)
+	if lb.FlagConsole || lb.FlagFile {
+		z := lb.buildZ(l)
+		z.WithLevel(l).Msg(s)
+	}
 	if l == FATAL {
 		os.Exit(1)
 	}

@@ -19,7 +19,6 @@ type DirectoryIterator struct {
 		storage   string
 		CannedACL string
 	}
-
 	err    error
 	config config.Configuration
 }

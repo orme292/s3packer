@@ -1,6 +1,6 @@
 Authentication:
   key: ""
-  access: ""
+  secret: ""
 Bucket:
   name: "long-term-bucket"
   region: "eu-north-1"
@@ -13,6 +13,6 @@ Dirs:
   - "/var/log"
   - "/root/"
 Logging:
-  console: true
-  file: true
-  path: "/var/log/backup.log"
+  toConsole: true
+  toFile: true
+  filename: "/var/log/backup.log"

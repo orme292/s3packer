@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/orme292/s3packer/config"
@@ -37,6 +38,7 @@ main is the entry point of the program. It does the following:
  6. Any returned errors from either of the above are printed as warnings and the program terminates with a 0.
 */
 func main() {
+	var count int
 	c := config.New()
 
 	filename, _, err := getFlags()
@@ -48,20 +50,22 @@ func main() {
 		c.Logger.Fatal("Problem loading profile: " + err.Error())
 	}
 
+	fmt.Println("Processing objects...")
+
 	if len(c.Dirs) != 0 {
 		for _, dir := range c.Dirs {
-			if err := s3pack.UploadDirectory(c, dir); err != nil {
+			if err, count = s3pack.UploadDirectory(c, dir); err != nil {
 				c.Logger.Warn(err.Error())
 			}
 		}
 	}
 
 	if len(c.Files) != 0 {
-		if err := s3pack.UploadObjects(c); err != nil {
+		if err, count = s3pack.UploadObjects(c); err != nil {
 			c.Logger.Warn(err.Error())
 		}
 	}
 
-	c.Logger.Info("Program Finished.")
+	fmt.Printf("s3packer Finished, Uploaded %d objects.\n", count)
 	os.Exit(0)
 }

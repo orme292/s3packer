@@ -13,6 +13,8 @@ import (
 	"github.com/orme292/s3packer/config"
 )
 
+var uplCount int
+
 /*
 NewDirectoryIterator creates a new DirectoryIterator struct, which implements the s3manager.BatchUploadIterator
 interface for use with s3manager.UploadWithIterator. It takes a config.Configuration struct and a directory
@@ -35,7 +37,7 @@ func NewDirectoryIterator(c config.Configuration, dir string) s3manager.BatchUpl
 
 	return &DirectoryIterator{
 		filePaths: paths,
-		bucket:    c.Bucket["name"],
+		bucket:    c.Bucket["name"].(string),
 		config:    c,
 	}
 }
@@ -98,6 +100,7 @@ s3manager.UploadWithIterator. We set After: to a function that closes the file a
 func (di *DirectoryIterator) UploadObject() s3manager.BatchUploadObject {
 	f := di.next.f
 	di.config.Logger.Info(fmt.Sprintf("Uploading %s...", di.next.name))
+	uplCount++
 	return s3manager.BatchUploadObject{
 		Object: &s3manager.UploadInput{
 			Bucket:       &di.bucket,
@@ -128,13 +131,13 @@ UploadDirectory takes a config.Configuration struct and a directory path as inpu
 
 5. Log the completion of the upload and return nil.
 */
-func UploadDirectory(c config.Configuration, dir string) (err error) {
+func UploadDirectory(c config.Configuration, dir string) (error, int) {
 	// If the directory does not exist, we just stop here and return the error
-	fileSkip, err := LocalFileExists(dir)
-	if fileSkip == false {
-		return errors.New(fmt.Sprintf("directory %s does not exist, skipping", dir))
+	dirExists, err := LocalFileExists(dir)
+	if !dirExists {
+		return errors.New(fmt.Sprintf("directory %s does not exist, skipping", dir)), uplCount
 	} else if err != nil {
-		return err
+		return err, uplCount
 	}
 
 	c.Logger.Info(fmt.Sprintf("Starting Directory Upload Session for %s", dir))
@@ -142,11 +145,11 @@ func UploadDirectory(c config.Configuration, dir string) (err error) {
 	di := NewDirectoryIterator(c, dir)
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(c.Bucket["region"]),
-		Credentials: credentials.NewStaticCredentials(c.Authentication["key"], c.Authentication["access"], ""),
+		Region:      aws.String(c.Bucket["region"].(string)),
+		Credentials: credentials.NewStaticCredentials(c.Authentication["key"].(string), c.Authentication["secret"].(string), ""),
 	})
 	if err != nil {
-		return
+		return err, uplCount
 	}
 
 	uploader := s3manager.NewUploader(sess)
@@ -157,8 +160,8 @@ func UploadDirectory(c config.Configuration, dir string) (err error) {
 
 	err = uploader.UploadWithIterator(aws.BackgroundContext(), di)
 	if err != nil {
-		return
+		return err, uplCount
 	}
 	c.Logger.Info(fmt.Sprintf("Finished uploading %q to %q", dir, c.Bucket["name"]))
-	return nil
+	return nil, uplCount
 }

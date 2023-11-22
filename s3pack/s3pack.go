@@ -105,18 +105,16 @@ func ListedObjectsNotExisting(c config.Configuration, objects []string) (remaini
 	var awsError awserr.Error
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(c.Bucket["region"]),
-		Credentials: credentials.NewStaticCredentials(c.Authentication["key"], c.Authentication["access"], ""),
+		Region:      aws.String(c.Bucket["region"].(string)),
+		Credentials: credentials.NewStaticCredentials(c.Authentication["key"].(string), c.Authentication["secret"].(string), ""),
 	})
 
-	svc := s3.New(sess, &aws.Config{
-		DisableRestProtocolURICleaning: aws.Bool(true),
-	})
+	svc := s3.New(sess, &aws.Config{})
 
 	for _, object := range objects {
 		object = AppendPrefix(c, object)
 		_, err := svc.GetObject(&s3.GetObjectInput{
-			Bucket: aws.String(c.Bucket["name"]),
+			Bucket: aws.String(c.Bucket["name"].(string)),
 			Key:    aws.String(object),
 		})
 		if err != nil {
@@ -147,16 +145,14 @@ func ObjectExists(c config.Configuration, prefixedKey string) (bool, error) {
 	}
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(c.Bucket["region"]),
-		Credentials: credentials.NewStaticCredentials(c.Authentication["key"], c.Authentication["access"], ""),
+		Region:      aws.String(c.Bucket["region"].(string)),
+		Credentials: credentials.NewStaticCredentials(c.Authentication["key"].(string), c.Authentication["secret"].(string), ""),
 	})
 
-	svc := s3.New(sess, &aws.Config{
-		DisableRestProtocolURICleaning: aws.Bool(true),
-	})
+	svc := s3.New(sess, &aws.Config{})
 
 	out, err := svc.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(c.Bucket["name"]),
+		Bucket: aws.String(c.Bucket["name"].(string)),
 		Key:    aws.String(prefixedKey),
 	})
 	if err != nil {
