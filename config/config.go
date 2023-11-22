@@ -38,6 +38,11 @@ The file is expected to be in YAML format.
 7. Return the Configuration object.
 */
 func (c *Configuration) Load(file string) error {
+	file, err := filepath.Abs(file)
+	if err != nil {
+		return errors.New("unable to determine filename path: " + err.Error())
+	}
+
 	f, err := os.ReadFile(file)
 	if err != nil {
 		return errors.New(err.Error())
