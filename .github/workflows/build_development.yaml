@@ -26,10 +26,10 @@ jobs:
         if: github.event_name != 'pull_request'
         id: branch
         run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_OUTPUT
-      - name: Get Branch Name (pull request)
-        if: github.event_name == 'pull_request'
-        id: branch
-        run: echo "branch=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_OUTPUT
+#      - name: Get Branch Name (pull request)
+#        if: github.event_name == 'pull_request'
+#        id: branch
+#        run: echo "branch=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_OUTPUT
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
