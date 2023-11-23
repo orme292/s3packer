@@ -1,0 +1,59 @@
+name: prod-release
+on:
+
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  prod-merge-build-release:
+    strategy:
+      matrix:
+        go-version: [ 1.21.4 ]
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set Version
+        id: version
+        run: echo "version=$(cat ./VERSION)" >> $GITHUB_OUTPUT
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Display Go Version
+        run: go version
+      - name: Install Dependencies
+        run: go get .
+      - name: Make Artifact Directory
+        run: mkdir -p ./bin
+      - name: Build Linux ARM64 Artifact
+        run: GOOS=linux GOOARCH=arm64 go build -o ./bin/s3packer-linux-arm64 .
+      - name: Build Linux AMD64 Artifact
+        run: GOOS=linux GOOARCH=amd64 go build -o ./bin/s3packer-linux-amd64 .
+      - name: Build MacOS ARM64 Artifact
+        run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/s3packer-mac-arm64 .
+      - name: Build MacOS AMD64 Artifact
+        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/s3packer-mac-amd64 .
+      - name: Create New Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          name: Release ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body_path: ./CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            ./bin/s3packer-linux-arm64
+            ./bin/s3packer-linux-amd64
+            ./bin/s3packer-mac-arm64
+            ./bin/s3packer-mac-amd64
+            ./LICENSE
+            ./CHANGELOG.md

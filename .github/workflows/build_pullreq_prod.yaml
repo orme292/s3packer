@@ -1,0 +1,42 @@
+name: prod-pullrequest-check
+on:
+
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  prod-pullreq-build:
+    strategy:
+      matrix:
+        go-version: [ 1.21.4 ]
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set Version
+        id: version
+        run: echo "version=$(cat ./VERSION)" >> $GITHUB_OUTPUT
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Display Go Version
+        run: go version
+      - name: Install Dependencies
+        run: go get .
+      - name: Make Artifact Directory
+        run: mkdir -p ./bin
+      - name: Build Linux ARM64 Artifact
+        run: GOOS=linux GOOARCH=arm64 go build -o ./bin/s3packer-linux-arm64 .
+      - name: Build Linux AMD64 Artifact
+        run: GOOS=linux GOOARCH=amd64 go build -o ./bin/s3packer-linux-amd64 .
+      - name: Build MacOS ARM64 Artifact
+        run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/s3packer-mac-arm64 .
+      - name: Build MacOS AMD64 Artifact
+        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/s3packer-mac-amd64 .
