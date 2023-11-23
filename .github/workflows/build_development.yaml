@@ -1,3 +1,4 @@
+name: dev-release
 on:
 
   pull_request:
@@ -5,20 +6,22 @@ on:
   push:
     branches: [development]
 
-permissions:
-  contents: write
-
 jobs:
 
-  build:
+  build-release:
     strategy:
       matrix:
         go-version: [ 1.21.4 ]
         os: [ ubuntu-latest ]
-
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+      - name: version
+        run: echo "::set-output name=version::$(cat ./VERSION_DEV)"
+        id: version
       - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
@@ -27,29 +30,52 @@ jobs:
         run: go version
       - name: Install Dependencies
         run: go get .
-      - name: Make build directory
+      - name: Make Artifact Directory
         run: mkdir -p ./bin
-      - name: Build Linux ARM64
+      - name: Build Linux ARM64 Artifact
         run: GOOS=linux GOOARCH=arm64 go build -v -o ./bin/s3packer-linux-arm64 .
-      - name: Build Linux AMD64
+      - name: Build Linux AMD64 Artifact
         run: GOOS=linux GOOARCH=amd64 go build -v -o ./bin/s3packer-linux-amd64 .
-      - name: Build MacOS ARM64
+      - name: Build MacOS ARM64 Artifact
         run: GOOS=darwin GOOARCH=arm64 go build -v -o ./bin/s3packer-mac-arm64 .
-      - name: Build MacOS AMD64
+      - name: Build MacOS AMD64 Artifact
         run: GOOS=darwin GOOARCH=amd64 go build -v -o ./bin/s3packer-mac-amd64 .
-      - uses: actions/upload-artifact@v3
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
         with:
-          name: s3packer-linux-arm64
-          path: ./bin/s3packer-linux-arm64
-      - uses: actions/upload-artifact@v3
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: development
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Upload Linux ARM64 Artifact
+        uses: actions/upload-release-asset@v1
         with:
-          name: s3packer-linux-amd64
-          path: ./bin/s3packer-linux-amd64
-      - uses: actions/upload-artifact@v3
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/s3packer-linux-arm64
+          asset_name: s3packer-linux-arm64
+          asset_content_type: application/octet-stream
+      - name: Upload Linux AMD64 Artifact
+        uses: actions/upload-release-asset@v1
         with:
-          name: s3packer-mac-arm64
-          path: ./bin/s3packer-mac-arm64
-      - uses: actions/upload-artifact@v3
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/s3packer-linux-amd64
+          asset_name: s3packer-linux-amd64
+          asset_content_type: application/octet-stream
+      - name: Upload MacOS ARM64 Artifact
+        uses: actions/upload-release-asset@v1
         with:
-          name: s3packer-mac-amd64
-          path: ./bin/s3packer-mac-amd64
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/s3packer-mac-arm64
+          asset_name: s3packer-mac-arm64
+          asset_content_type: application/octet-stream
+      - name: Upload MacOS AMD64 Artifact
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./bin/s3packer-mac-amd64
+          asset_name: s3packer-mac-amd64
+          asset_content_type: application/octet-stream
