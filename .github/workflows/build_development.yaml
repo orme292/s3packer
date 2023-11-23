@@ -27,15 +27,29 @@ jobs:
         run: go version
       - name: Install Dependencies
         run: go get .
+      - name: Make build directory
+        run: mkdir -p ./bin
       - name: Build Linux ARM64
-        run: GOOS=linux GOOARCH=arm64 go build -v -o ./s3packer-linux-arm64 .
+        run: GOOS=linux GOOARCH=arm64 go build -v -o ./bin/s3packer-linux-arm64 .
       - name: Build Linux AMD64
-        run: GOOS=linux GOOARCH=amd64 go build -v -o ./s3packer-linux-amd64 .
+        run: GOOS=linux GOOARCH=amd64 go build -v -o ./bin/s3packer-linux-amd64 .
       - name: Build MacOS ARM64
-        run: GOOS=darwin GOOARCH=arm64 go build -v -o ./s3packer-mac-arm64 .
+        run: GOOS=darwin GOOARCH=arm64 go build -v -o ./bin/s3packer-mac-arm64 .
       - name: Build MacOS AMD64
-        run: GOOS=darwin GOOARCH=amd64 go build -v -o ./s3packer-mac-amd64 .
-      - name: Locate Binaries
-        run: ls -la
-      - name: PWD
-        run: pwd
+        run: GOOS=darwin GOOARCH=amd64 go build -v -o ./bin/s3packer-mac-amd64 .
+      - uses: actions/upload-artifact@v3
+        with:
+          name: s3packer-linux-arm64
+          path: ./bin/s3packer-linux-arm64
+      - uses: actions/upload-artifact@v3
+        with:
+          name: s3packer-linux-amd64
+          path: ./bin/s3packer-linux-amd64
+      - uses: actions/upload-artifact@v3
+        with:
+          name: s3packer-mac-arm64
+          path: ./bin/s3packer-mac-arm64
+      - uses: actions/upload-artifact@v3
+        with:
+          name: s3packer-mac-amd64
+          path: ./bin/s3packer-mac-amd64
