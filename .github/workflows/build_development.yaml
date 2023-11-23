@@ -23,7 +23,6 @@ jobs:
         with:
             fetch-depth: 0
       - name: version
-#        run: echo "::set-output name=version::$(cat ./VERSION_DEV)"
         run: echo "version=$(cat ./VERSION_DEV)" >> $GITHUB_OUTPUT
       - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
@@ -43,7 +42,7 @@ jobs:
         run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/s3packer-mac-arm64 .
 #      - name: Build MacOS AMD64 Artifact
 #        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/s3packer-mac-amd64 .
-#      - name: Create Release
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           draft: true
