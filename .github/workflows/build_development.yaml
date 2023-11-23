@@ -45,13 +45,13 @@ jobs:
       - name: Build MacOS AMD64 Artifact
         run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/mac-amd64/s3packer .
       - name: Create Archive linux-arm64
-        run: tar -czvf ./bin/linux-arm64/s3packer.tar.gz -C ./bin/linux-arm64/ .
+        run: tar -czvf ./bin/s3packer-linux-arm64.tar.gz -C ./bin/linux-arm64/ .
       - name: Create Archive linux-amd64
-        run: tar -czvf ./bin/linux-amd64/s3packer.tar.gz -C ./bin/linux-amd64/ .
+        run: tar -czvf ./bin/s3packer-linux-amd64.tar.gz -C ./bin/linux-amd64/ .
       - name: Create Archive mac-arm64
-        run: tar -czvf ./bin/mac-arm64/s3packer.tar.gz -C ./bin/mac-arm64/ .
+        run: tar -czvf ./bin/s3packer-mac-arm64.tar.gz -C ./bin/mac-arm64/ .
       - name: Create Archive mac-amd64
-        run: tar -czvf ./bin/mac-amd64/s3packer.tar.gz -C /bin/mac-amd64/ .
+        run: tar -czvf ./bin/s3packer-mac-amd64.tar.gz -C /bin/mac-amd64/ .
       - name: Create New Release
         uses: softprops/action-gh-release@v1
         with:
@@ -63,7 +63,7 @@ jobs:
           body_path: ./CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-              ./bin/mac-arm64/s3packer.tar.gz
+              ./bin/s3packer-mac-arm64.tar.gz
               ./LICENSE
               ./CHANGELOG.md
               ./VERSION_DEV
