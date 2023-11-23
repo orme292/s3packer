@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  build-release:
+  dev-merge-build-release:
     strategy:
       matrix:
         go-version: [ 1.21.4 ]

@@ -1,4 +1,4 @@
-name: dev-release
+name: prod-release
 on:
 
   push:
@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  build-release:
+  prod-merge-build-release:
     strategy:
       matrix:
         go-version: [ 1.21.4 ]
