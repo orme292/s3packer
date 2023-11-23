@@ -52,9 +52,6 @@ jobs:
           tag_name: dev-${{ steps.version.outputs.version }}
           body_path: CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Linux ARM64 Artifact
-        uses: actions/upload-release-asset@v1
-        with:
           files: |
             ./bin/s3packer-linux-arm64
             ./bin/s3packer-linux-amd64
