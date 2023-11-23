@@ -10,7 +10,6 @@ permissions:
   contents: write
 
 jobs:
-
   build-release:
     strategy:
       matrix:
@@ -18,13 +17,14 @@ jobs:
         os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout
+      - name: Checkout Repo
         uses: actions/checkout@v4
         with:
             fetch-depth: 0
-      - name: version
+      - name: Set Version
+        id: version
         run: echo "version=$(cat ./VERSION_DEV)" >> $GITHUB_OUTPUT
-      - name: Set up Go ${{ matrix.go-version }}
+      - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
@@ -42,13 +42,13 @@ jobs:
         run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/s3packer-mac-arm64 .
 #      - name: Build MacOS AMD64 Artifact
 #        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/s3packer-mac-amd64 .
-      - name: Create Release
+      - name: Create New Release dev-${{ steps.version.outputs.version }}
         uses: softprops/action-gh-release@v1
         with:
-          draft: true
-          prerelease: true
+          draft: false
+          prerelease: false
           fail_on_unmatched_files: true
-          name: Development Release ${{ steps.version.outputs.version }}
+          name: Dev Release ${{ steps.version.outputs.version }}
           tag_name: dev-${{ steps.version.outputs.version }}
           body_path: ./CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,6 +56,7 @@ jobs:
               ./bin/s3packer-mac-arm64
               ./LICENSE
               ./CHANGELOG.md
+              ./VERSION_DEV
 #          files: |
 #            ./bin/s3packer-linux-arm64
 #            ./bin/s3packer-linux-amd64
