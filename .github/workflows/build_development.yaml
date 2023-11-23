@@ -2,7 +2,7 @@ name: dev-release
 on:
 
   push:
-    branches: [development, actions-gzip-binaries]
+    branches: [development]
 
 permissions:
   contents: write
@@ -18,7 +18,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
+          fetch-depth: 0
       - name: Set Version
         id: version
         run: echo "version=$(cat ./VERSION_DEV)" >> $GITHUB_OUTPUT

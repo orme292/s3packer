@@ -22,6 +22,10 @@ jobs:
       - name: Set Version
         id: version
         run: echo "version=$(cat ./VERSION)" >> $GITHUB_OUTPUT
+      - name: Get Branch Name (merge)
+        if: github.event_name != 'pull_request'
+        id: branch
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_OUTPUT
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
@@ -31,15 +35,27 @@ jobs:
       - name: Install Dependencies
         run: go get .
       - name: Make Artifact Directory
-        run: mkdir -p ./bin
+        run: mkdir -p ./bin/linux-arm64 && mkdir -p ./bin/linux-amd64 && mkdir -p ./bin/mac-arm64 && mkdir -p ./bin/mac-amd64
+      - name: Copy Release Files
+        run: cp ./VERSION_DEV ./bin/linux-amd64/ && cp ./VERSION_DEV ./bin/linux-arm64/ && cp ./VERSION_DEV ./bin/mac-amd64/ && cp ./VERSION_DEV ./bin/mac-arm64/
+      - name: Copy CHANGELOG.md
+        run: cp ./CHANGELOG.md ./bin/linux-amd64/ && cp ./CHANGELOG.md ./bin/linux-arm64/ && cp ./CHANGELOG.md ./bin/mac-amd64/ && cp ./CHANGELOG.md ./bin/mac-arm64/
       - name: Build Linux ARM64 Artifact
-        run: GOOS=linux GOOARCH=arm64 go build -o ./bin/s3packer-linux-arm64 .
+        run: GOOS=linux GOOARCH=arm64 go build -o ./bin/linux-arm64/s3packer .
       - name: Build Linux AMD64 Artifact
-        run: GOOS=linux GOOARCH=amd64 go build -o ./bin/s3packer-linux-amd64 .
+        run: GOOS=linux GOOARCH=amd64 go build -o ./bin/linux-amd64/s3packer .
       - name: Build MacOS ARM64 Artifact
-        run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/s3packer-mac-arm64 .
+        run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/mac-arm64/s3packer .
       - name: Build MacOS AMD64 Artifact
-        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/s3packer-mac-amd64 .
+        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/mac-amd64/s3packer .
+      - name: Create Archive linux-arm64
+        run: tar -czvf ./bin/s3packer-linux-arm64.tar.gz -C ./bin/linux-arm64/ .
+      - name: Create Archive linux-amd64
+        run: tar -czvf ./bin/s3packer-linux-amd64.tar.gz -C ./bin/linux-amd64/ .
+      - name: Create Archive mac-arm64
+        run: tar -czvf ./bin/s3packer-mac-arm64.tar.gz -C ./bin/mac-arm64/ .
+      - name: Create Archive mac-amd64
+        run: tar -czvf ./bin/s3packer-mac-amd64.tar.gz -C ./bin/mac-amd64/ .
       - name: Create New Release
         uses: softprops/action-gh-release@v1
         with:
@@ -47,13 +63,13 @@ jobs:
           prerelease: false
           fail_on_unmatched_files: true
           name: Release ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.branch.outputs.branch }}-${{ steps.version.outputs.version }}
           body_path: ./CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            ./bin/s3packer-linux-arm64
-            ./bin/s3packer-linux-amd64
-            ./bin/s3packer-mac-arm64
-            ./bin/s3packer-mac-amd64
+            ./bin/s3packer-linux-arm64.tar.gz
+            ./bin/s3packer-linux-amd64.tar.gz
+            ./bin/s3packer-mac-arm64.tar.gz
+            ./bin/s3packer-mac-amd64.tar.gz
             ./LICENSE
             ./CHANGELOG.md
