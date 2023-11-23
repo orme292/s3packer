@@ -44,41 +44,21 @@ jobs:
       - name: Build MacOS AMD64 Artifact
         run: GOOS=darwin GOOARCH=amd64 go build -v -o ./bin/s3packer-mac-amd64 .
       - name: release
-        uses: actions/create-release@v1
-        id: create_release
+        uses: softprops/action-gh-release@v1
         with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: development
+          draft: true
+          prerelease: true
+          release_name: Development Release ${{ steps.version.outputs.version }}
+          tag_name: dev-${{ steps.version.outputs.version }}
           body_path: CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Linux ARM64 Artifact
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/s3packer-linux-arm64
-          asset_name: s3packer-linux-arm64
-          asset_content_type: application/octet-stream
-      - name: Upload Linux AMD64 Artifact
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/s3packer-linux-amd64
-          asset_name: s3packer-linux-amd64
-          asset_content_type: application/octet-stream
-      - name: Upload MacOS ARM64 Artifact
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/s3packer-mac-arm64
-          asset_name: s3packer-mac-arm64
-          asset_content_type: application/octet-stream
-      - name: Upload MacOS AMD64 Artifact
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/s3packer-mac-amd64
-          asset_name: s3packer-mac-amd64
-          asset_content_type: application/octet-stream
+          files: |
+            ./bin/s3packer-linux-arm64
+            ./bin/s3packer-linux-amd64
+            ./bin/s3packer-mac-arm64
+            ./bin/s3packer-mac-amd64
+            ./LICENSE
+            ./CHANGELOG.md
