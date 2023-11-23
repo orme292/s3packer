@@ -1,8 +1,8 @@
 name: dev-release
 on:
 
-  push:
-    branches: [development]
+  pull_request:
+    branches: [master]
 
 permissions:
   contents: write
@@ -18,10 +18,10 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
+          fetch-depth: 0
       - name: Set Version
         id: version
-        run: echo "version=$(cat ./VERSION_DEV)" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat ./VERSION)" >> $GITHUB_OUTPUT
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
@@ -40,18 +40,3 @@ jobs:
         run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/s3packer-mac-arm64 .
       - name: Build MacOS AMD64 Artifact
         run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/s3packer-mac-amd64 .
-      - name: Create New Release
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: true
-          name: Dev Release ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
-          body_path: ./CHANGELOG.md
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: |
-              ./bin/s3packer-mac-arm64
-              ./LICENSE
-              ./CHANGELOG.md
-              ./VERSION_DEV
