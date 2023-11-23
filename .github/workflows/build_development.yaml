@@ -22,6 +22,14 @@ jobs:
       - name: Set Version
         id: version
         run: echo "version=$(cat ./VERSION_DEV)" >> $GITHUB_OUTPUT
+      - name: Get Branch Name (merge)
+        if: github.event_name != 'pull_request'
+        id: branch
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_OUTPUT
+      - name: Get Branch Name (pull request)
+        if: github.event_name == 'pull_request'
+        id: branch
+        run: echo "branch=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_OUTPUT
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
@@ -59,7 +67,7 @@ jobs:
           prerelease: false
           fail_on_unmatched_files: true
           name: Release ${{ steps.version.outputs.version }}
-          tag_name: ${GITHUB_REF##*/}-${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.branch.outputs.branch }}-${{ steps.version.outputs.version }}
           body_path: ./CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
