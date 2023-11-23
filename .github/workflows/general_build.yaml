@@ -1,14 +1,11 @@
-name: prod-pullrequest-check
-on:
-
-  pull_request:
-    branches: [master]
+name: general-build-check
+on: [push, pull_request]
 
 permissions:
   contents: write
 
 jobs:
-  prod-pullreq-build:
+  general-build-check:
     strategy:
       matrix:
         go-version: [ 1.21.4 ]
