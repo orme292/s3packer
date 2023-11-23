@@ -1,4 +1,4 @@
-name: prod-pullrequest-check
+name: general-build-check
 on: [push, pull_request]
 
 permissions:
