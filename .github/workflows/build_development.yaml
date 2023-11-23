@@ -51,7 +51,7 @@ jobs:
       - name: Create Archive mac-arm64
         run: tar -czvf ./bin/s3packer-mac-arm64.tar.gz -C ./bin/mac-arm64/ .
       - name: Create Archive mac-amd64
-        run: tar -czvf ./bin/s3packer-mac-amd64.tar.gz -C /bin/mac-amd64/ .
+        run: tar -czvf ./bin/s3packer-mac-amd64.tar.gz -C ./bin/mac-amd64/ .
       - name: Create New Release
         uses: softprops/action-gh-release@v1
         with:
