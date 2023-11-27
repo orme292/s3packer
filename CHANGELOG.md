@@ -5,7 +5,7 @@ or minor tweak.
 ---
 
 ### **0.0.1a** (2023-11-27)
-> Adds a README file and fixes a typo in an example profila
+> Adds a README file and fixes a typo in an example profile
 
 ### **0.0.1**
 > Initial release
