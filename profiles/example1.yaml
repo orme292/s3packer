@@ -15,7 +15,7 @@ Dirs:
 Files:
 - "/Users/forrest/docs/job-application-lawn-mower.pdf"
 - "/Users/forrest/docs/dr-pepper-recipe.txt"
-- "/Users/jenny/letters/from-forrest.docx""
+- "/Users/jenny/letters/from-forrest.docx"
 Logging:
   console: true
   file: false
