@@ -41,7 +41,7 @@ jobs:
         run: mkdir -p ./bin/linux-arm64 && mkdir -p ./bin/linux-amd64 && mkdir -p ./bin/mac-arm64 && mkdir -p ./bin/mac-amd64
 
       - name: Copy Release Files
-        run: cp ./VERSION_DEV ./bin/linux-amd64/ && cp ./VERSION_DEV ./bin/linux-arm64/ && cp ./VERSION_DEV ./bin/mac-amd64/ && cp ./VERSION_DEV ./bin/mac-arm64/
+        run: cp ./VERSION_DEV ./bin/linux-amd64/ && cp ./VERSION ./bin/linux-arm64/ && cp ./VERSION ./bin/mac-amd64/ && cp ./VERSION ./bin/mac-arm64/
       - name: Copy CHANGELOG.md
         run: cp ./CHANGELOG.md ./bin/linux-amd64/ && cp ./CHANGELOG.md ./bin/linux-arm64/ && cp ./CHANGELOG.md ./bin/mac-amd64/ && cp ./CHANGELOG.md ./bin/mac-arm64/
       - name: Copy README.md
