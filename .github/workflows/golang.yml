@@ -1,0 +1,38 @@
+name: Golang workflow
+
+on:
+  push:
+    paths: [ '**.go' ]
+  pull_request:
+    paths: [ '**.go' ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        go: [ 1.21.4 ]
+        os: [ 'ubuntu-latest' ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Run govulncheck to scan for known vulnerabilities in dependencies.
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest -test ./...
+
+      - name: Run osv-scanner to scan for known vulnerabilities in dependencies.
+        run: go run github.com/google/osv-scanner/cmd/osv-scanner@latest -r .
+
+      - name: Run securego/gosec to scan source for security problems
+        run: go run github.com/securego/gosec/v2/cmd/gosec@latest -exclude=G204 -quiet ./...
+
+#      - name: Run go-critic for code linting
+#        run: go run github.com/go-critic/go-critic/cmd/gocritic@latest check -enableAll ./...
+
+      - name: Run ineffassign to scan source for unused assignments
+        run: go run github.com/gordonklaus/ineffassign@latest ./...
+
+#      - name: Run Go test
+#        run: go test -race ./...
