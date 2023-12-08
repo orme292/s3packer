@@ -2,7 +2,6 @@ package logbot
 
 import (
 	"os"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -16,13 +15,15 @@ If the interface{} is a string, it will attempt to convert it to an int.
 When the interface{} is an int, it will attempt to convert it to a zerolog.Level.
 */
 func (lb *LogBot) ParseIntLevel(n any) (l zerolog.Level) {
-	if reflect.ValueOf(n).Kind() == reflect.String {
+	switch n.(type) {
+	case string:
 		x, err := strconv.Atoi(n.(string))
 		if err != nil {
 			return BLAST
 		}
 		n = x
 	}
+
 	switch n {
 	case 5:
 		l = PANIC
@@ -49,7 +50,6 @@ SetLogLevel takes a zerolog.Level and sets the global log level.
 */
 func (lb *LogBot) SetLogLevel(l zerolog.Level) {
 	zerolog.SetGlobalLevel(l)
-	log.Info().Msg("Global log level set to " + l.String())
 }
 
 /*
@@ -62,10 +62,8 @@ If LogBot.Level is DEBUG, the zerolog.Logger returned will have a caller field s
 Any zerolog.Logger returned will have a timestamp field set.
 */
 func (lb *LogBot) buildZ(l zerolog.Level) (z zerolog.Logger) {
-	//buildInfo, _ := debug.ReadBuildInfo()
-
 	if lb.FlagFile {
-		logFile, err := os.OpenFile(lb.Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0664)
+		logFile, err := os.OpenFile(lb.Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o664)
 		if err != nil {
 			log.Fatal().Msg("Unable to open log file: " + err.Error())
 			os.Exit(1)
@@ -94,7 +92,7 @@ If the zerolog.Level is FATAL, the program will exit with status code 1.
 */
 func (lb *LogBot) route(l zerolog.Level, s string) {
 	if lb.FlagConsole || lb.FlagFile {
-		z := lb.buildZ(l)
+		z := lb.buildZ(lb.Level)
 		z.WithLevel(l).Msg(s)
 	}
 	if l == FATAL {

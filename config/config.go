@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/orme292/s3packer/logbot"
 	"gopkg.in/yaml.v2"
@@ -18,7 +17,7 @@ func New() Configuration {
 	return Configuration{
 		Logger: logbot.LogBot{
 			Level:       logbot.INFO,
-			FlagConsole: true,
+			FlagConsole: false,
 			FlagFile:    false,
 			Path:        "log.log",
 		},
@@ -60,24 +59,17 @@ func (c *Configuration) Load(file string) error {
 		return err
 	}
 
-	c.Logger.FlagConsole = c.Logging["toConsole"].(bool)
-	c.Logger.FlagFile = c.Logging["toFile"].(bool)
-	if c.Logging["toFile"].(bool) == true && c.Logging["path"].(string) != "" {
-		path, err := filepath.Abs(c.Logging["path"].(string))
+	c.Logger.FlagConsole = c.Logging[ProfileLoggingToConsole].(bool)
+	c.Logger.Level = c.Logger.ParseIntLevel(c.Logging[ProfileLoggingLevel].(int))
+	c.Logger.FlagFile = c.Logging[ProfileLoggingToFile].(bool)
+	if c.Logging[ProfileLoggingToFile].(bool) == true && c.Logging[ProfileLoggingFilename].(string) != "" {
+		path, err := filepath.Abs(c.Logging[ProfileLoggingFilename].(string))
 		if err != nil {
 			return errors.New("unable to get absolute path of log file: " + err.Error())
 		}
 		c.Logger.Path = path
 	}
-	c.Logger.SetLogLevel(c.Logger.ParseIntLevel(c.Logging["level"]))
-
-	c.sanitizeACL()
-	c.sanitizeStorageType()
-
-	if c.Options["overwrite"] == "" {
-		c.Options["overwrite"] = false
-	}
-	c.Options["prefix"] = strings.TrimSpace(c.Options["prefix"].(string))
+	c.Logger.Level = c.Logger.ParseIntLevel(c.Logging[ProfileLoggingLevel])
 
 	if c.Files == nil && c.Dirs == nil {
 		return errors.New("no files or directories specified")
