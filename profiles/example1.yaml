@@ -1,14 +1,16 @@
 Authentication:
-  key: ""
-  secret: ""
+  aws-profile: "default"
 Bucket:
   name: "my-bucket"
   region: "us-east-1"
 Options:
   acl: "private"
   storage: "STANDARD"
-  prefix: ""
+  tagOrigins: true
   overwrite: true
+Tags:
+  "author": "forrest"
+  "project": "jenny"
 Dirs:
 - "/Users/forrest/docs/stocks/apple"
 - "/Users/jenny/docs/lyrics"

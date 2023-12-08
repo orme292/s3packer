@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	pal "github.com/abusomani/go-palette/palette"
 	"github.com/orme292/s3packer/config"
 	"github.com/orme292/s3packer/s3pack"
 )
@@ -38,7 +39,13 @@ main is the entry point of the program. It does the following:
  6. Any returned errors from either of the above are printed as warnings and the program terminates with a 0.
 */
 func main() {
-	var count int
+
+	p := pal.New(pal.WithBackground(pal.Color(21)), pal.WithForeground(pal.BrightWhite), pal.WithSpecialEffects([]pal.Special{pal.Bold}))
+	_, _ = p.Println("s3packer v", s3pack.Version)
+	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
+	_, _ = p.Println("https://github.com/orme292/s3packer\n")
+
+	var dirsIgnored, filesIgnored, dirsUploaded, filesUploaded int
 	c := config.New()
 
 	filename, _, err := getFlags()
@@ -53,19 +60,21 @@ func main() {
 	fmt.Println("Processing objects...")
 
 	if len(c.Dirs) != 0 {
-		for _, dir := range c.Dirs {
-			if err, count = s3pack.UploadDirectory(c, dir); err != nil {
-				c.Logger.Warn(err.Error())
-			}
+		err, dirsUploaded, dirsIgnored = s3pack.DirectoryUploader(&c, c.Dirs)
+		if err != nil {
+			c.Logger.Error(err.Error())
 		}
 	}
 
 	if len(c.Files) != 0 {
-		if err, count = s3pack.UploadObjects(c); err != nil {
-			c.Logger.Warn(err.Error())
+		err, filesUploaded, filesIgnored = s3pack.IndividualFileUploader(&c, c.Files)
+		if err != nil {
+			c.Logger.Error(err.Error())
 		}
 	}
 
-	fmt.Printf("s3packer Finished, Uploaded %d objects.\n", count)
+	//uploaded = dirsUploaded + filesUploaded
+	//ignored = dirsIgnored + filesIgnored
+	fmt.Printf("s3packer Finished, Uploaded %d objects, Ignored %d objects.\n", dirsUploaded+filesUploaded, dirsIgnored+filesIgnored)
 	os.Exit(0)
 }
