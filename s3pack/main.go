@@ -17,6 +17,7 @@ import (
 // TODO: Update VERSION
 // TODO: Add more readable log output, check log levels make sense
 // TODO: Consider ErrorAs implementation and hard coding error messages in Const
+// TODO: Upgrade to AWS SDK v2
 // TODO: OCI support
 
 func IndividualFileUploader(c *config.Configuration, files []string) (err error, uploaded, ignored int) {
