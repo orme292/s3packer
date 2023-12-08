@@ -77,11 +77,11 @@ Options:
   objectPrefix: "monthly-"
   pathPrefix: "/backups/monthly"
   tagOrigins: true
-  keyNamingMethod: "relative""
+  keyNamingMethod: "relative"
   overwrite: false
 ```
 
-**acl:** <br/>
+**acl** <br/>
 The default is `private`, but you can use any canned ACL: 
 - `public-read`
 - `public-read-write`
@@ -93,7 +93,7 @@ The default is `private`, but you can use any canned ACL:
 
 See more details on the AWS site, [https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html][s3_acl_url]
 
-**storage:** <br/>
+**storage** <br/>
 The default is `STANDARD`, but you can use any of the following storage classes:
 - `STANDARD`
 - `STANDARD_IA`
@@ -106,7 +106,7 @@ The default is `STANDARD`, but you can use any of the following storage classes:
 This is blank by default. Any value put here will be added before the file path when it's uploaded to S3.
 If you use something like `/backups/monthly`, the file will be uploaded to `/backups/monthly/your-file.txt`.
 
-**objectPrefix:** <br/>
+**objectPrefix** <br/>
 This is blank by default. Any value you put here will be added before the filename when it's uploaded to S3.
 Using something like `weekly-` will add that string to any file you're uploading, like `weekly-log.log` or `weekly-2021-01-01.log`.
 
@@ -138,7 +138,7 @@ Logging:
  ```
 
 **toConsole:**<br/>
-This is `true` by default. Outputs logging messages to standard output. If you set it to `false`, s3packer
+This is `false` by default. Outputs logging messages to standard output. If you set it to `false`, s3packer
 prints minimal output.
 
 **toFile:**<br/>

@@ -7,6 +7,7 @@ or minor tweak.
 - config: More config profile validation occurs.
 - config: Added 'level' option to control the logging level (0 debug, 5 Panic)
 - config: console and file logging disabled by default
+- config: added support for using aws cli profiles instead of secrets/keys
 - logbot: fixed an issue where it was impossible to set the logging level
 - s3pack: rewrite the whole module
 - s3pack: add an explicit bucket check before starting uploads
