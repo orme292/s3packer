@@ -116,11 +116,11 @@ local filesystem. This is useful if you want to be able to trace the origin of a
 
 **keyNamingMethod** <br/>
 The default is `relative`.
-- `relative`: The key will be prepended with the relative path of the file on the local filesystem.
+- `relative`: The key will be prepended with the relative path of the file on the local filesystem (individual files specified in the profile will always end up at the root of the bucket, plus the `pathPrefix` and then `objectPrefix`).
 - `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
 
 
-**overwrite:**  <br/>
+**overwrite**  <br/>
 This is `false` by default. If you set it to `true`, s3packer will overwrite any files in the bucket that 
 have the same name as what you're uploading. Useful if you're uploading a file that is updated over and over again.
 
