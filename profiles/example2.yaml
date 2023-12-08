@@ -1,14 +1,16 @@
 Authentication:
-  key: ""
-  secret: ""
+  key: "my-key"
+  secret: "my-secret"
 Bucket:
-  name: "long-term-bucket"
+  name: "secret-bucket"
   region: "eu-north-1"
 Options:
   acl: "private"
-  storage: "INTELLIGENT_TIERING"
-  prefix: "logs-"
+  keyNamingMethod: "absolute"
+  objectPrefix: "logs-"
   overwrite: false
+  pathPrefix: "/backups"
+  storage: "INTELLIGENT_TIERING"
 Dirs:
   - "/var/log"
   - "/root/"
