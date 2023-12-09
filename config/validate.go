@@ -380,6 +380,13 @@ func (c *Configuration) repairMissingFields() {
 			c.Options[ProfileOptionKeyNamingMethod] = EmptyString
 		}
 	}
+	_, ok = c.Options[ProfileOptionOmitOriginDir]
+	if !ok {
+		if !isBool(c.Options[ProfileOptionOmitOriginDir]) {
+			c.Options[ProfileOptionOmitOriginDir] = map[string]any{}
+			c.Options[ProfileOptionOmitOriginDir] = false
+		}
+	}
 
 	// Validate the Logging map: map[string]any
 	_, ok = c.Logging[ProfileLoggingToConsole]
