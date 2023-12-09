@@ -15,13 +15,15 @@ If the interface{} is a string, it will attempt to convert it to an int.
 When the interface{} is an int, it will attempt to convert it to a zerolog.Level.
 */
 func (lb *LogBot) ParseIntLevel(n any) (l zerolog.Level) {
-	switch n.(type) {
+	switch v := n.(type) {
 	case string:
-		x, err := strconv.Atoi(n.(string))
+		v, err := strconv.Atoi(n.(string))
 		if err != nil {
 			return BLAST
 		}
-		n = x
+		n = v
+	default:
+		n = v
 	}
 
 	switch n {
