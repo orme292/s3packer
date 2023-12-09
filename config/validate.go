@@ -218,7 +218,7 @@ func (c *Configuration) sanitizePrefixes() {
 	newKey := c.Options[ProfileOptionPathPrefix].(string)
 	if c.Options[ProfileOptionPathPrefix] != EmptyString {
 		for {
-			newKey = strings.Replace(c.Options[ProfileOptionPathPrefix].(string), "//", "/", -1)
+			newKey = strings.ReplaceAll(c.Options[ProfileOptionPathPrefix].(string), "//", "/")
 			if c.Options[ProfileOptionPathPrefix].(string) == newKey {
 				break
 			}
@@ -230,7 +230,7 @@ func (c *Configuration) sanitizePrefixes() {
 	newKey = c.Options[ProfileOptionObjectPrefix].(string)
 	if c.Options[ProfileOptionObjectPrefix] != EmptyString {
 		for {
-			newKey = strings.Replace(c.Options[ProfileOptionObjectPrefix].(string), "//", "/", -1)
+			newKey = strings.ReplaceAll(c.Options[ProfileOptionObjectPrefix].(string), "//", "/")
 			if c.Options[ProfileOptionObjectPrefix].(string) == newKey {
 				break
 			}
