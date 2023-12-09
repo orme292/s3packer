@@ -75,8 +75,8 @@ func BucketExists(c *config.Configuration) (exists bool, err error) {
 CalcChecksumSHA256 takes a path string as input and returns a checksum string and an error, if there is one.
 You should check if the path exists and is readable before using this function.
 */
-func CalcChecksumSHA256(path string) (checksum string, err error) {
-	absPath, err := filepath.Abs(path)
+func CalcChecksumSHA256(p string) (checksum string, err error) {
+	absPath, err := filepath.Abs(p)
 	if err != nil {
 		return
 	}
@@ -125,8 +125,8 @@ error, if there is one.
 
 It does not walk subdirectories.
 */
-func GetFiles(path string) (files []string, err error) {
-	absPath, err := filepath.Abs(path)
+func GetFiles(p string) (files []string, err error) {
+	absPath, err := filepath.Abs(p)
 	if err != nil {
 		return nil, errors.New("Error getting absolute path: " + err.Error())
 	}
@@ -147,8 +147,8 @@ func GetFiles(path string) (files []string, err error) {
 GetFileSize returns the size of a file in bytes. It takes a path string as input and returns an int64 and an error
 if there is one.
 */
-func GetFileSize(path string) (size int64, err error) {
-	absPath, err := filepath.Abs(path)
+func GetFileSize(p string) (size int64, err error) {
+	absPath, err := filepath.Abs(p)
 	if err != nil {
 		return 0, err
 	}
@@ -164,8 +164,8 @@ func GetFileSize(path string) (size int64, err error) {
 GetSubDirs returns a list of subdirectories in a given directory. It takes a path string as input and returns a
 slice of strings and an error, if there is one.
 */
-func GetSubDirs(path string) (subDirs []string, err error) {
-	absPath, err := filepath.Abs(path)
+func GetSubDirs(p string) (subDirs []string, err error) {
+	absPath, err := filepath.Abs(p)
 
 	err = filepath.Walk(absPath, func(path string, info os.FileInfo, err error) error {
 		if info != nil && info.IsDir() {
