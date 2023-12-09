@@ -3,6 +3,12 @@ Hello Changelog. This is where I document all changes to s3packer. I'll try to r
 or minor tweak. 
 
 ---
+### **1.0.1** (2023-12-04)
+- use gocritic suggestions
+- resolve gosec scan issues
+- fix ineffectual assignment
+- correct version number
+
 ### **1.0.0** (2023-12-03)
 - config: More config profile validation occurs.
 - config: Added 'level' option to control the logging level (0 debug, 5 Panic)
