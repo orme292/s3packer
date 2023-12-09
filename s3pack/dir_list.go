@@ -18,7 +18,7 @@ NewDirectoryList is a DirectoryList constructor. It takes a config and a directo
 DirectoryList and an error.
 */
 func NewDirectoryList(c *config.Configuration, dir string) (dirList DirectoryList, err error) {
-	c.Logger.Info(fmt.Sprintln("Processing directory: ", dir))
+	c.Logger.Info(fmt.Sprintf("Processing directory: %q", dir))
 
 	subDirs, err := GetSubDirs(dir)
 	if err != nil {
