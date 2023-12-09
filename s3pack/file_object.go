@@ -100,7 +100,12 @@ relative root is "/home/users" then the PrefixedName will be set to "/forrest/no
 */
 func (fo *FileObject) SetNameMethodRelative() {
 	if fo.IsDirectoryPart == true {
-		relativePath := strings.Replace(fo.OriginDirectory, fo.RelativeRoot, EmptyString, 1)
+		var relativePath string
+		if fo.config.Options[config.ProfileOptionOmitOriginDir].(bool) {
+			relativePath = strings.Replace(fo.OriginDirectory, fo.RelativeRoot, EmptyString, 1)
+		} else {
+			relativePath = strings.Replace(fo.OriginDirectory, filepath.Dir(fo.RelativeRoot), EmptyString, 1)
+		}
 		fo.PrefixedName = AppendPathPrefix(&fo.config, fmt.Sprintf("/%s/%s", relativePath, AppendObjectPrefix(&fo.config, fo.BaseName)))
 	} else {
 		fo.PrefixedName = AppendPathPrefix(&fo.config, AppendObjectPrefix(&fo.config, fo.BaseName))

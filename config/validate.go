@@ -215,10 +215,9 @@ func (c *Configuration) sanitizeKeyNamingMethod() {
 }
 
 func (c *Configuration) sanitizePrefixes() {
-	newKey := c.Options[ProfileOptionPathPrefix].(string)
 	if c.Options[ProfileOptionPathPrefix] != EmptyString {
 		for {
-			newKey = strings.Replace(c.Options[ProfileOptionPathPrefix].(string), "//", "/", -1)
+			newKey := strings.ReplaceAll(c.Options[ProfileOptionPathPrefix].(string), "//", "/")
 			if c.Options[ProfileOptionPathPrefix].(string) == newKey {
 				break
 			}
@@ -227,10 +226,9 @@ func (c *Configuration) sanitizePrefixes() {
 		c.Options[ProfileOptionPathPrefix] = strings.Trim(c.Options[ProfileOptionPathPrefix].(string), "/")
 	}
 
-	newKey = c.Options[ProfileOptionObjectPrefix].(string)
 	if c.Options[ProfileOptionObjectPrefix] != EmptyString {
 		for {
-			newKey = strings.Replace(c.Options[ProfileOptionObjectPrefix].(string), "//", "/", -1)
+			newKey := strings.ReplaceAll(c.Options[ProfileOptionObjectPrefix].(string), "//", "/")
 			if c.Options[ProfileOptionObjectPrefix].(string) == newKey {
 				break
 			}
@@ -380,6 +378,13 @@ func (c *Configuration) repairMissingFields() {
 		if !isString(c.Options[ProfileOptionKeyNamingMethod]) {
 			c.Options[ProfileOptionKeyNamingMethod] = map[string]any{}
 			c.Options[ProfileOptionKeyNamingMethod] = EmptyString
+		}
+	}
+	_, ok = c.Options[ProfileOptionOmitOriginDir]
+	if !ok {
+		if !isBool(c.Options[ProfileOptionOmitOriginDir]) {
+			c.Options[ProfileOptionOmitOriginDir] = map[string]any{}
+			c.Options[ProfileOptionOmitOriginDir] = false
 		}
 	}
 

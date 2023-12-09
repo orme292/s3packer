@@ -64,6 +64,7 @@ const (
 	ProfileOptionStorage         = "storage"
 	ProfileOptionTagOrigins      = "tagOrigins"
 	ProfileOptionKeyNamingMethod = "keyNamingMethod"
+	ProfileOptionOmitOriginDir   = "keyNamingOmitOriginDir" // Hidden Option
 	ProfileLoggingToConsole      = "toConsole"
 	ProfileLoggingToFile         = "toFile"
 	ProfileLoggingFilename       = "filename"

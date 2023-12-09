@@ -14,35 +14,40 @@ ParseIntLevel takes an interface{} and returns a zerolog.Level.
 If the interface{} is a string, it will attempt to convert it to an int.
 When the interface{} is an int, it will attempt to convert it to a zerolog.Level.
 */
-func (lb *LogBot) ParseIntLevel(n any) (l zerolog.Level) {
-	switch n.(type) {
+func (lb *LogBot) ParseIntLevel(n any) zerolog.Level {
+	switch v := n.(type) {
 	case string:
 		x, err := strconv.Atoi(n.(string))
 		if err != nil {
 			return BLAST
 		}
 		n = x
+	case bool:
+		return DEBUG
+	case int:
+		n = v
+	default:
+		return INFO
 	}
 
 	switch n {
 	case 5:
-		l = PANIC
+		return PANIC
 	case 4:
-		l = FATAL
+		return FATAL
 	case 3:
-		l = ERROR
+		return ERROR
 	case 2:
-		l = WARN
+		return WARN
 	case 1:
-		l = INFO
+		return INFO
 	case 0:
-		l = DEBUG
+		return DEBUG
 	case -1:
-		l = TRACE
+		return TRACE
 	default:
-		l = INFO
+		return INFO
 	}
-	return
 }
 
 /*
@@ -63,7 +68,7 @@ Any zerolog.Logger returned will have a timestamp field set.
 */
 func (lb *LogBot) buildZ(l zerolog.Level) (z zerolog.Logger) {
 	if lb.FlagFile {
-		logFile, err := os.OpenFile(lb.Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o664)
+		logFile, err := os.OpenFile(lb.Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o640)
 		if err != nil {
 			log.Fatal().Msg("Unable to open log file: " + err.Error())
 			os.Exit(1)

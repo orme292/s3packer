@@ -73,8 +73,6 @@ func main() {
 		}
 	}
 
-	//uploaded = dirsUploaded + filesUploaded
-	//ignored = dirsIgnored + filesIgnored
 	fmt.Printf("s3packer Finished, Uploaded %d objects, Ignored %d objects.\n", dirsUploaded+filesUploaded, dirsIgnored+filesIgnored)
 	os.Exit(0)
 }

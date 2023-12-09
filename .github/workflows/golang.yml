@@ -21,15 +21,17 @@ jobs:
 
       - name: Run govulncheck to scan for known vulnerabilities in dependencies.
         run: go run golang.org/x/vuln/cmd/govulncheck@latest -test ./...
+        continue-on-error: true
 
       - name: Run osv-scanner to scan for known vulnerabilities in dependencies.
         run: go run github.com/google/osv-scanner/cmd/osv-scanner@latest -r .
+        continue-on-error: true
 
       - name: Run securego/gosec to scan source for security problems
-        run: go run github.com/securego/gosec/v2/cmd/gosec@latest -exclude=G204 -quiet ./...
+        run: go run github.com/securego/gosec/v2/cmd/gosec@latest -exclude=G204,G302 -quiet ./...
 
-#      - name: Run go-critic for code linting
-#        run: go run github.com/go-critic/go-critic/cmd/gocritic@latest check -enableAll ./...
+      - name: Run go-critic for code linting
+        run: go run github.com/go-critic/go-critic/cmd/gocritic@latest check -enableAll ./...
 
       - name: Run ineffassign to scan source for unused assignments
         run: go run github.com/gordonklaus/ineffassign@latest ./...

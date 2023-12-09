@@ -18,7 +18,7 @@ NewDirectoryList is a DirectoryList constructor. It takes a config and a directo
 DirectoryList and an error.
 */
 func NewDirectoryList(c *config.Configuration, dir string) (dirList DirectoryList, err error) {
-	c.Logger.Info(fmt.Sprintln("Processing directory: ", dir))
+	c.Logger.Info(fmt.Sprintf("Processing directory: %q", dir))
 
 	subDirs, err := GetSubDirs(dir)
 	if err != nil {
@@ -58,31 +58,6 @@ IteratedDirObjectFunc is a function type that takes a DirectoryObject pointer an
 DirectoryList.IterateAndExecute
 */
 type IteratedDirObjectFunc func(do *DirectoryObject) (err error)
-
-/*
-FixRedundantKeys is an ObjectList method. It checks for duplicate occurrences of PrefixedName. If duplicates are found,
-then it appends a counter to the end of the PrefixedName.
-
-ALL occurrences are renamed. The first occurrence will get a -0 suffix, the second will get a -1 suffix, etc.
-my-file.txt-0
-...
-my-file.txt-30
-
-Not used. There are a lot of problems with a simple implementation like this.
-*/
-//func (dirList DirectoryList) FixRedundantKeys() {
-//	counts := make(map[string]int)
-//
-//	for dirListIndex := range dirList {
-//		for foIndex := range dirList[dirListIndex].objList {
-//			counts[dirList[dirListIndex].objList[foIndex].PrefixedName]++
-//			if counts[dirList[dirListIndex].objList[foIndex].PrefixedName] > 1 {
-//				dirList[dirListIndex].config.Logger.Error(fmt.Sprintf("Duplicate key found: %s-%d", dirList[dirListIndex].objList[foIndex].PrefixedName, counts[dirList[dirListIndex].objList[foIndex].PrefixedName]))
-//				dirList[dirListIndex].objList[foIndex].PrefixedName = fmt.Sprintf("%s-%d", dirList[dirListIndex].objList[foIndex].PrefixedName, counts[dirList[dirListIndex].objList[foIndex].PrefixedName])
-//			}
-//		}
-//	}
-//}
 
 /*
 SetAsDirectoryPart is a DirectoryList method. It iterates over the DirectoryList slice and calls the

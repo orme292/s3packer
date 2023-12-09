@@ -75,13 +75,13 @@ func BucketExists(c *config.Configuration) (exists bool, err error) {
 CalcChecksumSHA256 takes a path string as input and returns a checksum string and an error, if there is one.
 You should check if the path exists and is readable before using this function.
 */
-func CalcChecksumSHA256(path string) (checksum string, err error) {
-	absPath, err := filepath.Abs(path)
+func CalcChecksumSHA256(p string) (checksum string, err error) {
+	absPath, err := filepath.Abs(p)
 	if err != nil {
 		return
 	}
 
-	f, err := os.Open(absPath)
+	f, err := os.Open(filepath.Clean(absPath))
 	if err != nil {
 		return
 	}
@@ -105,15 +105,16 @@ func CalcChecksumSHA256(path string) (checksum string, err error) {
 FileSizeString takes an int64 (size) and returns a human-readable file size string.
 */
 func FileSizeString(size int64) string {
-	if size < 1024 {
+	switch {
+	case size < 1024:
 		return fmt.Sprintf("%d bytes", size)
-	} else if size < 1024*1024 {
+	case size < 1024*1024:
 		return fmt.Sprintf("%d KB", size/1024)
-	} else if size < 1024*1024*1024 {
+	case size < 1024*1024*1024:
 		return fmt.Sprintf("%d MB", size/(1024*1024))
-	} else if size < 1024*1024*1024*1024 {
+	case size < 1024*1024*1024*1024:
 		return fmt.Sprintf("%d GB", size/(1024*1024*1024))
-	} else {
+	default:
 		return fmt.Sprintf("%d TB", size/(1024*1024*1024*1024))
 	}
 }
@@ -124,8 +125,8 @@ error, if there is one.
 
 It does not walk subdirectories.
 */
-func GetFiles(path string) (files []string, err error) {
-	absPath, err := filepath.Abs(path)
+func GetFiles(p string) (files []string, err error) {
+	absPath, err := filepath.Abs(p)
 	if err != nil {
 		return nil, errors.New("Error getting absolute path: " + err.Error())
 	}
@@ -146,8 +147,8 @@ func GetFiles(path string) (files []string, err error) {
 GetFileSize returns the size of a file in bytes. It takes a path string as input and returns an int64 and an error
 if there is one.
 */
-func GetFileSize(path string) (size int64, err error) {
-	absPath, err := filepath.Abs(path)
+func GetFileSize(p string) (size int64, err error) {
+	absPath, err := filepath.Abs(p)
 	if err != nil {
 		return 0, err
 	}
@@ -163,8 +164,11 @@ func GetFileSize(path string) (size int64, err error) {
 GetSubDirs returns a list of subdirectories in a given directory. It takes a path string as input and returns a
 slice of strings and an error, if there is one.
 */
-func GetSubDirs(path string) (subDirs []string, err error) {
-	absPath, err := filepath.Abs(path)
+func GetSubDirs(p string) (subDirs []string, err error) {
+	absPath, err := filepath.Abs(filepath.Clean(p))
+	if err != nil {
+		return nil, errors.New("Error getting absolute path: " + err.Error())
+	}
 
 	err = filepath.Walk(absPath, func(path string, info os.FileInfo, err error) error {
 		if info != nil && info.IsDir() {
