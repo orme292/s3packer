@@ -14,37 +14,40 @@ ParseIntLevel takes an interface{} and returns a zerolog.Level.
 If the interface{} is a string, it will attempt to convert it to an int.
 When the interface{} is an int, it will attempt to convert it to a zerolog.Level.
 */
-func (lb *LogBot) ParseIntLevel(n any) (l zerolog.Level) {
+func (lb *LogBot) ParseIntLevel(n any) zerolog.Level {
 	switch v := n.(type) {
 	case string:
-		v, err := strconv.Atoi(n.(string))
+		x, err := strconv.Atoi(n.(string))
 		if err != nil {
 			return BLAST
 		}
+		n = x
+	case bool:
+		return DEBUG
+	case int:
 		n = v
 	default:
-		n = v
+		return INFO
 	}
 
 	switch n {
 	case 5:
-		l = PANIC
+		return PANIC
 	case 4:
-		l = FATAL
+		return FATAL
 	case 3:
-		l = ERROR
+		return ERROR
 	case 2:
-		l = WARN
+		return WARN
 	case 1:
-		l = INFO
+		return INFO
 	case 0:
-		l = DEBUG
+		return DEBUG
 	case -1:
-		l = TRACE
+		return TRACE
 	default:
-		l = INFO
+		return INFO
 	}
-	return
 }
 
 /*
