@@ -105,15 +105,16 @@ func CalcChecksumSHA256(path string) (checksum string, err error) {
 FileSizeString takes an int64 (size) and returns a human-readable file size string.
 */
 func FileSizeString(size int64) string {
-	if size < 1024 {
+	switch {
+	case size < 1024:
 		return fmt.Sprintf("%d bytes", size)
-	} else if size < 1024*1024 {
+	case size < 1024*1024:
 		return fmt.Sprintf("%d KB", size/1024)
-	} else if size < 1024*1024*1024 {
+	case size < 1024*1024*1024:
 		return fmt.Sprintf("%d MB", size/(1024*1024))
-	} else if size < 1024*1024*1024*1024 {
+	case size < 1024*1024*1024*1024:
 		return fmt.Sprintf("%d GB", size/(1024*1024*1024))
-	} else {
+	default:
 		return fmt.Sprintf("%d TB", size/(1024*1024*1024*1024))
 	}
 }
