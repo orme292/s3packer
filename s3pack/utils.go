@@ -81,7 +81,7 @@ func CalcChecksumSHA256(p string) (checksum string, err error) {
 		return
 	}
 
-	f, err := os.Open(absPath)
+	f, err := os.Open(filepath.Clean(absPath))
 	if err != nil {
 		return
 	}
@@ -165,7 +165,7 @@ GetSubDirs returns a list of subdirectories in a given directory. It takes a pat
 slice of strings and an error, if there is one.
 */
 func GetSubDirs(p string) (subDirs []string, err error) {
-	absPath, err := filepath.Abs(p)
+	absPath, err := filepath.Abs(filepath.Clean(p))
 
 	err = filepath.Walk(absPath, func(path string, info os.FileInfo, err error) error {
 		if info != nil && info.IsDir() {

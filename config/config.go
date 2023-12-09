@@ -42,7 +42,7 @@ func (c *Configuration) Load(file string) error {
 		return errors.New("unable to determine filename path: " + err.Error())
 	}
 
-	f, err := os.ReadFile(file)
+	f, err := os.ReadFile(filepath.Clean(file))
 	if err != nil {
 		return errors.New(err.Error())
 	}
