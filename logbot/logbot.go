@@ -65,7 +65,7 @@ Any zerolog.Logger returned will have a timestamp field set.
 */
 func (lb *LogBot) buildZ(l zerolog.Level) (z zerolog.Logger) {
 	if lb.FlagFile {
-		logFile, err := os.OpenFile(lb.Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o664)
+		logFile, err := os.OpenFile(lb.Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o640)
 		if err != nil {
 			log.Fatal().Msg("Unable to open log file: " + err.Error())
 			os.Exit(1)
