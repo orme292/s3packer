@@ -166,6 +166,9 @@ slice of strings and an error, if there is one.
 */
 func GetSubDirs(p string) (subDirs []string, err error) {
 	absPath, err := filepath.Abs(filepath.Clean(p))
+	if err != nil {
+		return nil, errors.New("Error getting absolute path: " + err.Error())
+	}
 
 	err = filepath.Walk(absPath, func(path string, info os.FileInfo, err error) error {
 		if info != nil && info.IsDir() {
