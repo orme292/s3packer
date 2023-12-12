@@ -18,8 +18,8 @@ type FileIterator struct {
 		fo *FileObject
 		f  *os.File
 	}
-	err    error
-	config *config.Configuration
+	err error
+	c   *config.Configuration
 }
 
 /*
@@ -29,7 +29,7 @@ interface.
 func NewFileIterator(c *config.Configuration, objList ObjectList) s3manager.BatchUploadIterator {
 	return &FileIterator{
 		objList: objList,
-		config:  c,
+		c:       c,
 	}
 }
 
@@ -51,7 +51,7 @@ func (fi *FileIterator) Next() bool {
 
 	for {
 		if fi.objList[0].IsUploaded || fi.objList[0].Ignore {
-			fi.config.Logger.Warn(fmt.Sprintf("Ignoring %q, %s", fi.objList[0].PrefixedName, fi.objList[0].IgnoreString))
+			fi.c.Logger.Warn(fmt.Sprintf("Ignoring %q, %s", fi.objList[0].PrefixedName, fi.objList[0].IgnoreString))
 			if len(fi.objList) == 1 {
 				return false
 			}
@@ -77,13 +77,13 @@ input and returns a s3manager.BatchUploadObject struct.
 */
 func (fi *FileIterator) UploadObject() s3manager.BatchUploadObject {
 	f := fi.stage.f
-	fi.config.Logger.Info(fmt.Sprintf("Uploading %s...", fi.stage.fo.PrefixedName))
+	fi.c.Logger.Info(fmt.Sprintf("Uploading %s...", fi.stage.fo.PrefixedName))
 	return s3manager.BatchUploadObject{
 		Object: &s3manager.UploadInput{
-			Bucket:       aws.String(fi.config.Bucket["name"].(string)),
+			Bucket:       aws.String(fi.c.Bucket[config.ProfileBucketName].(string)),
 			Key:          aws.String(fi.stage.fo.PrefixedName),
-			ACL:          aws.String(fi.config.Options["acl"].(string)),
-			StorageClass: aws.String(fi.config.Options["storage"].(string)),
+			ACL:          aws.String(fi.c.Options[config.ProfileOptionACL].(string)),
+			StorageClass: aws.String(fi.c.Options[config.ProfileOptionStorage].(string)),
 			Tagging:      aws.String(fi.stage.fo.Tags),
 			Body:         f,
 		},

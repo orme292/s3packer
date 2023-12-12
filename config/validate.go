@@ -7,11 +7,11 @@ import (
 )
 
 /*
-isString checks if the given interface{} is a string
+isBool checks if the given interface{} is a bool
 */
-func isString(s any) bool {
-	switch s.(type) {
-	case string:
+func isBool(b any) bool {
+	switch b.(type) {
+	case bool:
 		return true
 	default:
 		return false
@@ -19,11 +19,23 @@ func isString(s any) bool {
 }
 
 /*
-isBool checks if the given interface{} is a bool
+isInt checks if the given interface{} is an int
 */
-func isBool(b any) bool {
-	switch b.(type) {
-	case bool:
+func isInt(i any) bool {
+	switch i.(type) {
+	case int:
+		return true
+	default:
+		return false
+	}
+}
+
+/*
+isString checks if the given interface{} is a string
+*/
+func isString(s any) bool {
+	switch s.(type) {
+	case string:
 		return true
 	default:
 		return false
@@ -378,6 +390,13 @@ func (c *Configuration) repairMissingFields() {
 		if !isString(c.Options[ProfileOptionKeyNamingMethod]) {
 			c.Options[ProfileOptionKeyNamingMethod] = map[string]any{}
 			c.Options[ProfileOptionKeyNamingMethod] = EmptyString
+		}
+	}
+	_, ok = c.Options[ProfileOptionsMaxConcurrent]
+	if !ok {
+		if !isInt(c.Options[ProfileOptionsMaxConcurrent]) {
+			c.Options[ProfileOptionsMaxConcurrent] = map[string]any{}
+			c.Options[ProfileOptionsMaxConcurrent] = 5
 		}
 	}
 	_, ok = c.Options[ProfileOptionOmitOriginDir]

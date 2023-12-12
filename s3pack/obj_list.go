@@ -116,17 +116,17 @@ to retrieve metadata from an S3 object of the same name (s3 key = FileObject.Pre
 the FileObject.Ignore field is set to true and the FileObject.IgnoreString field is set to ErrIgnoreObjectAlreadyExists.
 */
 func (objList ObjectList) IgnoreIfObjectExistsInBucket() {
-	if objList[0].config.Options[config.ProfileOptionOverwrite].(bool) || len(objList) == 0 {
+	if objList[0].c.Options[config.ProfileOptionOverwrite].(bool) || len(objList) == 0 {
 		return
 	}
 
-	sess, _ := NewSession(&objList[0].config)
+	sess, _ := NewSession(&objList[0].c)
 
 	svc := s3.New(sess, &aws.Config{})
 
 	for index := range objList {
 		_, err := svc.HeadObject(&s3.HeadObjectInput{
-			Bucket: aws.String(objList[index].config.Bucket[config.ProfileBucketName].(string)),
+			Bucket: aws.String(objList[index].c.Bucket[config.ProfileBucketName].(string)),
 			Key:    aws.String(objList[index].PrefixedName),
 		})
 		if err != nil {
@@ -186,6 +186,12 @@ func (objList ObjectList) SetChecksum() (err error) {
 		return
 	})
 	return
+}
+
+func (objList ObjectList) SetGroups() {
+	for index, fo := range objList {
+		fo.SetGroup(index % 5)
+	}
 }
 
 func (objList ObjectList) SetIgnoreIfLocalNotExists() {
@@ -252,7 +258,7 @@ func (objList ObjectList) ReturnNewWithoutIgnored() (newObjList ObjectList) {
 		if !objList[index].Ignore {
 			newObjList = append(newObjList, objList[index])
 		} else {
-			objList[index].config.Logger.Warn(fmt.Sprintf("Ignoring %s: %s", objList[index].OriginPath, objList[index].IgnoreString))
+			objList[index].c.Logger.Warn(fmt.Sprintf("Ignoring %s: %s", objList[index].OriginPath, objList[index].IgnoreString))
 		}
 	}
 	return
@@ -277,7 +283,7 @@ See FileObject.Tag for more information.
 */
 func (objList ObjectList) TagOrigins() {
 	_ = objList.IterateAndExecute(func(fo *FileObject) (err error) {
-		if fo.config.Options["tagOrigins"].(bool) {
+		if fo.c.Options["tagOrigins"].(bool) {
 			fo.Tag("Origin", fo.AbsolutePath)
 		}
 		return
@@ -294,7 +300,6 @@ func (objList ObjectList) Upload(c *config.Configuration) (err error, uploaded, 
 		return nil, 0, 0
 	}
 
-	svc, err := BuildUploader(c)
 	if err != nil {
 		return
 	}
@@ -309,8 +314,9 @@ func (objList ObjectList) Upload(c *config.Configuration) (err error, uploaded, 
 
 	objList.SetIgnoreIfObjExists()
 
-	fi := NewFileIterator(&objList[0].config, objList)
-	if err := svc.UploadWithIterator(aws.BackgroundContext(), fi); err != nil {
+	svc, err := BuildUploader(c)
+	fi := NewFileIterator(&objList[0].c, objList)
+	if err = svc.UploadWithIterator(aws.BackgroundContext(), fi); err != nil {
 		return err, objList.CountUploaded(), objList.CountIgnored()
 	}
 
