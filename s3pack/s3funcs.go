@@ -14,6 +14,20 @@ import (
 )
 
 /*
+BuildUploader builds a new s3manager.Uploader object. It takes a config.Configuration object. The func creates a session
+by calling NewSession and passes it to s3manager.NewUploader.
+*/
+func BuildUploader(c *config.Configuration) (uploader *s3manager.Uploader, err error) {
+	exists, err := BucketExists(c)
+	if err != nil || !exists {
+		return nil, err
+	}
+	sess, err := NewSession(c)
+	uploader = s3manager.NewUploader(sess)
+	return
+}
+
+/*
 NewSession creates a new session.Session object using the authentication information in the profile. It takes a
 config.Configuration object. It determines whether to use a profile or a keypair based on the presence of a profile
 name in the profile configuration.
@@ -58,19 +72,5 @@ func NewSessionWithProfile(c *config.Configuration) (sess *session.Session, err 
 		Profile:           c.Authentication[config.ProfileAuthProfile].(string),
 		SharedConfigState: session.SharedConfigEnable,
 	})
-	return
-}
-
-/*
-BuildUploader builds a new s3manager.Uploader object. It takes a config.Configuration object. The func creates a session
-by calling NewSession and passes it to s3manager.NewUploader.
-*/
-func BuildUploader(c *config.Configuration) (uploader *s3manager.Uploader, err error) {
-	exists, err := BucketExists(c)
-	if err != nil || !exists {
-		return nil, err
-	}
-	sess, err := NewSession(c)
-	uploader = s3manager.NewUploader(sess)
 	return
 }
