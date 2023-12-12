@@ -190,7 +190,7 @@ func (objList ObjectList) SetChecksum() (err error) {
 
 func (objList ObjectList) SetGroups() {
 	for index, fo := range objList {
-		fo.SetGroup(index % 5)
+		fo.SetGroup(index % fo.c.Options[config.ProfileOptionsMaxConcurrent].(int))
 	}
 }
 
@@ -313,6 +313,7 @@ func (objList ObjectList) Upload(c *config.Configuration) (err error, uploaded, 
 	}
 
 	objList.SetIgnoreIfObjExists()
+	objList.SetGroups()
 
 	svc, err := BuildUploader(c)
 	fi := NewFileIterator(&objList[0].c, objList)

@@ -5,9 +5,12 @@ package s3pack
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/orme292/s3packer/config"
 )
 
@@ -264,8 +267,36 @@ Upload is a FileObject method. The purpose will be to initiate a multipart uploa
 
 NotImplemented
 */
-func (fo *FileObject) Upload() {
-	return
+func (fo *FileObject) Upload() (uploaded bool, err error) {
+	svc, err := BuildUploader(&fo.c)
+	if err != nil {
+		return false, err
+	}
+
+	f, err := os.Open(fo.AbsolutePath)
+	if err != nil {
+		return false, err
+	}
+
+	if fo.Ignore || fo.IsUploaded {
+		return false, nil
+	}
+
+	fo.c.Logger.Info(fmt.Sprintf("Uploading %s...", fo.PrefixedName))
+	_, err = svc.Upload(&s3manager.UploadInput{
+		Bucket:       aws.String(fo.c.Bucket[config.ProfileBucketName].(string)),
+		Key:          aws.String(fo.PrefixedName),
+		ACL:          aws.String(fo.c.Options[config.ProfileOptionACL].(string)),
+		StorageClass: aws.String(fo.c.Options[config.ProfileOptionStorage].(string)),
+		Tagging:      aws.String(fo.Tags),
+		Body:         f,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	fo.IsUploaded = true
+	return true, nil
 }
 
 /* DEBUG */
