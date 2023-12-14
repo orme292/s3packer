@@ -316,7 +316,7 @@ func (objList ObjectList) Upload(c *config.Configuration) (err error, uploaded, 
 	objList.SetIgnoreIfObjExists()
 	objList.SetGroups()
 
-	errs, uploaded, ignored := objList.UploadHandler(c)
+	errs, _, _ := objList.UploadHandler(c)
 	if len(errs) > 0 {
 		for _, err := range errs {
 			c.Logger.Error(fmt.Sprintf("Error during upload: %q", err.Error()))
