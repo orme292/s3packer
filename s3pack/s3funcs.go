@@ -18,10 +18,6 @@ BuildUploader builds a new s3manager.Uploader object. It takes a config.Configur
 by calling NewSession and passes it to s3manager.NewUploader.
 */
 func BuildUploader(c *config.Configuration) (uploader *s3manager.Uploader, err error) {
-	exists, err := BucketExists(c)
-	if err != nil || !exists {
-		return nil, err
-	}
 	sess, err := NewSession(c)
 	uploader = s3manager.NewUploader(sess)
 	return
