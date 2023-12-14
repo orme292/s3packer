@@ -1,10 +1,17 @@
-# s3packer - A profile-based S3 backup and upload tool.
+# s3packer - A configurable profile-based S3 backup and upload tool.
+
+Linux/MacOS | Supports AWS S3 
 
 ---
-    
 [![Go Version][go_version_img]][go_version_url]
 [![Go Report Card][go_report_img]][go_report_url]
 [![Repo License][repo_license_img]][repo_license_url]
+
+[![Code Quality](https://github.com/orme292/s3packer/actions/workflows/golang.yml/badge.svg)](https://github.com/orme292/s3packer/actions/workflows/golang.yml)
+
+## Download 
+
+See the [releases][releases_url] page...
 
 ## How to Use
 
@@ -175,6 +182,7 @@ And if you run into any issues or have any suggestions, feel free to open a new 
 
 
 <!-- Links -->
+[releases_url]: https://github.com/orme292/s3packer/releases
 [issue_repo_url]: https://github.com/orme292/s3packer/issues/new/choose
 [go_version_url]: https://golang.org/doc/go1.21
 [go_report_url]: https://goreportcard.com/report/github.com/orme292/s3packer
