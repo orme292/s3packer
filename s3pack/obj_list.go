@@ -256,21 +256,6 @@ func (objList ObjectList) SetRelativeRoot(dir string) {
 	})
 }
 
-///*
-//ReturnNewWithoutIgnored is an ObjectList method. It returns an ObjectList type that contains any FileObject with
-//FileObject.Ignore set to false
-//*/
-//func (objList ObjectList) ReturnNewWithoutIgnored() (newObjList ObjectList) {
-//	for index := range objList {
-//		if !objList[index].Ignore {
-//			newObjList = append(newObjList, objList[index])
-//		} else {
-//			objList[index].c.Logger.Warn(fmt.Sprintf("Ignoring %s: %s", objList[index].OriginPath, objList[index].IgnoreString))
-//		}
-//	}
-//	return
-//}
-
 func (objList ObjectList) ReturnTotalUploadedBytes() (total int64) {
 	for index := range objList {
 		if objList[index].IsUploaded {
