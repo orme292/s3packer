@@ -73,12 +73,13 @@ You can also customize how your files are stored and accessed with these options
 ```yaml
 Options:
   acl: "private"
-  storage: "ONEZONE_IA"
-  objectPrefix: "monthly-"
-  pathPrefix: "/backups/monthly"
-  tagOrigins: true
   keyNamingMethod: "relative"
+  maxConcurrentUploads: 100
+  objectPrefix: "monthly-"
   overwrite: false
+  pathPrefix: "/backups/monthly"
+  storage: "ONEZONE_IA"
+  tagOrigins: true
 ```
 
 **acl** <br/>
@@ -91,7 +92,28 @@ The default is `private`, but you can use any canned ACL:
 - `bucket-owner-full-control`
 - `log-delivery-write`
 
-See more details on the AWS site, [https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html][s3_acl_url]
+Read more about ACLs here: [https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html][s3_acl_url]
+
+**keyNamingMethod** <br/>
+The default is `relative`.
+- `relative`: The key will be prepended with the relative path of the file on the local filesystem (individual files specified in the profile will always end up at the root of the bucket, plus the `pathPrefix` and then `objectPrefix`).
+- `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
+
+**maxConcurrentUploads** <br/>
+The default is `10`. This is the maximum number of files that will be uploaded at the same time. Concurrency is at the
+directory level, so the biggest speed gains are seen when uploading a directory with many files.
+
+**objectPrefix** <br/>
+This is blank by default. Any value you put here will be added before the filename when it's uploaded to S3.
+Using something like `weekly-` will add that string to any file you're uploading, like `weekly-log.log` or `weekly-2021-01-01.log`.
+
+**overwrite**  <br/>
+This is `false` by default. If you set it to `true`, s3packer will overwrite any files in the bucket that
+have the same name as what you're uploading. Useful if you're uploading a file that is updated over and over again.
+
+**pathPrefix** <br/>
+This is blank by default. Any value put here will be added before the file path when it's uploaded to S3.
+If you use something like `/backups/monthly`, the file will be uploaded to `/backups/monthly/your-file.txt`.
 
 **storage** <br/>
 The default is `STANDARD`, but you can use any of the following storage classes:
@@ -102,27 +124,9 @@ The default is `STANDARD`, but you can use any of the following storage classes:
 - `GLACIER`
 - `DEEP_ARCHIVE`
 
-**pathPrefix** <br/>
-This is blank by default. Any value put here will be added before the file path when it's uploaded to S3.
-If you use something like `/backups/monthly`, the file will be uploaded to `/backups/monthly/your-file.txt`.
-
-**objectPrefix** <br/>
-This is blank by default. Any value you put here will be added before the filename when it's uploaded to S3.
-Using something like `weekly-` will add that string to any file you're uploading, like `weekly-log.log` or `weekly-2021-01-01.log`.
-
 **tagOrigins** <br/>
 This is `true` by default. Every object uploaded will be tagged with the full absolute path of the file on the
 local filesystem. This is useful if you want to be able to trace the origin of a file in S3.
-
-**keyNamingMethod** <br/>
-The default is `relative`.
-- `relative`: The key will be prepended with the relative path of the file on the local filesystem (individual files specified in the profile will always end up at the root of the bucket, plus the `pathPrefix` and then `objectPrefix`).
-- `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
-
-
-**overwrite**  <br/>
-This is `false` by default. If you set it to `true`, s3packer will overwrite any files in the bucket that 
-have the same name as what you're uploading. Useful if you're uploading a file that is updated over and over again.
 
 ---
 
@@ -160,7 +164,8 @@ Also, if you’ve got multiple files with the same name (like if you have five �
 
 **Directories**
 
-When you’re uploading directories, all the subdirectories and files will be uploaded to the bucket as well.
+When you’re uploading directories, all the subdirectories and files will be uploaded to the bucket as well. Processing
+directories with a large number of files can take some time as the checksums are calculated. 
 
 ---
 
