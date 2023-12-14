@@ -396,7 +396,7 @@ func (c *Configuration) repairMissingFields() {
 	if !ok {
 		if !isInt(c.Options[ProfileOptionsMaxConcurrent]) {
 			c.Options[ProfileOptionsMaxConcurrent] = map[string]any{}
-			c.Options[ProfileOptionsMaxConcurrent] = 5
+			c.Options[ProfileOptionsMaxConcurrent] = 10
 		}
 	}
 	_, ok = c.Options[ProfileOptionOmitOriginDir]
