@@ -164,7 +164,10 @@ FileSize to the returned value. If the FileSize is greater than 104857600 (100MB
 to true.
 */
 func (fo *FileObject) SetFileSize() (size int64) {
-	size, _ = GetFileSize(fo.AbsolutePath)
+	size, err := GetFileSize(fo.AbsolutePath)
+	if err != nil {
+		fo.c.Logger.Error(fmt.Sprintf("Error getting file size for %q: %s", fo.BaseName, err.Error()))
+	}
 	fo.FileSize = size
 	if size > 104857600 {
 		fo.ShouldMultiPart = true
@@ -308,6 +311,7 @@ ObjectList slice.
 Change this as needed.
 */
 func (fo *FileObject) DebugOutput() {
+	fmt.Println()
 	fmt.Printf("\nOriginPath: %s\n", fo.OriginPath)
 	fmt.Printf("OriginDirectory: %s\n", fo.OriginDirectory)
 	fmt.Printf("RelativeRoot: %s\n", fo.RelativeRoot)

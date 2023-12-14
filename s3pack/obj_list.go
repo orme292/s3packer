@@ -9,10 +9,12 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/orme292/s3packer/config"
 )
 
@@ -23,6 +25,12 @@ elements of the slice and call the corresponding FileList method. Exceptions are
 See FileList for more information
 */
 type ObjectList []*FileObject
+
+type UploadResult struct {
+	Err         error
+	UploadCount int
+	IgnoreCount int
+}
 
 /*
 NewObjectList is an ObjectList constructor. It takes a slice of paths and returns a slice FileObjects.
@@ -86,7 +94,6 @@ func (objList ObjectList) FixRedundantKeys() error {
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -218,7 +225,7 @@ See FileObject.SetFileSize for more information.
 */
 func (objList ObjectList) SetFileSizes() {
 	_ = objList.IterateAndExecute(func(fo *FileObject) (err error) {
-		if fo.Ignore {
+		if !fo.Ignore {
 			fo.SetFileSize()
 		}
 		return
@@ -249,16 +256,25 @@ func (objList ObjectList) SetRelativeRoot(dir string) {
 	})
 }
 
-/*
-ReturnNewWithoutIgnored is an ObjectList method. It returns an ObjectList type that contains any FileObject with
-FileObject.Ignore set to false
-*/
-func (objList ObjectList) ReturnNewWithoutIgnored() (newObjList ObjectList) {
+///*
+//ReturnNewWithoutIgnored is an ObjectList method. It returns an ObjectList type that contains any FileObject with
+//FileObject.Ignore set to false
+//*/
+//func (objList ObjectList) ReturnNewWithoutIgnored() (newObjList ObjectList) {
+//	for index := range objList {
+//		if !objList[index].Ignore {
+//			newObjList = append(newObjList, objList[index])
+//		} else {
+//			objList[index].c.Logger.Warn(fmt.Sprintf("Ignoring %s: %s", objList[index].OriginPath, objList[index].IgnoreString))
+//		}
+//	}
+//	return
+//}
+
+func (objList ObjectList) ReturnTotalUploadedBytes() (total int64) {
 	for index := range objList {
-		if !objList[index].Ignore {
-			newObjList = append(newObjList, objList[index])
-		} else {
-			objList[index].c.Logger.Warn(fmt.Sprintf("Ignoring %s: %s", objList[index].OriginPath, objList[index].IgnoreString))
+		if objList[index].IsUploaded {
+			total += objList[index].FileSize
 		}
 	}
 	return
@@ -315,13 +331,53 @@ func (objList ObjectList) Upload(c *config.Configuration) (err error, uploaded, 
 	objList.SetIgnoreIfObjExists()
 	objList.SetGroups()
 
-	svc, err := BuildUploader(c)
-	fi := NewFileIterator(&objList[0].c, objList)
-	if err = svc.UploadWithIterator(aws.BackgroundContext(), fi); err != nil {
-		return err, objList.CountUploaded(), objList.CountIgnored()
+	errs, uploaded, ignored := objList.UploadHandler(c)
+	if len(errs) > 0 {
+		for _, err := range errs {
+			c.Logger.Error(fmt.Sprintf("Error during upload: %q", err.Error()))
+		}
+	}
+	return nil, objList.CountUploaded(), objList.CountIgnored()
+}
+
+func (objList ObjectList) UploadHandler(c *config.Configuration) (err []error, uploaded, ignored int) {
+	var wg sync.WaitGroup
+	resultCh := make(chan UploadResult)
+
+	svc, buErr := BuildUploader(c)
+	if buErr != nil {
+		err = append(err, buErr)
+		return err, 0, 0
 	}
 
-	return nil, objList.CountUploaded(), objList.CountIgnored()
+	for i := 0; i < c.Options[config.ProfileOptionsMaxConcurrent].(int); i++ {
+		wg.Add(1)
+		go func(group int, svc *s3manager.Uploader, wg *sync.WaitGroup) {
+			defer wg.Done()
+			fi := NewFileIterator(&objList[0].c, objList, group)
+			err := svc.UploadWithIterator(aws.BackgroundContext(), fi)
+
+			resultCh <- UploadResult{
+				Err:         err,
+				UploadCount: objList.CountUploadedByGroup(group),
+				IgnoreCount: objList.CountIgnoredByGroup(group),
+			}
+		}(i, svc, &wg)
+	}
+
+	go func(wg *sync.WaitGroup) {
+		wg.Wait()
+		close(resultCh)
+	}(&wg)
+
+	for result := range resultCh {
+		if result.Err != nil {
+			err = append(err, result.Err)
+		}
+		uploaded += result.UploadCount
+		ignored += result.IgnoreCount
+	}
+	return
 }
 
 /*
@@ -344,6 +400,15 @@ func (objList ObjectList) CountUploaded() (count int) {
 	return
 }
 
+func (objList ObjectList) CountUploadedByGroup(group int) (count int) {
+	for index := range objList {
+		if objList[index].IsUploaded && objList[index].Group == group {
+			count++
+		}
+	}
+	return
+}
+
 /*
 CountIgnored is an ObjectList method. It returns the number of FileObjects in the ObjectList slice that have the
 FileObject.Ignore field set to true.
@@ -351,6 +416,15 @@ FileObject.Ignore field set to true.
 func (objList ObjectList) CountIgnored() (count int) {
 	for index := range objList {
 		if objList[index].Ignore {
+			count++
+		}
+	}
+	return
+}
+
+func (objList ObjectList) CountIgnoredByGroup(group int) (count int) {
+	for index := range objList {
+		if objList[index].Ignore && objList[index].Group == group {
 			count++
 		}
 	}
@@ -367,8 +441,14 @@ Change this as needed.
 */
 func (objList ObjectList) DebugOutput() {
 	_ = objList.IterateAndExecute(func(fo *FileObject) (err error) {
-		fmt.Println(fo.AbsolutePath)
-		fmt.Println(fo.IsDirectoryPart)
+		fmt.Println()
+		fmt.Printf("AbsolutePath: %q\n", fo.AbsolutePath)
+		fmt.Printf("PrefixedName: %q\n", fo.PrefixedName)
+		fmt.Printf("Group: %d\n", fo.Group)
+		fmt.Printf("IsUploaded: %v\n", fo.IsUploaded)
+		fmt.Printf("Ignored: %v\n", fo.Ignore)
+		fmt.Printf("IgnoreString: %q\n", fo.IgnoreString)
+		fmt.Println()
 		return
 	})
 }

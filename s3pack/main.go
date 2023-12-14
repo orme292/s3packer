@@ -1,10 +1,14 @@
 package s3pack
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/orme292/s3packer/config"
 )
 
 // TODO: Overwrite options -- only-if checksum changes (overwrite: always, on-change, never)
+// TODO: Upload/Ignore function return args can be removed -- they can be counted on the fly
 // TODO: LogBot, support sprintf style formatting
 // TODO: Config, add naming section for KeyNamingMethod, pathPrefix, etc
 // TODO: Config, rename indexes from camel case to dashed "pathPrefix" to "path-prefix"
@@ -21,6 +25,13 @@ import (
 // TODO: OCI support
 
 func IndividualFileUploader(c *config.Configuration, files []string) (err error, uploaded, ignored int) {
+	exists, err := BucketExists(c)
+	if err != nil {
+		return
+	} else if !exists {
+		return errors.New(fmt.Sprintf("AWS says %q does not exist", c.Bucket[config.ProfileBucketName].(string))), 0, 0
+	}
+
 	objList, err := NewObjectList(c, files)
 	if err != nil {
 		return
@@ -30,6 +41,13 @@ func IndividualFileUploader(c *config.Configuration, files []string) (err error,
 }
 
 func DirectoryUploader(c *config.Configuration, dirs []string) (err error, uploaded, ignored int) {
+	exists, err := BucketExists(c)
+	if err != nil {
+		return
+	} else if !exists {
+		return errors.New(fmt.Sprintf("AWS says %q does not exist", c.Bucket[config.ProfileBucketName].(string))), 0, 0
+	}
+
 	dirLists, err := NewRootList(c, dirs)
 	if err != nil {
 		return
