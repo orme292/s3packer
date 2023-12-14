@@ -39,7 +39,7 @@ type FileObject struct {
 
 	Group int
 
-	c config.Configuration
+	c *config.Configuration
 }
 
 /*
@@ -57,7 +57,7 @@ func NewFileObject(c *config.Configuration, path string) (fo *FileObject, err er
 		AbsolutePath:    abPath,
 		BaseName:        filepath.Base(path),
 		PrefixedName:    EmptyString,
-		c:               *c,
+		c:               c,
 	}, nil
 }
 
@@ -70,7 +70,7 @@ func (fo *FileObject) IgnoreIfObjectExistsInBucket() error {
 	if fo.c.Options[config.ProfileOptionOverwrite].(bool) {
 		return nil
 	}
-	exists, err := ObjectExists(&fo.c, fo.PrefixedName)
+	exists, err := ObjectExists(fo.c, fo.PrefixedName)
 	if err != nil {
 		return err
 	} else if exists {
@@ -111,9 +111,9 @@ func (fo *FileObject) SetNameMethodRelative() {
 		} else {
 			relativePath = strings.Replace(fo.OriginDirectory, filepath.Dir(fo.RelativeRoot), EmptyString, 1)
 		}
-		fo.PrefixedName = AppendPathPrefix(&fo.c, fmt.Sprintf("/%s/%s", relativePath, AppendObjectPrefix(&fo.c, fo.BaseName)))
+		fo.PrefixedName = AppendPathPrefix(fo.c, fmt.Sprintf("/%s/%s", relativePath, AppendObjectPrefix(fo.c, fo.BaseName)))
 	} else {
-		fo.PrefixedName = AppendPathPrefix(&fo.c, AppendObjectPrefix(&fo.c, fo.BaseName))
+		fo.PrefixedName = AppendPathPrefix(fo.c, AppendObjectPrefix(fo.c, fo.BaseName))
 	}
 }
 
@@ -126,7 +126,7 @@ and the prefix is "/2023/November/mysql/" then the PrefixedName will be set
 to "/home/users/forrest/2023/November/mysql/mysql_backup.tar.gz".
 */
 func (fo *FileObject) SetNameMethodAbsolute() {
-	fo.PrefixedName = AppendPathPrefix(&fo.c, fmt.Sprintf("%s/%s", fo.OriginDirectory, AppendObjectPrefix(&fo.c, fo.BaseName)))
+	fo.PrefixedName = AppendPathPrefix(fo.c, fmt.Sprintf("%s/%s", fo.OriginDirectory, AppendObjectPrefix(fo.c, fo.BaseName)))
 }
 
 /*
@@ -216,7 +216,7 @@ func (fo *FileObject) SetIgnoreIfObjExists() {
 	if fo.Ignore || fo.c.Options[config.ProfileOptionOverwrite].(bool) {
 		return
 	}
-	exists, err := ObjectExists(&fo.c, fo.PrefixedName)
+	exists, err := ObjectExists(fo.c, fo.PrefixedName)
 	if err != nil {
 		fo.c.Logger.Error(fmt.Sprintf("Error checking if object exists: %s, ignoring object", err.Error()))
 		fo.SetIgnore("Error checking if object exists")
@@ -271,7 +271,7 @@ Upload is a FileObject method. The purpose will be to initiate a multipart uploa
 NotImplemented
 */
 func (fo *FileObject) Upload() (uploaded bool, err error) {
-	svc, err := BuildUploader(&fo.c)
+	svc, err := BuildUploader(fo.c)
 	if err != nil {
 		return false, err
 	}
