@@ -7,6 +7,7 @@ Bucket:
 Options:
   acl: "private"
   keyNamingMethod: "absolute"
+  maxConcurrentUploads: 100
   objectPrefix: "logs-"
   overwrite: false
   pathPrefix: "/backups"

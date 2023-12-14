@@ -2,3 +2,4 @@ profiles/myprofile.yaml
 s3packer
 .idea/
 *.log
+/scripts/

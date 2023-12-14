@@ -60,6 +60,7 @@ const (
 	ProfileOptionACL             = "acl"
 	ProfileOptionObjectPrefix    = "objectPrefix"
 	ProfileOptionPathPrefix      = "pathPrefix"
+	ProfileOptionsMaxConcurrent  = "maxConcurrentUploads"
 	ProfileOptionOverwrite       = "overwrite"
 	ProfileOptionStorage         = "storage"
 	ProfileOptionTagOrigins      = "tagOrigins"

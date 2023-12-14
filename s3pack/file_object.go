@@ -5,9 +5,12 @@ package s3pack
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/orme292/s3packer/config"
 )
 
@@ -34,13 +37,15 @@ type FileObject struct {
 	ShouldMultiPart bool
 	IsUploaded      bool
 
-	config config.Configuration
+	Group int
+
+	c config.Configuration
 }
 
 /*
 NewFileObject is a FileList constructor. It takes a path and returns a FileList.
 */
-func NewFileObject(c *config.Configuration, path string) (fl *FileObject, err error) {
+func NewFileObject(c *config.Configuration, path string) (fo *FileObject, err error) {
 	abPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -52,7 +57,7 @@ func NewFileObject(c *config.Configuration, path string) (fl *FileObject, err er
 		AbsolutePath:    abPath,
 		BaseName:        filepath.Base(path),
 		PrefixedName:    EmptyString,
-		config:          *c,
+		c:               *c,
 	}, nil
 }
 
@@ -62,10 +67,10 @@ If it returns true, then it calls FileList.SetIgnore(ErrIgnoreObjectAlreadyExist
 if the overwrite option is set to true.
 */
 func (fo *FileObject) IgnoreIfObjectExistsInBucket() error {
-	if fo.config.Options[config.ProfileOptionOverwrite].(bool) {
+	if fo.c.Options[config.ProfileOptionOverwrite].(bool) {
 		return nil
 	}
-	exists, err := ObjectExists(&fo.config, fo.PrefixedName)
+	exists, err := ObjectExists(&fo.c, fo.PrefixedName)
 	if err != nil {
 		return err
 	} else if exists {
@@ -101,14 +106,14 @@ relative root is "/home/users" then the PrefixedName will be set to "/forrest/no
 func (fo *FileObject) SetNameMethodRelative() {
 	if fo.IsDirectoryPart == true {
 		var relativePath string
-		if fo.config.Options[config.ProfileOptionOmitOriginDir].(bool) {
+		if fo.c.Options[config.ProfileOptionOmitOriginDir].(bool) {
 			relativePath = strings.Replace(fo.OriginDirectory, fo.RelativeRoot, EmptyString, 1)
 		} else {
 			relativePath = strings.Replace(fo.OriginDirectory, filepath.Dir(fo.RelativeRoot), EmptyString, 1)
 		}
-		fo.PrefixedName = AppendPathPrefix(&fo.config, fmt.Sprintf("/%s/%s", relativePath, AppendObjectPrefix(&fo.config, fo.BaseName)))
+		fo.PrefixedName = AppendPathPrefix(&fo.c, fmt.Sprintf("/%s/%s", relativePath, AppendObjectPrefix(&fo.c, fo.BaseName)))
 	} else {
-		fo.PrefixedName = AppendPathPrefix(&fo.config, AppendObjectPrefix(&fo.config, fo.BaseName))
+		fo.PrefixedName = AppendPathPrefix(&fo.c, AppendObjectPrefix(&fo.c, fo.BaseName))
 	}
 }
 
@@ -121,7 +126,7 @@ and the prefix is "/2023/November/mysql/" then the PrefixedName will be set
 to "/home/users/forrest/2023/November/mysql/mysql_backup.tar.gz".
 */
 func (fo *FileObject) SetNameMethodAbsolute() {
-	fo.PrefixedName = AppendPathPrefix(&fo.config, fmt.Sprintf("%s/%s", fo.OriginDirectory, AppendObjectPrefix(&fo.config, fo.BaseName)))
+	fo.PrefixedName = AppendPathPrefix(&fo.c, fmt.Sprintf("%s/%s", fo.OriginDirectory, AppendObjectPrefix(&fo.c, fo.BaseName)))
 }
 
 /*
@@ -134,7 +139,7 @@ func (fo *FileObject) SetChecksum() (err error) {
 	}
 	hash, err := CalcChecksumSHA256(fo.AbsolutePath)
 	if err != nil {
-		fo.config.Logger.Error(fmt.Sprintf("Error getting checksum for %q: %s", fo.BaseName, err.Error()))
+		fo.c.Logger.Error(fmt.Sprintf("Error getting checksum for %q: %s", fo.BaseName, err.Error()))
 		fo.DebugOutput()
 		return
 	}
@@ -159,12 +164,19 @@ FileSize to the returned value. If the FileSize is greater than 104857600 (100MB
 to true.
 */
 func (fo *FileObject) SetFileSize() (size int64) {
-	size, _ = GetFileSize(fo.AbsolutePath)
+	size, err := GetFileSize(fo.AbsolutePath)
+	if err != nil {
+		fo.c.Logger.Error(fmt.Sprintf("Error getting file size for %q: %s", fo.BaseName, err.Error()))
+	}
 	fo.FileSize = size
 	if size > 104857600 {
 		fo.ShouldMultiPart = true
 	}
 	return
+}
+
+func (fo *FileObject) SetGroup(g int) {
+	fo.Group = g
 }
 
 /*
@@ -185,7 +197,7 @@ func (fo *FileObject) SetIgnoreIfLocalNotExists() {
 	}
 	exists, err := LocalFileExists(fo.AbsolutePath)
 	if err != nil {
-		fo.config.Logger.Error(fmt.Sprintf("Error checking if local file exists: %s, ignoring object", err.Error()))
+		fo.c.Logger.Error(fmt.Sprintf("Error checking if local file exists: %s, ignoring object", err.Error()))
 		fo.SetIgnore("Error checking if local file exists")
 		fo.DebugOutput()
 		return
@@ -201,12 +213,12 @@ it calls ObjectExists on the FileObject's PrefixedName. If ObjectExists returns 
 to true and an IgnoreString is set.
 */
 func (fo *FileObject) SetIgnoreIfObjExists() {
-	if fo.Ignore || fo.config.Options[config.ProfileOptionOverwrite].(bool) {
+	if fo.Ignore || fo.c.Options[config.ProfileOptionOverwrite].(bool) {
 		return
 	}
-	exists, err := ObjectExists(&fo.config, fo.PrefixedName)
+	exists, err := ObjectExists(&fo.c, fo.PrefixedName)
 	if err != nil {
-		fo.config.Logger.Error(fmt.Sprintf("Error checking if object exists: %s, ignoring object", err.Error()))
+		fo.c.Logger.Error(fmt.Sprintf("Error checking if object exists: %s, ignoring object", err.Error()))
 		fo.SetIgnore("Error checking if object exists")
 		fo.DebugOutput()
 		return
@@ -221,13 +233,13 @@ SetPrefixedName is a FileObject method. It calls the appropriate key naming meth
 in the profile. See the nameMethod* functions for more information.
 */
 func (fo *FileObject) SetPrefixedName() {
-	switch fo.config.Options["keyNamingMethod"] {
+	switch fo.c.Options["keyNamingMethod"] {
 	case config.NameMethodRelative:
 		fo.SetNameMethodRelative()
 	case config.NameMethodAbsolute:
 		fo.SetNameMethodAbsolute()
 	default:
-		fo.config.Logger.Fatal("A key naming method must be specified")
+		fo.c.Logger.Fatal("A key naming method must be specified")
 	}
 }
 
@@ -258,7 +270,37 @@ Upload is a FileObject method. The purpose will be to initiate a multipart uploa
 
 NotImplemented
 */
-func (fo *FileObject) Upload() {}
+func (fo *FileObject) Upload() (uploaded bool, err error) {
+	svc, err := BuildUploader(&fo.c)
+	if err != nil {
+		return false, err
+	}
+
+	f, err := os.Open(fo.AbsolutePath)
+	if err != nil {
+		return false, err
+	}
+
+	if fo.Ignore || fo.IsUploaded {
+		return false, nil
+	}
+
+	fo.c.Logger.Info(fmt.Sprintf("Uploading %s...", fo.PrefixedName))
+	_, err = svc.Upload(&s3manager.UploadInput{
+		Bucket:       aws.String(fo.c.Bucket[config.ProfileBucketName].(string)),
+		Key:          aws.String(fo.PrefixedName),
+		ACL:          aws.String(fo.c.Options[config.ProfileOptionACL].(string)),
+		StorageClass: aws.String(fo.c.Options[config.ProfileOptionStorage].(string)),
+		Tagging:      aws.String(fo.Tags),
+		Body:         f,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	fo.IsUploaded = true
+	return true, nil
+}
 
 /* DEBUG */
 
@@ -269,6 +311,7 @@ ObjectList slice.
 Change this as needed.
 */
 func (fo *FileObject) DebugOutput() {
+	fmt.Println()
 	fmt.Printf("\nOriginPath: %s\n", fo.OriginPath)
 	fmt.Printf("OriginDirectory: %s\n", fo.OriginDirectory)
 	fmt.Printf("RelativeRoot: %s\n", fo.RelativeRoot)
@@ -283,6 +326,7 @@ func (fo *FileObject) DebugOutput() {
 	fmt.Printf("IgnoreString: %s\n", fo.IgnoreString)
 	fmt.Printf("ShouldMultiPart: %t\n", fo.ShouldMultiPart)
 	fmt.Printf("IsUploaded: %t\n", fo.IsUploaded)
+	fmt.Printf("Group: %d\n", fo.Group)
 	fmt.Println()
 
 }

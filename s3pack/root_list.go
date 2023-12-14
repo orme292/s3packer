@@ -72,7 +72,7 @@ func (rList RootList) Upload() (err error, uploaded, ignored int) {
 	_ = rList.IterateAndExecute(func(dirList DirectoryList) (err error) {
 		err, u, i := dirList.Upload()
 		if err != nil {
-			rList[0][0].config.Logger.Error(err.Error())
+			rList[0][0].c.Logger.Error(err.Error())
 		}
 		uploaded += u
 		ignored += i

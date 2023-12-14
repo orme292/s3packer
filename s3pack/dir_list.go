@@ -14,7 +14,7 @@ See RootList for more information and structure.
 type DirectoryList []*DirectoryObject
 
 /*
-NewDirectoryList is a DirectoryList constructor. It takes a config and a directory as a string. It returns a
+NewDirectoryList is a DirectoryList constructor. It takes a configuration and a directory as a string. It returns a
 DirectoryList and an error.
 */
 func NewDirectoryList(c *config.Configuration, dir string) (dirList DirectoryList, err error) {
@@ -121,10 +121,10 @@ See DirectoryList.FixRedundantKeys for more information
 func (dirList DirectoryList) Upload() (err error, uploaded, ignored int) {
 	dirList.SetPrefixedNames()
 	for index := range dirList {
-		dirList[index].config.Logger.Debug(fmt.Sprintf("Directory %s has %d objects", dirList[index].StartPath, dirList[index].CountObjects()))
+		dirList[index].c.Logger.Debug(fmt.Sprintf("Directory %s has %d objects", dirList[index].StartPath, dirList[index].CountObjects()))
 		fErr, fUploaded, fIgnored := dirList[index].Upload()
 		if fErr != nil {
-			dirList[index].config.Logger.Error(fErr.Error())
+			dirList[index].c.Logger.Error(fErr.Error())
 			return
 		}
 		uploaded += fUploaded

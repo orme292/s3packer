@@ -10,7 +10,7 @@ type DirectoryObject struct {
 	StartPath string
 	objList   ObjectList
 
-	config config.Configuration
+	c *config.Configuration
 }
 
 func NewDirectoryObject(c *config.Configuration, path string) (do *DirectoryObject, err error) {
@@ -31,7 +31,7 @@ func NewDirectoryObject(c *config.Configuration, path string) (do *DirectoryObje
 	return &DirectoryObject{
 		StartPath: absPath,
 		objList:   list,
-		config:    *c,
+		c:         c,
 	}, nil
 }
 
@@ -46,7 +46,7 @@ func (do *DirectoryObject) TagAll(k, v string) {
 Upload is an DirectoryObject method. It calls Upload on the DirectoryObject's ObjectList.
 */
 func (do *DirectoryObject) Upload() (err error, uploaded, ignored int) {
-	return do.objList.Upload(&do.config)
+	return do.objList.Upload(do.c)
 }
 
 /*
