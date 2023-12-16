@@ -17,7 +17,7 @@ type DirectoryList []*DirectoryObject
 NewDirectoryList is a DirectoryList constructor. It takes a configuration and a directory as a string. It returns a
 DirectoryList and an error.
 */
-func NewDirectoryList(c *config.Configuration, dir string) (dirList DirectoryList, err error) {
+func NewDirectoryList(c *config.Configuration, dir string) (dl DirectoryList, err error) {
 	c.Logger.Info(fmt.Sprintf("Processing directory: %q", dir))
 
 	subDirs, err := GetSubDirs(dir)
@@ -25,18 +25,18 @@ func NewDirectoryList(c *config.Configuration, dir string) (dirList DirectoryLis
 		return nil, err
 	}
 
-	for _, subDir := range subDirs {
-		do, err := NewDirectoryObject(c, subDir)
+	for index := range subDirs {
+		do, err := NewDirectoryObject(c, subDirs[index])
 		if err != nil {
 			c.Logger.Error(err.Error())
 		}
-		dirList = append(dirList, do)
+		dl = append(dl, do)
 	}
 
-	dirList.SetAsDirectoryPart()
-	dirList.SetRelativeRoot(dir)
+	dl.SetAsDirectoryPart()
+	dl.SetRelativeRoot(dir)
 
-	return dirList, nil
+	return dl, nil
 }
 
 /*
@@ -44,9 +44,9 @@ IterateAndExecute is an DirectoryList method. It takes a function that takes a D
 an error. It iterates over the DirectoryList slice and calls the provided function on each DirectoryObject pointer. If the function returns an
 error, then it is returned and iteration stops
 */
-func (dirList DirectoryList) IterateAndExecute(fn IteratedDirObjectFunc) (err error) {
-	for index := range dirList {
-		if err = fn(dirList[index]); err != nil {
+func (dl DirectoryList) IterateAndExecute(fn DirObjectIterationFunc) (err error) {
+	for index := range dl {
+		if err = fn(dl[index]); err != nil {
 			return
 		}
 	}
@@ -54,46 +54,46 @@ func (dirList DirectoryList) IterateAndExecute(fn IteratedDirObjectFunc) (err er
 }
 
 /*
-IteratedDirObjectFunc is a function type that takes a DirectoryObject pointer and returns an error. It is used with
+DirObjectIterationFunc is a function type that takes a DirectoryObject pointer and returns an error. It is used with
 DirectoryList.IterateAndExecute
 */
-type IteratedDirObjectFunc func(do *DirectoryObject) (err error)
+type DirObjectIterationFunc func(do *DirectoryObject) (err error)
 
 /*
 SetAsDirectoryPart is a DirectoryList method. It iterates over the DirectoryList slice and calls the
-ObjectList.setAsDirectoryPart method on each DirectoryObject pointer.
+SetAsDirectoryPart method on each ObjectList in a DirectoryObject pointer.
 
-See ObjectList.setAsDirectoryPart for more information
+See ObjectList.SetAsDirectoryPart for more information
 */
-func (dirList DirectoryList) SetAsDirectoryPart() {
-	_ = dirList.IterateAndExecute(func(do *DirectoryObject) (err error) {
-		do.objList.SetAsDirectoryPart()
+func (dl DirectoryList) SetAsDirectoryPart() {
+	_ = dl.IterateAndExecute(func(do *DirectoryObject) (err error) {
+		do.ol.SetAsDirectoryPart()
 		return
 	})
 }
 
 /*
 SetRelativeRoot is a DirectoryList method. It iterates over the DirectoryList slice and calls the
-ObjectList.SetRelativeRoot method on each DirectoryObject pointer.
+SetRelativeRoot method on each ObjectList in a DirectoryObject pointer.
 
 See ObjectList.SetRelativeRoot for more information
 */
-func (dirList DirectoryList) SetRelativeRoot(dir string) {
-	_ = dirList.IterateAndExecute(func(do *DirectoryObject) (err error) {
-		do.objList.SetRelativeRoot(dir)
+func (dl DirectoryList) SetRelativeRoot(dir string) {
+	_ = dl.IterateAndExecute(func(do *DirectoryObject) (err error) {
+		do.ol.SetRelativeRoot(dir)
 		return
 	})
 }
 
 /*
 SetPrefixedNames is a DirectoryList method. It iterates over the DirectoryList slice and calls the
-ObjectList.setPrefixedNames method on each DirectoryObject pointer.
+SetPrefixedNames method on each ObjectList in a DirectoryObject pointer.
 
 See ObjectList.setPrefixedNames for more information
 */
-func (dirList DirectoryList) SetPrefixedNames() {
-	_ = dirList.IterateAndExecute(func(do *DirectoryObject) (err error) {
-		do.objList.SetPrefixedNames()
+func (dl DirectoryList) SetPrefixedNames() {
+	_ = dl.IterateAndExecute(func(do *DirectoryObject) (err error) {
+		do.ol.SetPrefixedNames()
 		return
 	})
 }
@@ -104,8 +104,8 @@ on each DirectoryObject pointer.
 
 See DirectoryObject.TagAll for more information
 */
-func (dirList DirectoryList) TagAll(k, v string) {
-	_ = dirList.IterateAndExecute(func(do *DirectoryObject) (err error) {
+func (dl DirectoryList) TagAll(k, v string) {
+	_ = dl.IterateAndExecute(func(do *DirectoryObject) (err error) {
 		do.TagAll(k, v)
 		return
 	})
@@ -113,22 +113,20 @@ func (dirList DirectoryList) TagAll(k, v string) {
 
 /*
 Upload is an DirectoryList method. It iterates over the DirectoryList slice and calls the DirectoryObject.Upload method
-on each DirectoryObject pointer. It also executes the FixRedundantKeys method on the DirectoryList slice.
+on each DirectoryObject pointer. It also executes the SetPrefixedNames method on the DirectoryList slice.
 
 See DirectoryObject.Upload for more information
-See DirectoryList.FixRedundantKeys for more information
+See DirectoryList.SetPrefixedNames for more information
 */
-func (dirList DirectoryList) Upload() (err error, uploaded, ignored int) {
-	dirList.SetPrefixedNames()
-	for index := range dirList {
-		dirList[index].c.Logger.Debug(fmt.Sprintf("Directory %s has %d objects", dirList[index].StartPath, dirList[index].CountObjects()))
-		fErr, fUploaded, fIgnored := dirList[index].Upload()
+func (dl DirectoryList) Upload() (err error) {
+	dl.SetPrefixedNames()
+	for index := range dl {
+		dl[index].c.Logger.Debug(fmt.Sprintf("Directory %s has %d objects", dl[index].StartPath, dl[index].CountFileObjects()))
+		fErr := dl[index].Upload()
 		if fErr != nil {
-			dirList[index].c.Logger.Error(fErr.Error())
+			dl[index].c.Logger.Error(fErr.Error())
 			return
 		}
-		uploaded += fUploaded
-		ignored += fIgnored
 	}
 	return
 }
@@ -136,16 +134,57 @@ func (dirList DirectoryList) Upload() (err error, uploaded, ignored int) {
 /*
 Count is an DirectoryList method. It returns the number of DirectoryObjects in the DirectoryList slice.
 */
-func (dirList DirectoryList) Count() (count int) {
-	return len(dirList)
+func (dl DirectoryList) Count() (count int) {
+	return len(dl)
 }
 
 /*
-CountObjects is an DirectoryList method. It returns the number of FileObjects in all ObjectLists in the DirectoryList slice.
+CountFileObjects is an DirectoryList method. It returns the number of FileObjects in all ObjectLists in
+the DirectoryList slice.
 */
-func (dirList DirectoryList) CountObjects() (count int) {
-	for _, do := range dirList {
-		count += do.CountObjects()
+func (dl DirectoryList) CountFileObjects() (count int) {
+	for _, do := range dl {
+		count += do.CountFileObjects()
+	}
+	return
+}
+
+/*
+CountIgnored is an DirectoryList method. It returns the number of FileObjects in the slice with Ignore set to true. It
+iterates over the DirectoryList slice and calls the DirectoryObject.CountIgnored method on each DirectoryObject pointer.
+
+See DirectoryObject.CountIgnored for more information
+*/
+func (dl DirectoryList) CountIgnored() (count int) {
+	for _, do := range dl {
+		count += do.CountIgnored()
+	}
+	return
+}
+
+/*
+CountUploaded is an DirectoryList method. It returns the number of FileObjects in the slice with IsUploaded set to true.
+It iterates over the DirectoryList slice and calls the DirectoryObject.CountUploaded method on each DirectoryObject
+pointer.
+
+See DirectoryObject.CountUploaded for more information
+*/
+func (dl DirectoryList) CountUploaded() (count int) {
+	for _, do := range dl {
+		count += do.CountUploaded()
+	}
+	return
+}
+
+/*
+GetTotalUploadedBytes is an DirectoryList method. It returns the total number of bytes uploaded. It iterates over the
+DirectoryList slice and calls the DirectoryObject.GetTotalUploadedBytes method on each DirectoryObject pointer.
+
+See DirectoryObject.GetTotalUploadedBytes for more information
+*/
+func (dl DirectoryList) GetTotalUploadedBytes() (total int64) {
+	for _, do := range dl {
+		total += do.GetTotalUploadedBytes()
 	}
 	return
 }
@@ -154,8 +193,8 @@ func (dirList DirectoryList) CountObjects() (count int) {
 DEBUG
 */
 
-func (dirList DirectoryList) DebugOutput() {
-	for _, do := range dirList {
+func (dl DirectoryList) DebugOutput() {
+	for _, do := range dl {
 		fmt.Println(do.StartPath)
 	}
 }

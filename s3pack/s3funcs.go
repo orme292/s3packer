@@ -14,8 +14,8 @@ import (
 )
 
 /*
-BuildUploader builds a new s3manager.Uploader object. It takes a config.Configuration object. The func creates a session
-by calling NewSession and passes it to s3manager.NewUploader.
+BuildUploader builds and returned a s3manager.Uploader object. It takes a config.Configuration object. The func creates
+a session by calling NewSession and passes it to s3manager.NewUploader.
 */
 func BuildUploader(c *config.Configuration) (uploader *s3manager.Uploader, err error) {
 	sess, err := NewSession(c)

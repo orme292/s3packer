@@ -14,7 +14,7 @@ import (
 // TODO: Option to turn of checksum tagging (big bottleneck)
 // TODO: More debug messages
 // TODO: Concurrent checksum tagging
-// TODO: Remove FileObject attribute ShouldMultiPart, not used.
+// Done: Remove FileObject attribute ShouldMultiPart, not used.
 // TODO: Overwrite options -- only-if checksum changes (overwrite: always, on-change, never)
 // TODO: Upload/Ignore function return args can be removed -- they can be counted on the fly
 // TODO: LogBot, support sprintf style formatting
@@ -66,7 +66,9 @@ func main() {
 	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
 	_, _ = p.Println("https://github.com/orme292/s3packer\n")
 
-	var dirsIgnored, filesIgnored, dirsUploaded, filesUploaded int
+	var dirFilesUploaded, filesIgnored, dirFilesIgnored, filesUploaded int
+	var dirBytes, fileBytes int64
+
 	c := config.New()
 
 	filename, _, err := getFlags()
@@ -81,19 +83,19 @@ func main() {
 	fmt.Println("Processing objects...")
 
 	if len(c.Dirs) != 0 {
-		err, dirsUploaded, dirsIgnored = s3pack.DirectoryUploader(&c, c.Dirs)
+		err, dirBytes, dirFilesUploaded, dirFilesIgnored = s3pack.DirectoryUploader(&c, c.Dirs)
 		if err != nil {
 			c.Logger.Error(err.Error())
 		}
 	}
 
 	if len(c.Files) != 0 {
-		err, filesUploaded, filesIgnored = s3pack.IndividualFileUploader(&c, c.Files)
+		err, fileBytes, filesUploaded, filesIgnored = s3pack.IndividualFileUploader(&c, c.Files)
 		if err != nil {
 			c.Logger.Error(err.Error())
 		}
 	}
 
-	fmt.Printf("s3packer Finished, Uploaded %d objects, Ignored %d objects.\n", dirsUploaded+filesUploaded, dirsIgnored+filesIgnored)
+	fmt.Printf("s3packer Finished, Uploaded %d objects, %s, Ignored %d objects.\n", dirFilesUploaded+filesUploaded, s3pack.FileSizeString(dirBytes+fileBytes), dirFilesIgnored+filesIgnored)
 	os.Exit(0)
 }
