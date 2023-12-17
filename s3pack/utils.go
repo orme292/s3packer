@@ -43,6 +43,10 @@ func AppendPathPrefix(c *config.Configuration, key string) string {
 	return path.Clean(fmt.Sprintf("/%s/%s", c.Options[config.ProfileOptionPathPrefix].(string), key))
 }
 
+/*
+BucketExists takes the application configuration (c) and returns a bool and an error. It confirms that the bucket
+provided in the configuration exists and is accessible.
+*/
 func BucketExists(c *config.Configuration) (exists bool, err error) {
 	sess, _ := NewSession(c)
 
@@ -111,11 +115,11 @@ func FileSizeString(size int64) string {
 	case size < 1024*1024:
 		return fmt.Sprintf("%d KB", size/1024)
 	case size < 1024*1024*1024:
-		return fmt.Sprintf("%d MB", size/(1024*1024))
+		return fmt.Sprintf("%.2f MB", float32(size)/(1024*1024))
 	case size < 1024*1024*1024*1024:
-		return fmt.Sprintf("%d GB", size/(1024*1024*1024))
+		return fmt.Sprintf("%.2f GB", float32(size)/(1024*1024*1024))
 	default:
-		return fmt.Sprintf("%d TB", size/(1024*1024*1024*1024))
+		return fmt.Sprintf("%.2f TB", float32(size)/(1024*1024*1024*1024))
 	}
 }
 
@@ -123,7 +127,7 @@ func FileSizeString(size int64) string {
 GetFiles returns a list of files in a directory. It takes a path string as input and returns a slice of strings and an
 error, if there is one.
 
-It does not walk subdirectories.
+It does NOT walk subdirectories.
 */
 func GetFiles(p string) (files []string, err error) {
 	absPath, err := filepath.Abs(p)
@@ -161,8 +165,10 @@ func GetFileSize(p string) (size int64, err error) {
 }
 
 /*
-GetSubDirs returns a list of subdirectories in a given directory. It takes a path string as input and returns a
-slice of strings and an error, if there is one.
+GetSubDirs returns a list of subdirectories at all depths in a given directory. It takes a path string as input and
+returns a slice of strings and an error, if there is one.
+
+TODO: Add depth option
 */
 func GetSubDirs(p string) (subDirs []string, err error) {
 	absPath, err := filepath.Abs(filepath.Clean(p))
@@ -184,7 +190,7 @@ func GetSubDirs(p string) (subDirs []string, err error) {
 
 /*
 LocalFileExists takes a string (file) and returns a bool and an error.
-The function checks to see if the file exists. If it does, then we return true and a nil error.
+The function checks to see if the file exists. If it does, then it returns true and a nil error.
 If it doesn't, then we return false and a nil error.
 */
 func LocalFileExists(file string) (bool, error) {
@@ -199,8 +205,8 @@ func LocalFileExists(file string) (bool, error) {
 
 /*
 ObjectExists takes the application configuration (c) and a prefixed string (key).
-The function checks to see if the object exists in the bucket. If it does, then we return true and a nil error.
-If it doesn't, then we return false and a nil error.
+The function checks to see if an identically named object exists in the bucket. If it does, then it returns true and
+a nil error. If it doesn't, then false and a nil error are returned.
 */
 func ObjectExists(c *config.Configuration, objectKey string) (bool, error) {
 	if objectKey == "" {

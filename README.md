@@ -167,7 +167,7 @@ The file will be created if it doesn't exist, and appended to if it does.
 **Individual Files**
 
 If you’re uploading individual files, just remember that the prefix will be added to the start of the filenames and they’ll be uploaded right to the root of the bucket.
-Also, if you’ve got multiple files with the same name (like if you have five ‘log.log’ files from different directories), they’ll overwrite each other as they’re uploaded. So, you’ll end up with just one ‘log.log’ file in the bucket.
+Also, if you’ve got multiple files with the same name (like if you have five ‘log.log’ files from different directories), they’ll be sequentially renamed, so log.log-0, log.log-1, log.log-2, etc etc.
 
 **Directories**
 

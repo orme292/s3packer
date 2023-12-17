@@ -34,16 +34,16 @@ type FileObject struct {
 	IsDirectoryPart bool
 	Ignore          bool
 	IgnoreString    string
-	ShouldMultiPart bool
 	IsUploaded      bool
 
 	Group int
 
-	c config.Configuration
+	c *config.Configuration
 }
 
 /*
-NewFileObject is a FileList constructor. It takes a path and returns a FileList.
+NewFileObject is a FileList constructor. It takes a path and returns a FileList. Basic FileObject fields are prefilled
+based on the provided path.
 */
 func NewFileObject(c *config.Configuration, path string) (fo *FileObject, err error) {
 	abPath, err := filepath.Abs(path)
@@ -57,7 +57,7 @@ func NewFileObject(c *config.Configuration, path string) (fo *FileObject, err er
 		AbsolutePath:    abPath,
 		BaseName:        filepath.Base(path),
 		PrefixedName:    EmptyString,
-		c:               *c,
+		c:               c,
 	}, nil
 }
 
@@ -70,7 +70,7 @@ func (fo *FileObject) IgnoreIfObjectExistsInBucket() error {
 	if fo.c.Options[config.ProfileOptionOverwrite].(bool) {
 		return nil
 	}
-	exists, err := ObjectExists(&fo.c, fo.PrefixedName)
+	exists, err := ObjectExists(fo.c, fo.PrefixedName)
 	if err != nil {
 		return err
 	} else if exists {
@@ -111,9 +111,9 @@ func (fo *FileObject) SetNameMethodRelative() {
 		} else {
 			relativePath = strings.Replace(fo.OriginDirectory, filepath.Dir(fo.RelativeRoot), EmptyString, 1)
 		}
-		fo.PrefixedName = AppendPathPrefix(&fo.c, fmt.Sprintf("/%s/%s", relativePath, AppendObjectPrefix(&fo.c, fo.BaseName)))
+		fo.PrefixedName = AppendPathPrefix(fo.c, fmt.Sprintf("/%s/%s", relativePath, AppendObjectPrefix(fo.c, fo.BaseName)))
 	} else {
-		fo.PrefixedName = AppendPathPrefix(&fo.c, AppendObjectPrefix(&fo.c, fo.BaseName))
+		fo.PrefixedName = AppendPathPrefix(fo.c, AppendObjectPrefix(fo.c, fo.BaseName))
 	}
 }
 
@@ -126,7 +126,7 @@ and the prefix is "/2023/November/mysql/" then the PrefixedName will be set
 to "/home/users/forrest/2023/November/mysql/mysql_backup.tar.gz".
 */
 func (fo *FileObject) SetNameMethodAbsolute() {
-	fo.PrefixedName = AppendPathPrefix(&fo.c, fmt.Sprintf("%s/%s", fo.OriginDirectory, AppendObjectPrefix(&fo.c, fo.BaseName)))
+	fo.PrefixedName = AppendPathPrefix(fo.c, fmt.Sprintf("%s/%s", fo.OriginDirectory, AppendObjectPrefix(fo.c, fo.BaseName)))
 }
 
 /*
@@ -137,6 +137,7 @@ func (fo *FileObject) SetChecksum() (err error) {
 	if fo.Ignore {
 		return
 	}
+	fo.c.Logger.Debug("Calculating checksum for " + fo.BaseName)
 	hash, err := CalcChecksumSHA256(fo.AbsolutePath)
 	if err != nil {
 		fo.c.Logger.Error(fmt.Sprintf("Error getting checksum for %q: %s", fo.BaseName, err.Error()))
@@ -149,19 +150,18 @@ func (fo *FileObject) SetChecksum() (err error) {
 }
 
 /*
-SetDirectoryPart is a FileList helper method. It sets the FileList's IsDirectoryPart bool to true.
+SetAsDirectoryPart is a FileList helper method. It sets the FileList's IsDirectoryPart bool to true.
 
 This should not be called directly. It should only be called by the ObjectList.setAsDirectoryPart method. Individual
 values will be ignored, only the first FileObject in an ObjectList will be checked.
 */
-func (fo *FileObject) SetDirectoryPart() {
+func (fo *FileObject) SetAsDirectoryPart() {
 	fo.IsDirectoryPart = true
 }
 
 /*
 SetFileSize is a FileObject method. It calls GetFileSize on the FileObject's AbsolutePath and sets the FileObject's
-FileSize to the returned value. If the FileSize is greater than 104857600 (100MB), then the FileObject's ShouldMultiPart is set
-to true.
+FileSize to the returned value.
 */
 func (fo *FileObject) SetFileSize() (size int64) {
 	size, err := GetFileSize(fo.AbsolutePath)
@@ -169,9 +169,6 @@ func (fo *FileObject) SetFileSize() (size int64) {
 		fo.c.Logger.Error(fmt.Sprintf("Error getting file size for %q: %s", fo.BaseName, err.Error()))
 	}
 	fo.FileSize = size
-	if size > 104857600 {
-		fo.ShouldMultiPart = true
-	}
 	return
 }
 
@@ -216,7 +213,7 @@ func (fo *FileObject) SetIgnoreIfObjExists() {
 	if fo.Ignore || fo.c.Options[config.ProfileOptionOverwrite].(bool) {
 		return
 	}
-	exists, err := ObjectExists(&fo.c, fo.PrefixedName)
+	exists, err := ObjectExists(fo.c, fo.PrefixedName)
 	if err != nil {
 		fo.c.Logger.Error(fmt.Sprintf("Error checking if object exists: %s, ignoring object", err.Error()))
 		fo.SetIgnore("Error checking if object exists")
@@ -271,7 +268,7 @@ Upload is a FileObject method. The purpose will be to initiate a multipart uploa
 NotImplemented
 */
 func (fo *FileObject) Upload() (uploaded bool, err error) {
-	svc, err := BuildUploader(&fo.c)
+	svc, err := BuildUploader(fo.c)
 	if err != nil {
 		return false, err
 	}
@@ -324,7 +321,6 @@ func (fo *FileObject) DebugOutput() {
 	fmt.Printf("IsDirectoryPart: %t\n", fo.IsDirectoryPart)
 	fmt.Printf("Ignore: %t\n", fo.Ignore)
 	fmt.Printf("IgnoreString: %s\n", fo.IgnoreString)
-	fmt.Printf("ShouldMultiPart: %t\n", fo.ShouldMultiPart)
 	fmt.Printf("IsUploaded: %t\n", fo.IsUploaded)
 	fmt.Printf("Group: %d\n", fo.Group)
 	fmt.Println()
