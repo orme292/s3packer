@@ -115,11 +115,11 @@ func FileSizeString(size int64) string {
 	case size < 1024*1024:
 		return fmt.Sprintf("%d KB", size/1024)
 	case size < 1024*1024*1024:
-		return fmt.Sprintf("%d MB", size/(1024*1024))
+		return fmt.Sprintf("%.2f MB", float32(size)/(1024*1024))
 	case size < 1024*1024*1024*1024:
-		return fmt.Sprintf("%d GB", size/(1024*1024*1024))
+		return fmt.Sprintf("%.2f GB", float32(size)/(1024*1024*1024))
 	default:
-		return fmt.Sprintf("%d TB", size/(1024*1024*1024*1024))
+		return fmt.Sprintf("%.2f TB", float32(size)/(1024*1024*1024*1024))
 	}
 }
 
