@@ -3,6 +3,12 @@ Hello Changelog. This is where I document all changes to s3packer. I'll try to r
 or minor tweak. 
 
 ---
+### **1.0.3** (2023-12-17)
+- s3pack: concurrency for checksum calculations, more speed
+- s3pack: concurrency for checking for dupe objects, more speed
+- s3pack: counting uploads and ignored files is done on the fly
+- s3pack: display total uploaded bytes
+
 ### **1.0.2** (2023-12-13)
 - config: add new options 'maxConcurrentUploads'
 - s3pack: add upload concurrency (handled at ObjectList level)
