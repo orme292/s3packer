@@ -4,7 +4,7 @@ go 1.21.4
 
 require (
 	github.com/abusomani/go-palette v1.1.0
-	github.com/aws/aws-sdk-go v1.49.4
+	github.com/aws/aws-sdk-go v1.49.6
 	github.com/rs/zerolog v1.31.0
 	gopkg.in/yaml.v2 v2.4.0
 )
