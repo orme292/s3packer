@@ -31,6 +31,12 @@ type Configuration struct {
 const (
 	EmptyString = ""
 
+	/*
+		ACLPrivate, ACLPublicRead, ACLPublicReadWrite, ACLAuthenticatedRead,
+		ACLAwsExecRead, ACLBucketOwnerRead, ACLBucketOwnerFullControl
+
+		Values should all match the string values for ObjectCannedACL in the AWS SDK
+	*/
 	ACLPrivate                = "private"
 	ACLPublicRead             = "public-read"
 	ACLPublicReadWrite        = "public-read-write"
@@ -38,12 +44,21 @@ const (
 	ACLAwsExecRead            = "aws-exec-read"
 	ACLBucketOwnerRead        = "bucket-owner-read"
 	ACLBucketOwnerFullControl = "bucket-owner-full-control"
-	ACLLogDeliveryWrite       = "log-delivery-write"
 
 	NameMethodRelative = "relative"
 	NameMethodAbsolute = "absolute"
 
+	/*
+		StorageClassStandard, StorageClassReducedRedundancy, StorageClassGlacierIR, StorageClassSnow,
+		StorageClassStandardIA, StorageClassOneZoneIA, StorageClassIntelligentTiering, StorageClassGlacier,
+		StorageClassDeepArchive
+
+		Values should all match the string values for StorageClass in the AWS SDK
+	*/
 	StorageClassStandard           = "STANDARD"
+	StorageClassReducedRedundancy  = "REDUCED_REDUNDANCY"
+	StorageClassGlacierIR          = "GLACIER_IR"
+	StorageClassSnow               = "SNOW"
 	StorageClassStandardIA         = "STANDARD_IA"
 	StorageClassOneZoneIA          = "ONEZONE_IA"
 	StorageClassIntelligentTiering = "INTELLIGENT_TIERING"

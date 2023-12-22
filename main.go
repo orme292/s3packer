@@ -7,7 +7,7 @@ import (
 	"os"
 
 	pal "github.com/abusomani/go-palette/palette"
-	"github.com/orme292/s3packer/config"
+	app "github.com/orme292/s3packer/config"
 	"github.com/orme292/s3packer/s3pack"
 )
 
@@ -69,7 +69,7 @@ func main() {
 	var dirFilesUploaded, filesIgnored, dirFilesIgnored, filesUploaded int
 	var dirBytes, fileBytes int64
 
-	c := config.New()
+	c := app.New()
 
 	filename, _, err := getFlags()
 	if err != nil {

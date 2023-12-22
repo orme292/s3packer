@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/orme292/s3packer/logbot"
 	"gopkg.in/yaml.v2"
 )
@@ -79,4 +80,56 @@ func (c *Configuration) Load(file string) error {
 	}
 
 	return nil
+}
+
+/*
+GetACL returns an ObjectCannedACL that matches the provided ACL string.
+*/
+func (c *Configuration) GetACL(acl string) types.ObjectCannedACL {
+	switch acl {
+	case ACLPrivate:
+		return types.ObjectCannedACLPrivate
+	case ACLPublicRead:
+		return types.ObjectCannedACLPublicRead
+	case ACLPublicReadWrite:
+		return types.ObjectCannedACLPublicReadWrite
+	case ACLAuthenticatedRead:
+		return types.ObjectCannedACLAuthenticatedRead
+	case ACLAwsExecRead:
+		return types.ObjectCannedACLAwsExecRead
+	case ACLBucketOwnerRead:
+		return types.ObjectCannedACLBucketOwnerRead
+	case ACLBucketOwnerFullControl:
+		return types.ObjectCannedACLBucketOwnerFullControl
+	default:
+		return types.ObjectCannedACLPrivate
+	}
+}
+
+/*
+GetStorageClass returns a StorageClass that matches the provided class string.
+*/
+func (c *Configuration) GetStorageClass(class string) types.StorageClass {
+	switch class {
+	case StorageClassStandard:
+		return types.StorageClassStandard
+	case StorageClassReducedRedundancy:
+		return types.StorageClassReducedRedundancy
+	case StorageClassGlacier:
+		return types.StorageClassGlacier
+	case StorageClassStandardIA:
+		return types.StorageClassStandardIa
+	case StorageClassOneZoneIA:
+		return types.StorageClassOnezoneIa
+	case StorageClassIntelligentTiering:
+		return types.StorageClassIntelligentTiering
+	case StorageClassGlacierIR:
+		return types.StorageClassGlacierIr
+	case StorageClassDeepArchive:
+		return types.StorageClassDeepArchive
+	case StorageClassSnow:
+		return types.StorageClassSnow
+	default:
+		return types.StorageClassStandard
+	}
 }

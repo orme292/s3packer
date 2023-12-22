@@ -163,12 +163,11 @@ func (c *Configuration) sanitizeACL() {
 	case ACLAwsExecRead:
 	case ACLBucketOwnerRead:
 	case ACLBucketOwnerFullControl:
-	case ACLLogDeliveryWrite:
 	case EmptyString:
-		c.Logger.Warn("No ACL specified, using default.")
+		c.Logger.Warn("No ACL specified.")
 		c.Options[ProfileOptionACL] = ACLPrivate
 	default:
-		c.Logger.Warn("Invalid ACL specified, using default.")
+		c.Logger.Warn(fmt.Sprintf("Unsupported ACL %q.", c.Options[ProfileOptionACL].(string)))
 		c.Options[ProfileOptionACL] = ACLPrivate
 	}
 	c.Logger.Info("ACL set to " + c.Options[ProfileOptionACL].(string))
@@ -288,11 +287,14 @@ func (c *Configuration) sanitizeStorageType() {
 	case StorageClassIntelligentTiering:
 	case StorageClassGlacier:
 	case StorageClassDeepArchive:
+	case StorageClassReducedRedundancy:
+	case StorageClassGlacierIR:
+	case StorageClassSnow:
 	case EmptyString:
 		c.Logger.Warn("No storage class specified, using default.")
 		c.Options[ProfileOptionStorage] = StorageClassStandard
 	default:
-		c.Logger.Warn("Invalid storage class specified, using default.")
+		c.Logger.Warn(fmt.Sprintf("Unsupported storage class %q.", c.Options[ProfileOptionStorage].(string)))
 		c.Options[ProfileOptionStorage] = StorageClassStandard
 	}
 	c.Logger.Info("Storage Class set to " + c.Options[ProfileOptionStorage].(string))

@@ -3,7 +3,7 @@ package s3pack
 import (
 	"path/filepath"
 
-	"github.com/orme292/s3packer/config"
+	app "github.com/orme292/s3packer/config"
 )
 
 /*
@@ -19,7 +19,7 @@ type DirectoryObject struct {
 	ol ObjectList
 
 	// c is the application configuration
-	c *config.Configuration
+	c *app.Configuration
 }
 
 /*
@@ -30,7 +30,7 @@ It scans the provided directory for all files and creates an ObjectList (ol) fro
 
 See NewObjectList for additional information
 */
-func NewDirectoryObject(c *config.Configuration, path string) (do *DirectoryObject, err error) {
+func NewDirectoryObject(c *app.Configuration, path string) (do *DirectoryObject, err error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
