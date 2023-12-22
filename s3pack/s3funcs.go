@@ -4,69 +4,74 @@
 package s3pack
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/orme292/s3packer/config"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	app "github.com/orme292/s3packer/config"
 )
 
 /*
-BuildUploader builds and returned a s3manager.Uploader object. It takes a config.Configuration object. The func creates
-a session by calling NewSession and passes it to s3manager.NewUploader.
+BuildUploader builds and returned a manager.Uploader object. It takes a config.Configuration object. The func creates
+a session by calling NewConfig and passes the aws config to manager.NewUploader.
 */
-func BuildUploader(c *config.Configuration) (uploader *s3manager.Uploader, err error) {
-	sess, err := NewSession(c)
-	uploader = s3manager.NewUploader(sess)
+func BuildUploader(c *app.Configuration) (uploader *manager.Uploader, err error) {
+	client, err := BuildClient(c)
+	uploader = manager.NewUploader(client, func(u *manager.Uploader) {
+		u.MaxUploadParts = 1
+	})
+	return
+}
+
+func BuildClient(c *app.Configuration) (client *s3.Client, err error) {
+	cfg, err := NewConfig(c)
+	client = s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.Region = c.Bucket[app.ProfileBucketRegion].(string)
+	})
 	return
 }
 
 /*
-NewSession creates a new session.Session object using the authentication information in the profile. It takes a
+NewConfig creates a new aws.Config object using the authentication information in the profile. It takes a
 config.Configuration object. It determines whether to use a profile or a keypair based on the presence of a profile
 name in the profile configuration.
 
-NewSession calls NewSessionWithProfile or NewSessionWithKeypair
+NewConfig calls NewConfigWithProfile or NewConfigWithKeypair
 */
-func NewSession(c *config.Configuration) (sess *session.Session, err error) {
-	if c.Authentication[config.ProfileAuthProfile].(string) != EmptyString {
-		sess, err = NewSessionWithProfile(c)
+func NewConfig(c *app.Configuration) (cfg aws.Config, err error) {
+	if c.Authentication[app.ProfileAuthProfile].(string) != EmptyString {
+		cfg, err = NewConfigWithProfile(c)
 	} else {
-		sess, err = NewSessionWithKeypair(c)
+		cfg, err = NewConfigWithKeypair(c)
 	}
 	if err != nil {
-		c.Logger.Fatal(fmt.Sprintf("Unable to create session: %q", err.Error()))
+		c.Logger.Fatal(fmt.Sprintf("Unable to create build config: %q", err.Error()))
 	}
 	return
 }
 
-/*
-NewSessionWithKeypair creates a new session.Session object using a key/secret pair. It takes a config.Configuration
-object as input and returns a session.Session object and an error, if there is one.
-*/
-func NewSessionWithKeypair(c *config.Configuration) (sess *session.Session, err error) {
-	sess, err = session.NewSession(&aws.Config{
-		Region: aws.String(c.Bucket[config.ProfileBucketRegion].(string)),
-		Credentials: credentials.NewStaticCredentials(
-			c.Authentication[config.ProfileAuthKey].(string), c.Authentication[config.ProfileAuthSecret].(string), ""),
-	})
-	if err != nil {
-		return
+func NewConfigWithKeypair(c *app.Configuration) (cfg aws.Config, err error) {
+	creds := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
+		c.Authentication[app.ProfileAuthKey].(string), c.Authentication[app.ProfileAuthSecret].(string), ""))
+	opts := func(o *config.LoadOptions) error {
+		o.Region = c.Bucket[app.ProfileBucketRegion].(string)
+		return nil
 	}
+	cfg, err = config.LoadDefaultConfig(context.TODO(), config.WithCredentialsProvider(creds), opts)
 	return
 }
 
-/*
-NewSessionWithProfile creates a new session.Session object using a profile. It takes a config.Configuration object
-as input and returns a session.Session object and an error, if there is one.
-*/
-func NewSessionWithProfile(c *config.Configuration) (sess *session.Session, err error) {
-	sess, err = session.NewSessionWithOptions(session.Options{
-		Config:            aws.Config{},
-		Profile:           c.Authentication[config.ProfileAuthProfile].(string),
-		SharedConfigState: session.SharedConfigEnable,
-	})
+func NewConfigWithProfile(c *app.Configuration) (cfg aws.Config, err error) {
+	opts := func(o *config.LoadOptions) error {
+		o.Region = c.Bucket[app.ProfileBucketRegion].(string)
+		return nil
+	}
+	cfg, err = config.LoadDefaultConfig(context.TODO(),
+		config.WithSharedConfigProfile(c.Authentication[app.ProfileAuthProfile].(string)),
+		opts)
 	return
 }

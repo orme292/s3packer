@@ -1,7 +1,9 @@
 package s3pack
 
 import (
+	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -10,24 +12,22 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/orme292/s3packer/config"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	app "github.com/orme292/s3packer/config"
 )
 
 /*
 AppendObjectPrefix takes the application configuration (c) and a key string (key) and returns a new string with the prefix
 prepended to the key.
 */
-func AppendObjectPrefix(c *config.Configuration, key string) string {
-	if c.Options[config.ProfileOptionObjectPrefix].(string) == EmptyString {
+func AppendObjectPrefix(c *app.Configuration, key string) string {
+	if c.Options[app.ProfileOptionObjectPrefix].(string) == EmptyString {
 		return key
 	}
-	return fmt.Sprintf("%s%s", c.Options[config.ProfileOptionObjectPrefix].(string), filepath.Base(key))
+	return fmt.Sprintf("%s%s", c.Options[app.ProfileOptionObjectPrefix].(string), filepath.Base(key))
 }
 
 /*
@@ -36,39 +36,31 @@ pathPrefix prepended to the key.
 
 This is the last step in the process of building the object key (PrefixedKey)
 */
-func AppendPathPrefix(c *config.Configuration, key string) string {
-	if c.Options[config.ProfileOptionPathPrefix].(string) == EmptyString {
+func AppendPathPrefix(c *app.Configuration, key string) string {
+	if c.Options[app.ProfileOptionPathPrefix].(string) == EmptyString {
 		return key
 	}
-	return path.Clean(fmt.Sprintf("/%s/%s", c.Options[config.ProfileOptionPathPrefix].(string), key))
+	return path.Clean(fmt.Sprintf("/%s/%s", c.Options[app.ProfileOptionPathPrefix].(string), key))
 }
 
 /*
 BucketExists takes the application configuration (c) and returns a bool and an error. It confirms that the bucket
 provided in the configuration exists and is accessible.
 */
-func BucketExists(c *config.Configuration) (exists bool, err error) {
-	sess, _ := NewSession(c)
-
-	svc := s3.New(sess, &aws.Config{})
-
-	_, err = svc.HeadBucket(&s3.HeadBucketInput{
-		Bucket: aws.String(c.Bucket[config.ProfileBucketName].(string)),
+func BucketExists(c *app.Configuration) (exists bool, err error) {
+	client, _ := BuildClient(c)
+	_, err = client.HeadBucket(context.TODO(), &s3.HeadBucketInput{
+		Bucket: aws.String(c.Bucket[app.ProfileBucketName].(string)),
 	})
 	if err != nil {
-		var awsErr awserr.Error
-		if errors.As(err, &awsErr) {
-			switch awsErr.Code() {
-			case s3.ErrCodeNoSuchBucket:
+		if errors.As(err, &s3Error) {
+			switch {
+			case errors.As(s3Error, &s3NotFound) || errors.As(s3Error, &s3NoSuchBucket):
 				return false, errors.New(fmt.Sprintf("aws says bucket %q does not exist",
-					c.Bucket[config.ProfileBucketName].(string)))
+					c.Bucket[app.ProfileBucketName].(string)))
 			default:
-				if strings.Contains(awsErr.Error(), "status code: 404") {
-					return false, errors.New(fmt.Sprintf("aws says bucket %q does not exist",
-						c.Bucket[config.ProfileBucketName].(string)))
-				}
 				return false, errors.New(fmt.Sprintf("aws error when checking if %q exists: %q",
-					c.Bucket[config.ProfileBucketName].(string), awsErr.Error()))
+					c.Bucket[app.ProfileBucketName].(string), err))
 			}
 		}
 	}
@@ -102,7 +94,7 @@ func CalcChecksumSHA256(p string) (checksum string, err error) {
 		return
 	}
 
-	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+	return base64.StdEncoding.EncodeToString(hash.Sum(nil)), nil
 }
 
 /*
@@ -208,32 +200,34 @@ ObjectExists takes the application configuration (c) and a prefixed string (key)
 The function checks to see if an identically named object exists in the bucket. If it does, then it returns true and
 a nil error. If it doesn't, then false and a nil error are returned.
 */
-func ObjectExists(c *config.Configuration, objectKey string) (bool, error) {
+func ObjectExists(c *app.Configuration, objectKey string) (exists bool, err error) {
 	if objectKey == "" {
-		return false, errors.New("key is empty")
+		return false, errors.New(ErrIgnoreObjectKeyEmpty)
 	}
 
-	sess, _ := NewSession(c)
+	client, _ := BuildClient(c)
+	exists, err = ObjectExistsWithClient(c, objectKey, client)
+	return
+}
 
-	svc := s3.New(sess, &aws.Config{})
-
-	_, err := svc.HeadObject(&s3.HeadObjectInput{
-		Bucket: aws.String(c.Bucket[config.ProfileBucketName].(string)),
+func ObjectExistsWithClient(c *app.Configuration, objectKey string, client *s3.Client) (exists bool, err error) {
+	if objectKey == "" {
+		return false, errors.New(ErrIgnoreObjectKeyEmpty)
+	}
+	c.Logger.Debug(fmt.Sprintf("Checking if object %q already exists", objectKey))
+	_, err = client.HeadObject(context.TODO(), &s3.HeadObjectInput{
+		Bucket: aws.String(c.Bucket[app.ProfileBucketName].(string)),
 		Key:    aws.String(objectKey),
 	})
 	if err != nil {
-		var awsErr awserr.Error
-		if errors.As(err, &awsErr) {
-			switch awsErr.Code() {
-			case s3.ErrCodeNoSuchKey:
+		if errors.As(err, &s3Error) {
+			switch {
+			case errors.As(s3Error, &s3NotFound) || errors.As(s3Error, &s3NoSuchKey):
 				return false, nil
-			case s3.ErrCodeNoSuchBucket:
+			case errors.As(s3Error, &s3NoSuchBucket):
 				return false, errors.New(fmt.Sprintf("aws says bucket %q does not exist", c.Bucket["name"].(string)))
 			default:
-				if strings.Contains(awsErr.Error(), "status code: 404") {
-					return false, nil
-				}
-				return false, errors.New(fmt.Sprintf("aws error: %q", awsErr.Error()))
+				return false, errors.New(fmt.Sprintf("aws error: %q", err))
 			}
 		}
 	}

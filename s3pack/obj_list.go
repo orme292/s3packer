@@ -8,14 +8,10 @@ package s3pack
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/orme292/s3packer/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	app "github.com/orme292/s3packer/config"
 )
 
 /*
@@ -44,7 +40,7 @@ SetIgnoreIfLocalNotExists, SetFileSizes, SetChecksum, and TagOrigins to fill in 
 
 See NewFileObject for additional information
 */
-func NewObjectList(c *config.Configuration, paths []string) (ol ObjectList, err error) {
+func NewObjectList(c *app.Configuration, paths []string) (ol ObjectList, err error) {
 	for _, path := range paths {
 		fo, err := NewFileObject(c, path)
 		if err != nil {
@@ -198,71 +194,14 @@ func (ol ObjectList) GetTotalUploadedBytes() (total int64) {
 }
 
 /*
-IgnoreIfObjectExistsInBucket is an ObjectList method. It iterates through each FileObject in the ObjectList and tries
-to retrieve metadata from an S3 object of the same name (s3 key = FileObject.PrefixedName). If the object exists, then
-the FileObject.Ignore field is set to true and the FileObject.IgnoreString field is set to ErrIgnoreObjectAlreadyExists.
-*/
-func (ol ObjectList) IgnoreIfObjectExistsInBucket() {
-	if ol[0].c.Options[config.ProfileOptionOverwrite].(bool) || len(ol) == 0 {
-		return
-	}
-
-	sess, _ := NewSession(ol[0].c)
-
-	svc := s3.New(sess, &aws.Config{})
-
-	for index := range ol {
-		_, err := svc.HeadObject(&s3.HeadObjectInput{
-			Bucket: aws.String(ol[index].c.Bucket[config.ProfileBucketName].(string)),
-			Key:    aws.String(ol[index].PrefixedName),
-		})
-		if err != nil {
-			var awsErr awserr.Error
-			if errors.As(err, &awsErr) {
-				switch awsErr.Code() {
-				case s3.ErrCodeNoSuchKey:
-					continue
-				default:
-					if strings.Contains(awsErr.Error(), "status code: 404") {
-						continue
-					}
-					ol[index].SetIgnore(fmt.Sprintf("When checking for a duplicate object: an aws errored: %q", awsErr.Error()))
-					continue
-				}
-			}
-		}
-		ol[index].SetIgnore(ErrIgnoreObjectAlreadyExists)
-	}
-}
-
-/*
-IgnoreIfLocalDoesNotExist is an ObjectList convenience method. It calls IgnoreIfLocalDoesNotExist on each FileObject
-in the ObjectList slice.
-
-See FileObject.IgnoreIfLocalDoesNotExist for more information.
-*/
-func (ol ObjectList) IgnoreIfLocalDoesNotExist() error {
-	if len(ol) == 0 {
-		return errors.New("FileList is empty")
-	}
-
-	if err := ol.IterateAndExecute(func(fo *FileObject) (err error) {
-		return fo.IgnoreIfLocalDoesNotExist()
-	}); err != nil {
-		return err
-	}
-	return nil
-}
-
-/*
-SetAsDirectoryPart is a ObjectList method. It calls the FileObject.SetAsDirectoryPart function on each FileObject in the
+SetAsDirectoryPart is a ObjectList method. It calls the FileObject.SetIsDirectoryPart function on each FileObject in the
 ObjectList slice.
 
-See FileObject.SetAsDirectoryPart for more information.
+See FileObject.SetIsDirectoryPart for more information.
 */
 func (ol ObjectList) SetAsDirectoryPart() {
 	_ = ol.IterateAndExecute(func(fo *FileObject) (err error) {
-		fo.SetAsDirectoryPart()
+		fo.SetIsDirectoryPart()
 		return
 	})
 }
@@ -289,8 +228,43 @@ See FileObject.SetGroup for more information.
 */
 func (ol ObjectList) SetGroups() {
 	for index, fo := range ol {
-		fo.SetGroup(index % fo.c.Options[config.ProfileOptionsMaxConcurrent].(int))
+		fo.SetGroup(index % fo.c.Options[app.ProfileOptionsMaxConcurrent].(int))
 	}
+}
+
+/*
+SetIgnoreIfObjExistsInBucket is an ObjectList method. It iterates through each FileObject in the ObjectList and tries
+to retrieve metadata from an S3 object of the same name (s3 key = FileObject.PrefixedName). If the object exists, then
+the FileObject.Ignore field is set to true and the FileObject.IgnoreString field is set to ErrIgnoreObjectAlreadyExists.
+*/
+func (ol ObjectList) SetIgnoreIfObjExistsInBucket() {
+	if ol[0].c.Options[app.ProfileOptionOverwrite].(bool) || len(ol) == 0 {
+		return
+	}
+
+	client, _ := BuildClient(ol[0].c)
+	_ = ol.ConcurrentIterateAndExecute(5, func(fo *FileObject) (err error) {
+		fo.SetIgnoreIfObjExistsInBucketWithClient(client)
+		return
+	})
+}
+
+/*
+SetIgnoreIfLocalDoesNotExist is an ObjectList convenience method. It calls SetIgnoreIfLocalDoesNotExist on each FileObject
+in the ObjectList slice.
+
+See FileObject.IgnoreIfLocalDoesNotExist for more information.
+*/
+func (ol ObjectList) SetIgnoreIfLocalDoesNotExist() error {
+	if len(ol) == 0 {
+		return errors.New("FileList is empty")
+	}
+
+	_ = ol.ConcurrentIterateAndExecute(20, func(fo *FileObject) (err error) {
+		fo.SetIgnoreIfLocalNotExists()
+		return
+	})
+	return nil
 }
 
 /*
@@ -302,21 +276,6 @@ See FileObject.SetIgnoreIfLocalNotExists for more information.
 func (ol ObjectList) SetIgnoreIfLocalNotExists() {
 	_ = ol.IterateAndExecute(func(fo *FileObject) (err error) {
 		fo.SetIgnoreIfLocalNotExists()
-		return
-	})
-	return
-}
-
-/*
-SetIgnoreIfObjExists is a ObjectList convenience method. It calls FileObject.SetIgnoreIfObjExists on each FileObject
-in the ObjectList.
-
-See FileObject.SetIgnoreIfObjExists for more information.
-*/
-func (ol ObjectList) SetIgnoreIfObjExists() {
-	_ = ol.ConcurrentIterateAndExecute(10, func(fo *FileObject) (err error) {
-		fo.c.Logger.Debug(fmt.Sprintf("Checking if object exists %q", fo.PrefixedName))
-		fo.SetIgnoreIfObjExists()
 		return
 	})
 	return
@@ -389,11 +348,11 @@ func (ol ObjectList) TagOrigins() {
 
 /*
 Upload is an ObjectList method. It prepares each FileObject in the ObjectList to be uploaded by executing SetPrefixedNames,
-FixRedundantKeys, SetIgnoreIfObjExists, and SetGroups. It then calls UploadHandler to handle concurrent uploads.
+FixRedundantKeys, SetIgnoreIfObjExistsInBucket, and SetGroups. It then calls UploadHandler to handle concurrent uploads.
 
 See ObjectList.UploadHandler for more information.
 */
-func (ol ObjectList) Upload(c *config.Configuration) (err error, bytes int64, uploaded, ignored int) {
+func (ol ObjectList) Upload(c *app.Configuration) (err error, bytes int64, uploaded, ignored int) {
 	if len(ol) == 0 {
 		return nil, 0, 0, 0
 	}
@@ -410,13 +369,15 @@ func (ol ObjectList) Upload(c *config.Configuration) (err error, bytes int64, up
 		}
 	}
 
-	ol.SetIgnoreIfObjExists()
+	ol.SetIgnoreIfObjExistsInBucket()
 	ol.SetGroups()
 
 	errs := ol.UploadHandler(c)
 	if len(errs) > 0 {
-		for _, err := range errs {
-			c.Logger.Error(fmt.Sprintf("Error during upload: %q", err.Error()))
+		for _, rerr := range errs {
+			if rerr.Error() != EmptyString {
+				c.Logger.Error(fmt.Sprintf("Error during upload: %q", rerr.Error()))
+			}
 		}
 	}
 	return nil, ol.GetTotalUploadedBytes(), ol.CountUploaded(), ol.CountIgnored()
@@ -430,7 +391,7 @@ It uses sync.WaitGroup and a channel to handle concurrent uploads. A single s3ma
 each goroutine. Each goroutine is assigned a group number, which is used to determine which FileObject it will upload.
 The number of goroutines is determined by the ProfileOptionsMaxConcurrent configuration value.
 */
-func (ol ObjectList) UploadHandler(c *config.Configuration) (err []error) {
+func (ol ObjectList) UploadHandler(c *app.Configuration) (err []error) {
 	var wg sync.WaitGroup
 	resultChan := make(chan UploadResult)
 
@@ -440,19 +401,19 @@ func (ol ObjectList) UploadHandler(c *config.Configuration) (err []error) {
 		return err
 	}
 
-	for i := 0; i < c.Options[config.ProfileOptionsMaxConcurrent].(int); i++ {
+	for i := 0; i < c.Options[app.ProfileOptionsMaxConcurrent].(int); i++ {
 		wg.Add(1)
-		go func(group int, svc *s3manager.Uploader, wg *sync.WaitGroup) {
+		go func(c *app.Configuration, group int, svc *manager.Uploader, wg *sync.WaitGroup) {
 			defer wg.Done()
-			fi := NewFileIterator(ol[0].c, ol, group)
-			err := svc.UploadWithIterator(aws.BackgroundContext(), fi)
+			fi := NewObjectIterator(c, ol, group)
+			errs := UploadWithIterator(c, fi)
 
 			resultChan <- UploadResult{
-				Err:         err,
+				Err:         errors.New(errs.String()),
 				UploadCount: ol.CountUploadedByGroup(group),
 				IgnoreCount: ol.CountIgnoredByGroup(group),
 			}
-		}(i, svc, &wg)
+		}(c, i, svc, &wg)
 	}
 
 	go func(wg *sync.WaitGroup) {
