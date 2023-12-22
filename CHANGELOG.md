@@ -3,6 +3,13 @@ Hello Changelog. This is where I document all changes to s3packer. I'll try to r
 or minor tweak. 
 
 ---
+### **1.1.0** (2023-12-31)
+- Move to AWS SDK for Go V2
+- Move to Go 1.21.5
+- s3pack: Checksum matching on successful upload
+- s3pack: Dropped multipart upload support (for now) in favor of checksum matching
+- s3pack: AWS SDK for Go V2 dropped the iterator model, so I wrote my own iterator implementation.
+
 ### **1.0.3** (2023-12-17)
 - s3pack: concurrency for checksum calculations, more speed
 - s3pack: concurrency for checking for dupe objects, more speed
