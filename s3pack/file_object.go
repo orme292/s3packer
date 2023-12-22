@@ -245,6 +245,9 @@ Upload is a FileObject method. The purpose will be to initiate a multipart uploa
 */
 func (fo *FileObject) Upload() (uploaded bool, err error) {
 	svc, err := BuildUploader(fo.c)
+	if err != nil {
+		return false, err
+	}
 	return fo.UploadWithProvided(svc)
 }
 
