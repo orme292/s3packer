@@ -1,10 +1,20 @@
 ## CHANGELOG
-Hello Changelog. This is where I document all changes to s3packer. I'll try to record every bug fix, feature addition, 
-or minor tweak. 
+This is the Changelog. Between each version, major or minor, I'll document all changes, record every 
+bug fix, feature addition, or minor tweak. 
 
 ---
-### **1.1.0** (2023-12-31)
-- Move to AWS SDK for Go V2
+### **1.2.0** (2023-12-29)
+- config: Remove config module
+- conf: Add conf module with new AppConfig model
+- conf: Profiles are not versioned, only version 2 will be supported
+- conf: Adding conf support for the checksum overwrite method and multipart upload, but neither are supported yet
+- conf: Add feature to write out a sample profile, `s3packer --create=\"file.yaml\"`
+- logbot: Logging now has fmt.Sprintf style formatting
+- s3pack: started using the new conf.AppConfig model, removed old config.Configuration model. Much cleaner.
+- README updated to reflect new config format and `--create` feature
+
+### **1.1.0** (2023-12-21)
+- Upgrade to AWS SDK for Go V2
 - Move to Go 1.21.5
 - s3pack: Checksum matching on successful upload
 - s3pack: Dropped multipart upload support (for now) in favor of checksum matching

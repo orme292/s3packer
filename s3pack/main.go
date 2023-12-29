@@ -4,34 +4,34 @@ import (
 	"errors"
 	"fmt"
 
-	app "github.com/orme292/s3packer/config"
+	"github.com/orme292/s3packer/conf"
 )
 
-func IndividualFileUploader(c *app.Configuration, files []string) (err error, bytes int64, uploaded, ignored int) {
-	exists, err := BucketExists(c)
+func IndividualFileUploader(a *conf.AppConfig, files []string) (err error, bytes int64, uploaded, ignored int) {
+	exists, err := BucketExists(a)
 	if err != nil {
 		return
 	} else if !exists {
-		return errors.New(fmt.Sprintf("AWS says %q does not exist", c.Bucket[app.ProfileBucketName].(string))), 0, 0, 0
+		return errors.New(fmt.Sprintf("aws says %q does not exist", a.Bucket.Name)), 0, 0, 0
 	}
 
-	objList, err := NewObjectList(c, files)
+	objList, err := NewObjectList(a, files)
 	if err != nil {
 		return
 	}
 
-	return objList.Upload(c)
+	return objList.Upload(a)
 }
 
-func DirectoryUploader(c *app.Configuration, dirs []string) (err error, bytes int64, uploaded, ignored int) {
-	exists, err := BucketExists(c)
+func DirectoryUploader(a *conf.AppConfig, dirs []string) (err error, bytes int64, uploaded, ignored int) {
+	exists, err := BucketExists(a)
 	if err != nil {
 		return
 	} else if !exists {
-		return errors.New(fmt.Sprintf("AWS says %q does not exist", c.Bucket[app.ProfileBucketName].(string))), 0, 0, 0
+		return errors.New(fmt.Sprintf("aws says %q does not exist", a.Bucket.Name)), 0, 0, 0
 	}
 
-	dirLists, err := NewRootList(c, dirs)
+	dirLists, err := NewRootList(a, dirs)
 	if err != nil {
 		return
 	}

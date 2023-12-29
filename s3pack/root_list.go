@@ -1,7 +1,7 @@
 package s3pack
 
 import (
-	"github.com/orme292/s3packer/config"
+	"github.com/orme292/s3packer/conf"
 )
 
 /*
@@ -10,12 +10,10 @@ RootList is a slice of DirectoryList pointers (slices are inherently pointers).
 Structure:
 RootList => DirectoryList => DirectoryObject -> ObjectList => FileObject
 RootList is a slice of DirectoryList Pointers.
-DirectoryList is a slice of DirectoryObject pointers.
-DirectoryObject is a struct with a slice of FileObject pointers.
+DirectoryList is a slice containing DirectoryObject pointers.
+DirectoryObject is a struct with an ObjectList pointer.
+ObjectList is a slice of FileObject pointers.
 FileObject is a struct that holds information about a file.
-
-RootLists are a slice of DirectoryList pointers. DirectoryList pointers are a slice of DirectoryObject pointers.
-DirectoryObject pointers reference an ObjectList, which is a slice of FileObject pointers.
 */
 type RootList []DirectoryList
 
@@ -24,9 +22,9 @@ NewRootList is a RootList constructor. It takes directory paths as a slice of st
 
 See NewDirectoryList for more information
 */
-func NewRootList(c *config.Configuration, dir []string) (dl RootList, err error) {
+func NewRootList(a *conf.AppConfig, dir []string) (dl RootList, err error) {
 	for _, d := range dir {
-		dirList, err := NewDirectoryList(c, d)
+		dirList, err := NewDirectoryList(a, d)
 		if err != nil {
 			return nil, err
 		}
@@ -78,7 +76,7 @@ func (rl RootList) Upload() (err error, bytes int64, uploaded, ignored int) {
 	_ = rl.IterateAndExecute(func(dl DirectoryList) (err error) {
 		err = dl.Upload()
 		if err != nil {
-			rl[0][0].c.Logger.Error(err.Error())
+			rl[0][0].a.Log.Error(err.Error())
 		}
 		return
 	})

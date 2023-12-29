@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	app "github.com/orme292/s3packer/config"
+	"github.com/orme292/s3packer/conf"
 )
 
 /*
@@ -41,14 +41,14 @@ type FileObject struct {
 
 	Group int
 
-	c *app.Configuration
+	a *conf.AppConfig
 }
 
 /*
 NewFileObject is a FileList constructor. It takes a path and returns a FileList. Basic FileObject fields are prefilled
 based on the provided path.
 */
-func NewFileObject(c *app.Configuration, path string) (fo *FileObject, err error) {
+func NewFileObject(a *conf.AppConfig, path string) (fo *FileObject, err error) {
 	abPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func NewFileObject(c *app.Configuration, path string) (fo *FileObject, err error
 		AbsolutePath:    abPath,
 		BaseName:        filepath.Base(path),
 		PrefixedName:    EmptyString,
-		c:               c,
+		a:               a,
 	}, nil
 }
 
@@ -76,7 +76,7 @@ relative root is "/home/users" then the PrefixedName will be set to "/forrest/no
 func (fo *FileObject) SetNameMethodRelative() {
 	if fo.IsDirectoryPart == true {
 		var relativePath string
-		if fo.c.Options[app.ProfileOptionOmitOriginDir].(bool) {
+		if fo.a.Objects.OmitOriginDirectory {
 			relativePath = strings.TrimPrefix(
 				strings.Replace(fo.OriginDirectory, fo.RelativeRoot, EmptyString, 1), "/")
 		} else {
@@ -84,10 +84,10 @@ func (fo *FileObject) SetNameMethodRelative() {
 				strings.Replace(fo.OriginDirectory, filepath.Dir(fo.RelativeRoot), EmptyString, 1), "/")
 		}
 		fo.PrefixedName = strings.TrimPrefix(
-			AppendPathPrefix(fo.c, fmt.Sprintf("%s/%s", relativePath, AppendObjectPrefix(fo.c, fo.BaseName))), "/")
+			AppendPathPrefix(fo.a, fmt.Sprintf("%s/%s", relativePath, AppendObjectPrefix(fo.a, fo.BaseName))), "/")
 	} else {
 		fo.PrefixedName = strings.TrimPrefix(
-			AppendPathPrefix(fo.c, AppendObjectPrefix(fo.c, fo.BaseName)), "/")
+			AppendPathPrefix(fo.a, AppendObjectPrefix(fo.a, fo.BaseName)), "/")
 	}
 }
 
@@ -100,7 +100,7 @@ and the prefix is "/2023/November/mysql/" then the PrefixedName will be set
 to "/home/users/forrest/2023/November/mysql/mysql_backup.tar.gz".
 */
 func (fo *FileObject) SetNameMethodAbsolute() {
-	fo.PrefixedName = AppendPathPrefix(fo.c, fmt.Sprintf("%s/%s", fo.OriginDirectory, AppendObjectPrefix(fo.c, fo.BaseName)))
+	fo.PrefixedName = AppendPathPrefix(fo.a, fmt.Sprintf("%s/%s", fo.OriginDirectory, AppendObjectPrefix(fo.a, fo.BaseName)))
 }
 
 /*
@@ -111,10 +111,10 @@ func (fo *FileObject) SetChecksum() (err error) {
 	if fo.Ignore {
 		return
 	}
-	fo.c.Logger.Debug("Calculating checksum for " + fo.BaseName)
+	fo.a.Log.Debug("Calculating checksum for %q", fo.BaseName)
 	hash, err := CalcChecksumSHA256(fo.AbsolutePath)
 	if err != nil {
-		fo.c.Logger.Error(fmt.Sprintf("Error getting checksum for %q: %s", fo.BaseName, err.Error()))
+		fo.a.Log.Error("Error getting checksum for %q: %s", fo.BaseName, err.Error())
 		fo.DebugOutput()
 		return
 	}
@@ -140,7 +140,7 @@ FileSize to the returned value.
 func (fo *FileObject) SetFileSize() (size int64) {
 	size, err := GetFileSize(fo.AbsolutePath)
 	if err != nil {
-		fo.c.Logger.Error(fmt.Sprintf("Error getting file size for %q: %s", fo.BaseName, err.Error()))
+		fo.a.Log.Error("Error getting file size for %q: %s", fo.BaseName, err.Error())
 	}
 	fo.FileSize = size
 	return
@@ -168,7 +168,7 @@ func (fo *FileObject) SetIgnoreIfLocalNotExists() {
 	}
 	exists, err := LocalFileExists(fo.AbsolutePath)
 	if err != nil {
-		fo.c.Logger.Error(fmt.Sprintf("%s: %s, ignoring.", ErrLocalErrorOnCheck, err.Error()))
+		fo.a.Log.Error("%s: %s, ignoring.", ErrLocalErrorOnCheck, err.Error())
 		fo.SetIgnore(ErrLocalErrorOnCheck)
 		fo.DebugOutput()
 		return
@@ -184,17 +184,17 @@ it calls ObjectExists on the FileObject's PrefixedName. If ObjectExists returns 
 to true and an IgnoreString is set.
 */
 func (fo *FileObject) SetIgnoreIfObjExistsInBucket() {
-	client, _ := BuildClient(fo.c)
+	client, _ := BuildClient(fo.a)
 	fo.SetIgnoreIfObjExistsInBucketWithClient(client)
 }
 
 func (fo *FileObject) SetIgnoreIfObjExistsInBucketWithClient(client *s3.Client) {
-	if fo.Ignore || fo.c.Options[app.ProfileOptionOverwrite].(bool) {
+	if fo.Ignore || (fo.a.Opts.Overwrite == conf.OverwriteAlways) {
 		return
 	}
-	exists, err := ObjectExistsWithClient(fo.c, fo.PrefixedName, client)
+	exists, err := ObjectExistsWithClient(fo.a, fo.PrefixedName, client)
 	if err != nil {
-		fo.c.Logger.Error(fmt.Sprintf("%s: %s, ignoring.", ErrIgnoreObjectErrorOnCheck, err.Error()))
+		fo.a.Log.Error("%s: %s, ignoring.", ErrIgnoreObjectErrorOnCheck, err.Error())
 		fo.SetIgnore(ErrIgnoreObjectErrorOnCheck)
 		return
 	}
@@ -208,13 +208,13 @@ SetPrefixedName is a FileObject method. It calls the appropriate key naming meth
 in the profile. See the nameMethod* functions for more information.
 */
 func (fo *FileObject) SetPrefixedName() {
-	switch fo.c.Options[app.ProfileOptionKeyNamingMethod] {
-	case app.NameMethodRelative:
+	switch fo.a.Objects.Naming {
+	case conf.NamingRelative:
 		fo.SetNameMethodRelative()
-	case app.NameMethodAbsolute:
+	case conf.NamingAbsolute:
 		fo.SetNameMethodAbsolute()
 	default:
-		fo.c.Logger.Fatal(ErrKeyNameMust)
+		fo.a.Log.Fatal(ErrKeyNameMust)
 	}
 }
 
@@ -244,7 +244,7 @@ func (fo *FileObject) Tag(k, v string) {
 Upload is a FileObject method. The purpose will be to initiate a multipart upload for this FileObject.
 */
 func (fo *FileObject) Upload() (uploaded bool, err error) {
-	svc, err := BuildUploader(fo.c)
+	svc, err := BuildUploader(fo.a)
 	if err != nil {
 		return false, err
 	}
@@ -261,15 +261,15 @@ func (fo *FileObject) UploadWithProvided(svc *manager.Uploader) (uploaded bool, 
 		return false, nil
 	}
 
-	fo.c.Logger.Info(fmt.Sprintf("Uploading %s...", fo.PrefixedName))
-	_, err = svc.Upload(context.TODO(), &s3.PutObjectInput{
-		ACL:               fo.c.GetACL(fo.c.Options[app.ProfileOptionACL].(string)),
+	fo.a.Log.Info("Uploading %s...", fo.PrefixedName)
+	_, err = svc.Upload(context.Background(), &s3.PutObjectInput{
+		ACL:               fo.a.Provider.AwsACL,
 		Body:              f,
-		Bucket:            aws.String(fo.c.Options[app.ProfileBucketName].(string)),
+		Bucket:            aws.String(fo.a.Bucket.Name),
 		ChecksumAlgorithm: types.ChecksumAlgorithmSha256,
 		ChecksumSHA256:    aws.String(fo.Checksum),
 		Key:               aws.String(fo.PrefixedName),
-		StorageClass:      fo.c.GetStorageClass(fo.c.Options[app.ProfileOptionsMaxConcurrent].(string)),
+		StorageClass:      fo.a.Provider.AwsStorage,
 		Tagging:           aws.String(fo.Tags),
 	})
 	if err != nil {

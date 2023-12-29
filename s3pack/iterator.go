@@ -2,13 +2,12 @@ package s3pack
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	app "github.com/orme292/s3packer/config"
+	"github.com/orme292/s3packer/conf"
 )
 
 type IterErrs []error
@@ -46,21 +45,21 @@ type ObjectIterator struct {
 	}
 	group int
 	err   error
-	c     *app.Configuration
+	a     *conf.AppConfig
 }
 
-func NewObjectIterator(c *app.Configuration, ol ObjectList, g int) Iterator {
+func NewObjectIterator(a *conf.AppConfig, ol ObjectList, g int) Iterator {
 	return &ObjectIterator{
 		ol:    ol,
 		group: g,
-		c:     c,
+		a:     a,
 	}
 }
 
 func (oi *ObjectIterator) Err() error {
 	if oi.err != nil {
 		oi.stage.fo.IsUploaded = false
-		oi.c.Logger.Debug(fmt.Sprintf("ObjectIterator.Err() called, err: %v", oi.err))
+		oi.a.Log.Debug("ObjectIterator.Err() called, err: %v", oi.err)
 	}
 	return oi.err
 }
@@ -79,8 +78,8 @@ func (oi *ObjectIterator) Next() bool {
 			continue
 		}
 		if oi.ol[oi.stage.index].IsUploaded || oi.ol[oi.stage.index].Ignore {
-			oi.c.Logger.Warn(fmt.Sprintf("Ignoring %q, %s", oi.ol[oi.stage.index].PrefixedName,
-				oi.ol[oi.stage.index].IgnoreString))
+			oi.a.Log.Warn("Ignoring %q, %s", oi.ol[oi.stage.index].PrefixedName,
+				oi.ol[oi.stage.index].IgnoreString)
 			oi.stage.index += 1
 			continue
 		}
@@ -103,18 +102,18 @@ func (oi *ObjectIterator) UploadObject() *BatchPutObject {
 	f := oi.stage.f
 	return &BatchPutObject{
 		Before: func() error {
-			oi.c.Logger.Info(fmt.Sprintf("Transferring (%s) %q...", FileSizeString(oi.stage.fo.FileSize),
-				oi.stage.fo.PrefixedName))
+			oi.a.Log.Info("Transferring (%s) %q...", FileSizeString(oi.stage.fo.FileSize),
+				oi.stage.fo.PrefixedName)
 			return nil
 		},
 		Object: &s3.PutObjectInput{
-			ACL:               oi.c.GetACL(oi.c.Options[app.ProfileOptionACL].(string)),
+			ACL:               oi.a.Provider.AwsACL,
 			Body:              f,
-			Bucket:            aws.String(oi.c.Bucket[app.ProfileBucketName].(string)),
+			Bucket:            aws.String(oi.a.Bucket.Name),
 			ChecksumAlgorithm: types.ChecksumAlgorithmSha256,
 			ChecksumSHA256:    aws.String(oi.stage.fo.Checksum),
 			Key:               aws.String(oi.stage.fo.PrefixedName),
-			StorageClass:      oi.c.GetStorageClass(oi.c.Options[app.ProfileOptionStorage].(string)),
+			StorageClass:      oi.a.Provider.AwsStorage,
 			Tagging:           aws.String(oi.stage.fo.Tags),
 		},
 		After: func() error {
@@ -125,8 +124,8 @@ func (oi *ObjectIterator) UploadObject() *BatchPutObject {
 	}
 }
 
-func UploadWithIterator(c *app.Configuration, iter Iterator) (errs IterErrs) {
-	svc, err := BuildUploader(c)
+func UploadWithIterator(a *conf.AppConfig, iter Iterator) (errs IterErrs) {
+	svc, err := BuildUploader(a)
 	if err != nil {
 		errs = append(errs, err)
 		return
@@ -139,7 +138,7 @@ func UploadWithIterator(c *app.Configuration, iter Iterator) (errs IterErrs) {
 				errs = append(errs, err)
 			}
 		}
-		_, err = svc.Upload(context.TODO(), object.Object)
+		_, err = svc.Upload(context.Background(), object.Object)
 		if err != nil {
 			errs = append(errs, err)
 		}
