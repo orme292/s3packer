@@ -1,8 +1,6 @@
 package conf
 
 import (
-	"fmt"
-
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/orme292/s3packer/logbot"
 )
@@ -17,7 +15,6 @@ func New(file string) (a *AppConfig, err error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("%+v\n\n", r)
 
 	_, err = r.versionOK()
 	if err != nil {
