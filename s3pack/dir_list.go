@@ -3,7 +3,7 @@ package s3pack
 import (
 	"fmt"
 
-	"github.com/orme292/s3packer/config"
+	"github.com/orme292/s3packer/conf"
 )
 
 /*
@@ -17,8 +17,8 @@ type DirectoryList []*DirectoryObject
 NewDirectoryList is a DirectoryList constructor. It takes a configuration and a directory as a string. It returns a
 DirectoryList and an error.
 */
-func NewDirectoryList(c *config.Configuration, dir string) (dl DirectoryList, err error) {
-	c.Logger.Info(fmt.Sprintf("Processing directory: %q", dir))
+func NewDirectoryList(a *conf.AppConfig, dir string) (dl DirectoryList, err error) {
+	a.Log.Info("Processing directory: %q", dir)
 
 	subDirs, err := GetSubDirs(dir)
 	if err != nil {
@@ -26,9 +26,9 @@ func NewDirectoryList(c *config.Configuration, dir string) (dl DirectoryList, er
 	}
 
 	for index := range subDirs {
-		do, err := NewDirectoryObject(c, subDirs[index])
+		do, err := NewDirectoryObject(a, subDirs[index])
 		if err != nil {
-			c.Logger.Error(err.Error())
+			a.Log.Error(err.Error())
 		}
 		dl = append(dl, do)
 	}
@@ -121,10 +121,10 @@ See DirectoryList.SetPrefixedNames for more information
 func (dl DirectoryList) Upload() (err error) {
 	dl.SetPrefixedNames()
 	for index := range dl {
-		dl[index].c.Logger.Debug(fmt.Sprintf("Directory %s has %d objects", dl[index].StartPath, dl[index].CountFileObjects()))
+		dl[index].a.Log.Debug("Directory %s has %d objects", dl[index].StartPath, dl[index].CountFileObjects())
 		fErr := dl[index].Upload()
 		if fErr != nil {
-			dl[index].c.Logger.Error(fErr.Error())
+			dl[index].a.Log.Error(fErr.Error())
 			return
 		}
 	}

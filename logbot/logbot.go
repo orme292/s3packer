@@ -1,54 +1,13 @@
 package logbot
 
 import (
+	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
-
-/*
-ParseIntLevel takes an interface{} and returns a zerolog.Level.
-If the interface{} is a string, it will attempt to convert it to an int.
-When the interface{} is an int, it will attempt to convert it to a zerolog.Level.
-*/
-func (lb *LogBot) ParseIntLevel(n any) zerolog.Level {
-	switch v := n.(type) {
-	case string:
-		x, err := strconv.Atoi(n.(string))
-		if err != nil {
-			return BLAST
-		}
-		n = x
-	case bool:
-		return DEBUG
-	case int:
-		n = v
-	default:
-		return INFO
-	}
-
-	switch n {
-	case 5:
-		return PANIC
-	case 4:
-		return FATAL
-	case 3:
-		return ERROR
-	case 2:
-		return WARN
-	case 1:
-		return INFO
-	case 0:
-		return DEBUG
-	case -1:
-		return TRACE
-	default:
-		return INFO
-	}
-}
 
 /*
 SetLogLevel takes a zerolog.Level and sets the global log level.
@@ -100,7 +59,7 @@ func (lb *LogBot) route(l zerolog.Level, s string) {
 		z := lb.buildZ(lb.Level)
 		z.WithLevel(l).Msg(s)
 	}
-	if l == FATAL {
+	if l == FATAL || l == PANIC {
 		os.Exit(1)
 	}
 }
@@ -109,41 +68,52 @@ func (lb *LogBot) route(l zerolog.Level, s string) {
 Blast takes a string and passes it to LogBot.route with zerolog.NoLevel.
 This ensures the message is logged regardless of the global log level.
 */
-func (lb *LogBot) Blast(s string) {
-	lb.route(BLAST, s)
+func (lb *LogBot) Blast(format string, a ...any) {
+	msg := fmt.Sprintf(format, a...)
+	lb.route(BLAST, msg)
+}
+
+func (lb *LogBot) Panic(format string, a ...any) {
+	msg := fmt.Sprintf(format, a...)
+	lb.route(PANIC, msg)
 }
 
 /*
 Fatal takes a string and passes it to LogBot.route with zerolog.FatalLevel.
 */
-func (lb *LogBot) Fatal(s string) {
-	lb.route(FATAL, s)
+func (lb *LogBot) Fatal(format string, a ...any) {
+	msg := fmt.Sprintf(format, a...)
+	lb.route(FATAL, msg)
 }
 
 /*
 Error takes a string and passes it to LogBot.route with zerolog.ErrorLevel.
 */
-func (lb *LogBot) Error(s string) {
-	lb.route(ERROR, s)
+func (lb *LogBot) Error(format string, a ...any) {
+	msg := fmt.Sprintf(format, a...)
+	lb.route(ERROR, msg)
 }
 
 /*
 Warn takes a string and passes it to LogBot.route with zerolog.WarnLevel.
 */
-func (lb *LogBot) Warn(s string) {
-	lb.route(WARN, s)
+func (lb *LogBot) Warn(format string, a ...any) {
+	msg := fmt.Sprintf(format, a...)
+	lb.route(WARN, msg)
 }
 
 /*
 Info takes a string and passes it to LogBot.route with zerolog.InfoLevel.
 */
-func (lb *LogBot) Info(s string) {
-	lb.route(INFO, s)
+func (lb *LogBot) Info(format string, a ...any) {
+	msg := fmt.Sprintf(format, a...)
+	lb.route(INFO, msg)
 }
 
 /*
 Debug takes a string and passes it to LogBot.route with zerolog.DebugLevel.
 */
-func (lb *LogBot) Debug(s string) {
-	lb.route(DEBUG, s)
+func (lb *LogBot) Debug(format string, a ...any) {
+	msg := fmt.Sprintf(format, a...)
+	lb.route(DEBUG, msg)
 }

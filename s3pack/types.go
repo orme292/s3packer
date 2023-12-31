@@ -8,7 +8,7 @@ import (
 const (
 	ChecksumSha256 = "SHA256"
 	EmptyString    = ""
-	Version        = "1.1.0"
+	Version        = "1.2.0"
 )
 
 const (

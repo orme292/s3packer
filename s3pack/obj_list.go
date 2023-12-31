@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
-	app "github.com/orme292/s3packer/config"
+	"github.com/orme292/s3packer/conf"
 )
 
 /*
@@ -40,9 +40,9 @@ SetIgnoreIfLocalNotExists, SetFileSizes, SetChecksum, and TagOrigins to fill in 
 
 See NewFileObject for additional information
 */
-func NewObjectList(c *app.Configuration, paths []string) (ol ObjectList, err error) {
+func NewObjectList(a *conf.AppConfig, paths []string) (ol ObjectList, err error) {
 	for _, path := range paths {
-		fo, err := NewFileObject(c, path)
+		fo, err := NewFileObject(a, path)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +53,7 @@ func NewObjectList(c *app.Configuration, paths []string) (ol ObjectList, err err
 	ol.SetFileSizes()
 	_ = ol.SetChecksum()
 	ol.TagOrigins()
-	for k, v := range c.Tags {
+	for k, v := range a.Tags {
 		ol.TagAll(k, v)
 	}
 	return
@@ -75,7 +75,7 @@ func (ol ObjectList) FixRedundantKeys() error {
 		return errors.New("FileList is empty or only contains one item")
 	}
 
-	ol[0].c.Logger.Debug("Fixing Redundant Keys...")
+	ol[0].a.Log.Debug("Fixing Redundant Keys...")
 	occurrences := make(map[string]int)
 	for index := range ol {
 		if _, ok := occurrences[ol[index].PrefixedName]; ok {
@@ -214,7 +214,7 @@ See FileObject.SetChecksum for more information.
 */
 func (ol ObjectList) SetChecksum() (err error) {
 	_ = ol.ConcurrentIterateAndExecute(25, func(fo *FileObject) (err error) {
-		fo.c.Logger.Debug(fmt.Sprintf("Setting checksum for %q", fo.BaseName))
+		fo.a.Log.Debug("Setting checksum for %q", fo.BaseName)
 		return fo.SetChecksum()
 	})
 	return
@@ -228,7 +228,7 @@ See FileObject.SetGroup for more information.
 */
 func (ol ObjectList) SetGroups() {
 	for index, fo := range ol {
-		fo.SetGroup(index % fo.c.Options[app.ProfileOptionsMaxConcurrent].(int))
+		fo.SetGroup(index % fo.a.Opts.MaxUploads)
 	}
 }
 
@@ -238,11 +238,11 @@ to retrieve metadata from an S3 object of the same name (s3 key = FileObject.Pre
 the FileObject.Ignore field is set to true and the FileObject.IgnoreString field is set to ErrIgnoreObjectAlreadyExists.
 */
 func (ol ObjectList) SetIgnoreIfObjExistsInBucket() {
-	if ol[0].c.Options[app.ProfileOptionOverwrite].(bool) || len(ol) == 0 {
+	if (ol[0].a.Opts.Overwrite == conf.OverwriteAlways) || len(ol) == 0 {
 		return
 	}
 
-	client, _ := BuildClient(ol[0].c)
+	client, _ := BuildClient(ol[0].a)
 	_ = ol.ConcurrentIterateAndExecute(5, func(fo *FileObject) (err error) {
 		fo.SetIgnoreIfObjExistsInBucketWithClient(client)
 		return
@@ -339,7 +339,7 @@ See FileObject.Tag for more information.
 */
 func (ol ObjectList) TagOrigins() {
 	_ = ol.IterateAndExecute(func(fo *FileObject) (err error) {
-		if fo.c.Options["tagOrigins"].(bool) {
+		if fo.a.Tag.Origins {
 			fo.Tag("Origin", fo.AbsolutePath)
 		}
 		return
@@ -352,7 +352,7 @@ FixRedundantKeys, SetIgnoreIfObjExistsInBucket, and SetGroups. It then calls Upl
 
 See ObjectList.UploadHandler for more information.
 */
-func (ol ObjectList) Upload(c *app.Configuration) (err error, bytes int64, uploaded, ignored int) {
+func (ol ObjectList) Upload(a *conf.AppConfig) (err error, bytes int64, uploaded, ignored int) {
 	if len(ol) == 0 {
 		return nil, 0, 0, 0
 	}
@@ -372,11 +372,11 @@ func (ol ObjectList) Upload(c *app.Configuration) (err error, bytes int64, uploa
 	ol.SetIgnoreIfObjExistsInBucket()
 	ol.SetGroups()
 
-	errs := ol.UploadHandler(c)
+	errs := ol.UploadHandler(a)
 	if len(errs) > 0 {
 		for _, rerr := range errs {
 			if rerr.Error() != EmptyString {
-				c.Logger.Error(fmt.Sprintf("Error during upload: %q", rerr.Error()))
+				a.Log.Error("Error during upload: %q", rerr.Error())
 			}
 		}
 	}
@@ -391,29 +391,29 @@ It uses sync.WaitGroup and a channel to handle concurrent uploads. A single s3ma
 each goroutine. Each goroutine is assigned a group number, which is used to determine which FileObject it will upload.
 The number of goroutines is determined by the ProfileOptionsMaxConcurrent configuration value.
 */
-func (ol ObjectList) UploadHandler(c *app.Configuration) (err []error) {
+func (ol ObjectList) UploadHandler(a *conf.AppConfig) (err []error) {
 	var wg sync.WaitGroup
 	resultChan := make(chan UploadResult)
 
-	svc, buErr := BuildUploader(c)
+	svc, buErr := BuildUploader(a)
 	if buErr != nil {
 		err = append(err, buErr)
 		return err
 	}
 
-	for i := 0; i < c.Options[app.ProfileOptionsMaxConcurrent].(int); i++ {
+	for i := 0; i < a.Opts.MaxUploads; i++ {
 		wg.Add(1)
-		go func(c *app.Configuration, group int, svc *manager.Uploader, wg *sync.WaitGroup) {
+		go func(a *conf.AppConfig, group int, svc *manager.Uploader, wg *sync.WaitGroup) {
 			defer wg.Done()
-			fi := NewObjectIterator(c, ol, group)
-			errs := UploadWithIterator(c, fi)
+			fi := NewObjectIterator(a, ol, group)
+			errs := UploadWithIterator(a, fi)
 
 			resultChan <- UploadResult{
 				Err:         errors.New(errs.String()),
 				UploadCount: ol.CountUploadedByGroup(group),
 				IgnoreCount: ol.CountIgnoredByGroup(group),
 			}
-		}(c, i, svc, &wg)
+		}(a, i, svc, &wg)
 	}
 
 	go func(wg *sync.WaitGroup) {

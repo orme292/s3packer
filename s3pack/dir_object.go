@@ -3,7 +3,7 @@ package s3pack
 import (
 	"path/filepath"
 
-	app "github.com/orme292/s3packer/config"
+	"github.com/orme292/s3packer/conf"
 )
 
 /*
@@ -19,7 +19,7 @@ type DirectoryObject struct {
 	ol ObjectList
 
 	// c is the application configuration
-	c *app.Configuration
+	a *conf.AppConfig
 }
 
 /*
@@ -30,7 +30,7 @@ It scans the provided directory for all files and creates an ObjectList (ol) fro
 
 See NewObjectList for additional information
 */
-func NewDirectoryObject(c *app.Configuration, path string) (do *DirectoryObject, err error) {
+func NewDirectoryObject(a *conf.AppConfig, path string) (do *DirectoryObject, err error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -41,14 +41,14 @@ func NewDirectoryObject(c *app.Configuration, path string) (do *DirectoryObject,
 		return
 	}
 
-	list, err := NewObjectList(c, files)
+	list, err := NewObjectList(a, files)
 	if err != nil {
 		return nil, err
 	}
 	return &DirectoryObject{
 		StartPath: absPath,
 		ol:        list,
-		c:         c,
+		a:         a,
 	}, nil
 }
 
@@ -63,7 +63,7 @@ func (do *DirectoryObject) TagAll(k, v string) {
 Upload is an DirectoryObject method. It calls Upload on the DirectoryObject's ObjectList.
 */
 func (do *DirectoryObject) Upload() (err error) {
-	err, _, _, _ = do.ol.Upload(do.c)
+	err, _, _, _ = do.ol.Upload(do.a)
 	return
 }
 
