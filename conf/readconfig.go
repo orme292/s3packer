@@ -205,7 +205,7 @@ func (r *readConfig) getTag() (t *Tag, err error) {
 func (r *readConfig) getValidTags() (tags map[string]string, err error) {
 	tags = make(map[string]string)
 	for k, v := range r.Tagging.Tags {
-		reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
+		reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 		nk := reg.ReplaceAllString(k, "")
 		nv := reg.ReplaceAllString(v, "")
 		if nk != k {
