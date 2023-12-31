@@ -38,7 +38,7 @@ import (
 getFlags uses the flag package to configure and get command line arguments. It returns:
 -- profile: The filename of the profile to load.
 */
-func getFlags() (profile string, create string, max int, err error) {
+func getFlags() (profile, create string, err error) {
 	flag.StringVar(&profile, "profile", "", "The profile filename you want to use.")
 	flag.StringVar(&create, "create", "", "Create a new profile with the specified filename.")
 	flag.Parse()
@@ -68,7 +68,7 @@ func main() {
 	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
 	_, _ = p.Println("https://github.com/orme292/s3packer\n")
 
-	profileF, createF, _, err := getFlags()
+	profileF, createF, err := getFlags()
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
