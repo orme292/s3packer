@@ -55,38 +55,36 @@ func getFlags() (profile string, create string, max int, err error) {
 
 /*
 main is the entry point of the program. It does the following:
- 1. Creates a new configuration object (See config/config.go). This will be passed around to all the modules. It initially
-    contains default values and a logbot instance. (See logbot/logbot.go)
- 2. Calls getFlags to get the command line arguments. (See above)
- 3. Loads the YAML profile specified in the command line arguments. (See config/config.go#Load)
- 4. Checks whether the loaded profile has specified directories to process (c.Dirs)
- 5. Checks whether the loaded profile has specified individual files to process (c.Files)
- 6. Any returned errors from either of the above are printed as warnings and the program terminates with a 0.
+ 1. Calls getFlags to get the command line arguments. (See above)
+ 2. If the --create flag is specified, it calls conf.Create to create a new profile file.
+ 2. Creates a new configuration object (See conf/appconfig.go) using the provided profile filename
+ 3. Checks whether the loaded profile has specified directories to process (c.Dirs)
+ 4. Checks whether the loaded profile has specified individual files to process (c.Files)
+ 5. Any returned errors from either of the above are printed as warnings and the program terminates with a 0.
 */
 func main() {
-
 	p := pal.New(pal.WithBackground(pal.Color(21)), pal.WithForeground(pal.BrightWhite), pal.WithSpecialEffects([]pal.Special{pal.Bold}))
 	_, _ = p.Println("s3packer v", s3pack.Version)
 	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
 	_, _ = p.Println("https://github.com/orme292/s3packer\n")
 
-	profile, create, _, err := getFlags()
+	profileF, createF, _, err := getFlags()
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	if create != "" {
-		err = conf.Create(create)
+	if createF != "" {
+		err = conf.Create(createF)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Printf("An error occurred: %q\n\n", err.Error())
 			os.Exit(1)
 		} else {
 			os.Exit(0)
 		}
 	}
 
-	a, err := conf.New(profile)
+	a, err := conf.New(profileF)
 	if err != nil {
 		a.Log.Fatal(err.Error())
 	}

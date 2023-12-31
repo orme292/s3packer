@@ -7,6 +7,10 @@ import (
 	"github.com/orme292/s3packer/logbot"
 )
 
+// New will build a new AppConfig object out of the specified yaml file.
+// It creates a readConfig object and called the load() method to open, read, and unmarshal the yaml file.
+// There is also a versionOK() method that will eventually be fleshed out to make sure difference profile
+// versions are unmarshalled correctly.
 func New(file string) (a *AppConfig, err error) {
 	r := &readConfig{}
 	err = r.load(file)
@@ -22,7 +26,7 @@ func New(file string) (a *AppConfig, err error) {
 
 	a = &AppConfig{
 		Log: &logbot.LogBot{
-			Level:       logbot.WARN,
+			Level:       logbot.ERROR,
 			FlagConsole: true,
 			FlagFile:    false,
 		},
@@ -32,9 +36,9 @@ func New(file string) (a *AppConfig, err error) {
 	return a, err
 }
 
-/*
-init() sets defaults
-*/
+// init() sets the default values for the AppConfig object. It should be one of the first methods called after
+// creating a new AppConfig object, but before the readConfig object values are transferred, or before apply() is
+// called.
 func (a *AppConfig) init() {
 	a.Bucket = &Bucket{Create: false}
 	a.Objects = &Objects{Naming: NamingAbsolute}
@@ -53,9 +57,10 @@ func (a *AppConfig) init() {
 	}
 }
 
-/*
-apply() reads the values from the readConfig object into the AppConfig object.
-*/
+// apply will transfer the values from the readConfig object to the AppConfig object. It should be called after
+// init() and after the readConfig object has been loaded and validated.
+// Each struct of the AppConfig object is handled separately, and each should have its own readConfig method
+// to handle validation of the values and transfer.
 func (a *AppConfig) apply(r *readConfig) (err error) {
 	a.LogOpts, err = r.getLogging()
 	a.Log = &logbot.LogBot{
@@ -75,22 +80,18 @@ func (a *AppConfig) apply(r *readConfig) (err error) {
 	if err != nil {
 		return
 	}
-	// Done: Objects
 	a.Objects, err = r.getObjects()
 	if err != nil {
 		return
 	}
-	// Done: Options
 	a.Opts, err = r.getOpts()
 	if err != nil {
 		return
 	}
-	// Done: Tagging
 	a.Tag, err = r.getTag()
 	if err != nil {
 		return
 	}
-	// Done: Tags
 	a.Tags, err = r.getValidTags()
 	if err != nil {
 		return
