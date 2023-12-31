@@ -77,11 +77,13 @@ func (r *readConfig) getTargets() (files []string, dirs []string, err error) {
 		s, err := os.Stat(file)
 		if err != nil {
 			r.Log.Warn("%s: %q", ErrorGettingFileInfo, file)
-		} else if s.IsDir() == true {
-			dirs = append(dirs, strings.TrimRight(file, "/"))
-			r.Log.Warn("%s: %q", ErrorFileIsDirectory, file)
 		} else {
-			files = append(files, file)
+			if s.IsDir() == true {
+				dirs = append(dirs, strings.TrimRight(file, "/"))
+				r.Log.Warn("%s: %q", ErrorFileIsDirectory, file)
+			} else {
+				files = append(files, file)
+			}
 		}
 	}
 	for _, folder := range r.Uploads.Folders {
@@ -144,8 +146,8 @@ func (r *readConfig) getOpts() (opts *Opts, err error) {
 	switch strings.ToLower(strings.Trim(r.Options.Overwrite, " ")) {
 	case OverwriteAlways.String():
 		overwrite = OverwriteAlways
-	//case OverwriteChecksum.String():
-	//	overwrite = OverwriteChecksum
+	// case OverwriteChecksum.String():
+	//	 overwrite = OverwriteChecksum
 	case OverwriteNever.String():
 		overwrite = OverwriteNever
 	default:
