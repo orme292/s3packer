@@ -18,25 +18,24 @@ const (
 	AwsACLBucketOwnerFullControl = "bucket-owner-full-control"
 )
 
+// awsMatchACL will match the ACL string to the AWS ACL type. The constant values above are used to match the string.
 func awsMatchACL(acl string) (cAcl types.ObjectCannedACL, err error) {
-	switch strings.ToLower(strings.Trim(acl, " ")) {
-	case AwsACLPrivate:
-		return types.ObjectCannedACLPrivate, nil
-	case AwsACLPublicRead:
-		return types.ObjectCannedACLPublicRead, nil
-	case AwsACLPublicReadWrite:
-		return types.ObjectCannedACLPublicReadWrite, nil
-	case AwsACLAuthenticatedRead:
-		return types.ObjectCannedACLAuthenticatedRead, nil
-	case AwsACLAwsExecRead:
-		return types.ObjectCannedACLAwsExecRead, nil
-	case AwsACLBucketOwnerRead:
-		return types.ObjectCannedACLBucketOwnerRead, nil
-	case AwsACLBucketOwnerFullControl:
-		return types.ObjectCannedACLBucketOwnerFullControl, nil
-	default:
+	acl = strings.ToLower(strings.Trim(acl, " "))
+	awsCannedACLs := map[string]types.ObjectCannedACL{
+		AwsACLPrivate:                types.ObjectCannedACLPrivate,
+		AwsACLPublicRead:             types.ObjectCannedACLPublicRead,
+		AwsACLPublicReadWrite:        types.ObjectCannedACLPublicReadWrite,
+		AwsACLAuthenticatedRead:      types.ObjectCannedACLAuthenticatedRead,
+		AwsACLAwsExecRead:            types.ObjectCannedACLAwsExecRead,
+		AwsACLBucketOwnerRead:        types.ObjectCannedACLBucketOwnerRead,
+		AwsACLBucketOwnerFullControl: types.ObjectCannedACLBucketOwnerFullControl,
+	}
+
+	cAcl, ok := awsCannedACLs[acl]
+	if !ok {
 		return types.ObjectCannedACLPrivate, errors.New(fmt.Sprintf("%s %q", InvalidACL, acl))
 	}
+	return cAcl, nil
 }
 
 const (
@@ -51,27 +50,25 @@ const (
 	AwsClassDeepArchive        = "DEEP_ARCHIVE"
 )
 
+// awsMatchStorage will match the storage class string to the AWS storage class type. The constant values above are
+// used to match the string.
 func awsMatchStorage(class string) (sClass types.StorageClass, err error) {
-	switch strings.ToUpper(strings.Trim(class, " ")) {
-	case AwsClassStandard:
-		return types.StorageClassStandard, nil
-	case AwsClassReducedRedundancy:
-		return types.StorageClassReducedRedundancy, nil
-	case AwsClassGlacier:
-		return types.StorageClassGlacier, nil
-	case AwsClassStandardIA:
-		return types.StorageClassStandardIa, nil
-	case AwsClassOneZoneIA:
-		return types.StorageClassOnezoneIa, nil
-	case AwsClassIntelligentTiering:
-		return types.StorageClassIntelligentTiering, nil
-	case AwsClassGlacierIR:
-		return types.StorageClassGlacierIr, nil
-	case AwsClassDeepArchive:
-		return types.StorageClassDeepArchive, nil
-	case AwsClassSnow:
-		return types.StorageClassSnow, nil
-	default:
+	class = strings.ToUpper(strings.Trim(class, " "))
+	awsStorageClasses := map[string]types.StorageClass{
+		AwsClassStandard:           types.StorageClassStandard,
+		AwsClassReducedRedundancy:  types.StorageClassReducedRedundancy,
+		AwsClassGlacier:            types.StorageClassGlacier,
+		AwsClassStandardIA:         types.StorageClassStandardIa,
+		AwsClassOneZoneIA:          types.StorageClassOnezoneIa,
+		AwsClassIntelligentTiering: types.StorageClassIntelligentTiering,
+		AwsClassGlacierIR:          types.StorageClassGlacier,
+		AwsClassDeepArchive:        types.StorageClassDeepArchive,
+		AwsClassSnow:               types.StorageClassGlacier,
+	}
+
+	sClass, ok := awsStorageClasses[class]
+	if !ok {
 		return types.StorageClassStandard, errors.New(fmt.Sprintf("%s %q", InvalidStorageClass, class))
 	}
+	return sClass, nil
 }
