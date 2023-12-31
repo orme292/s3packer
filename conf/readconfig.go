@@ -72,7 +72,7 @@ func (r *readConfig) getBucket() (b *Bucket, err error) {
 // Directories and Folders slices are consolidated here, since they are just two different names for the same thing.
 // TODO: Check files and dirs for duplicate entries.
 // TODO: Add support for globs.
-func (r *readConfig) getTargets() (files []string, dirs []string, err error) {
+func (r *readConfig) getTargets() (files, dirs []string, err error) {
 	for _, file := range r.Uploads.Files {
 		s, err := os.Stat(file)
 		if err != nil {
