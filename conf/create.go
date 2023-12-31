@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -126,11 +127,21 @@ func Create(filename string) (err error) {
 // canCreate checks whether a file can be created. It returns true if the file does not exist, and false if it does
 // or if another error occurs. To figure it out if the program has permissions ot create the file, it attempts to
 // create the file. If creation succeeds, then the file is immediately removed.
-func canCreate(filename string) (bool, error) {
-	_, err := os.Stat(filename)
+func canCreate(f string) (bool, error) {
+	filename, err := filepath.Abs(filepath.Clean(f))
+	if err != nil {
+		return false, err
+	}
+
+	// Resolve G304: Potential file inclusion via variable
+	if strings.Contains(filename, "..") {
+		return false, fmt.Errorf("invalid filename: %s", filename)
+	}
+
+	_, err = os.Stat(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
-			file, err := os.OpenFile(filename, os.O_CREATE|os.O_EXCL, 0666)
+			file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0o640)
 			if err != nil {
 				return false, err
 			}
