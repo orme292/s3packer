@@ -11,28 +11,24 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-// Done: Option to turn off checksum tagging (big bottleneck)
-// TODO: More debug messages
-// TODO: Concurrent checksum tagging
+// Partial: Overwrite options -- only-if checksum changes (overwrite: always, on-change, never)
+// Done: Generate checksums concurrently
 // Done: Remove FileObject attribute ShouldMultiPart, not used.
-// TODO: Overwrite options -- only-if checksum changes (overwrite: always, on-change, never)
-// TODO: Upload/Ignore function return args can be removed -- they can be counted on the fly
 // Done: LogBot, support sprintf style formatting
 // Done: Config, add naming section for KeyNamingMethod, pathPrefix, etc
 // Done: Config, rename indexes from camel case to dashed "pathPrefix" to "path-prefix"
+// Done: Add option to create sample profile YAML
+// Done: Upgrade to aws SDK v2
+// TODO: Modular Provider Support (AWS, OCI, GCP, Azure, etc)
+// TODO: More debug messages
+// TODO: Concurrent checksum tagging
+// TODO: Support checksum-only overwrite mode
+// TODO: Upload/Ignore function return args can be removed -- they can be counted on the fly
 // TODO: Add some console styling, maybe a progress bar.
 // TODO: Add silent option
-// TODO: Add option to create sample profile YAML
 // TODO: Update all comments for each function/method.
-// TODO: Update CHANGELOG.md
-// TODO: Update README.md
-// TODO: Update VERSION
 // TODO: Add more readable log output, check log levels make sense
 // TODO: Consider ErrorAs implementation and hard coding error messages in Const
-// Done: Upgrade to aws SDK v2
-// TODO: GCP Support
-// TODO: Azure Support
-// TODO: OCI support
 
 /*
 getFlags uses the flag package to configure and get command line arguments. It returns:
@@ -84,7 +80,7 @@ func main() {
 		}
 	}
 
-	a, err := conf.New(profileF)
+	a, err := conf.NewAppConfig(profileF)
 	if err != nil {
 		a.Log.Fatal(err.Error())
 	}
