@@ -17,13 +17,13 @@ import (
 // Done: LogBot, support sprintf style formatting
 // Done: Config, add naming section for KeyNamingMethod, pathPrefix, etc
 // Done: Config, rename indexes from camel case to dashed "pathPrefix" to "path-prefix"
+// Done: Upload/Ignore function return args can be removed -- they can be counted on the fly
 // Done: Add option to create sample profile YAML
-// Done: Upgrade to aws SDK v2
+// Done: Upgrade to AWS SDK v2
 // TODO: Modular Provider Support (AWS, OCI, GCP, Azure, etc)
 // TODO: More debug messages
 // TODO: Concurrent checksum tagging
 // TODO: Support checksum-only overwrite mode
-// TODO: Upload/Ignore function return args can be removed -- they can be counted on the fly
 // TODO: Add some console styling, maybe a progress bar.
 // TODO: Add silent option
 // TODO: Update all comments for each function/method.
