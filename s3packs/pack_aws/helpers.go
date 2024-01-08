@@ -1,10 +1,8 @@
-// Package s3pack provides functions for uploading files to s3.
-// This file implements functions for creating a session.Session object and an s3manager.Uploader object.
-// https://github.com/orme292/s3packer is licensed under the MIT License.
-package s3pack
+package pack_aws
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -18,18 +16,18 @@ import (
 BuildUploader builds and returned a manager.Uploader object. It takes a config.Configuration object. The func creates
 a session by calling NewConfig and passes the aws config to manager.NewUploader.
 */
-func BuildUploader(a *conf.AppConfig) (uploader *manager.Uploader, err error) {
-	client, err := BuildClient(a)
+func buildUploader(ac *conf.AppConfig) (uploader *manager.Uploader, client *s3.Client, err error) {
+	client, err = buildClient(ac)
 	uploader = manager.NewUploader(client, func(u *manager.Uploader) {
-		u.MaxUploadParts = int32(a.Opts.MaxParts)
+		u.MaxUploadParts = int32(ac.Opts.MaxParts)
 	})
 	return
 }
 
-func BuildClient(a *conf.AppConfig) (client *s3.Client, err error) {
-	cfg, err := NewConfig(a)
+func buildClient(ac *conf.AppConfig) (client *s3.Client, err error) {
+	cfg, err := newConfig(ac)
 	client = s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.Region = a.Bucket.Region
+		o.Region = ac.Bucket.Region
 	})
 	return
 }
@@ -41,37 +39,56 @@ name in the profile configuration.
 
 NewConfig calls NewConfigWithProfile or NewConfigWithKeypair
 */
-func NewConfig(a *conf.AppConfig) (cfg aws.Config, err error) {
-	if a.Provider.AwsProfile != EmptyString {
-		cfg, err = NewConfigWithProfile(a)
+func newConfig(ac *conf.AppConfig) (cfg aws.Config, err error) {
+	if ac.Provider.AwsProfile != EmptyString {
+		cfg, err = newConfigWithProfile(ac)
 	} else {
-		cfg, err = NewConfigWithKeypair(a)
+		cfg, err = newConfigWithKeypair(ac)
 	}
 	if err != nil {
-		a.Log.Fatal("Unable to create build config: %q", err.Error())
+		ac.Log.Fatal("Unable to create build config: %q", err.Error())
 	}
 
 	return
 }
 
-func NewConfigWithKeypair(a *conf.AppConfig) (cfg aws.Config, err error) {
+func newConfigWithKeypair(ac *conf.AppConfig) (cfg aws.Config, err error) {
 	creds := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
-		a.Provider.Key, a.Provider.Secret, ""))
+		ac.Provider.Key, ac.Provider.Secret, ""))
 	opts := func(o *config.LoadOptions) error {
-		o.Region = a.Bucket.Region
+		o.Region = ac.Bucket.Region
 		return nil
 	}
 	cfg, err = config.LoadDefaultConfig(context.Background(), config.WithCredentialsProvider(creds), opts)
 	return
 }
 
-func NewConfigWithProfile(a *conf.AppConfig) (cfg aws.Config, err error) {
+func newConfigWithProfile(ac *conf.AppConfig) (cfg aws.Config, err error) {
 	opts := func(o *config.LoadOptions) error {
-		o.Region = a.Bucket.Region
+		o.Region = ac.Bucket.Region
 		return nil
 	}
 	cfg, err = config.LoadDefaultConfig(context.Background(),
-		config.WithSharedConfigProfile(a.Provider.AwsProfile),
+		config.WithSharedConfigProfile(ac.Provider.AwsProfile),
 		opts)
 	return
+}
+
+func s(format string, a ...any) string {
+	return fmt.Sprintf(format, a...)
+}
+
+func awsTag(tags map[string]string) string {
+	if len(tags) == 0 {
+		return EmptyString
+	}
+	var tag string
+	for k, v := range tags {
+		if tag == EmptyString {
+			tag = s("%s=%s", k, v)
+		} else {
+			tag = s("%s&%s=%s", tag, k, v)
+		}
+	}
+	return tag
 }

@@ -35,10 +35,10 @@ type readConfig struct {
 
 	// Objects contains object level configuration details, mostly related to object naming. Tagging is separate.
 	Objects struct {
-		NamePrefix          string `yaml:"NamePrefix"`
-		RootPrefix          string `yaml:"RootPrefix"`
-		Naming              string `yaml:"Naming"`
-		OmitOriginDirectory bool   `yaml:"OmitOriginDirectory"`
+		NamePrefix  string `yaml:"NamePrefix"`
+		RootPrefix  string `yaml:"RootPrefix"`
+		Naming      string `yaml:"Naming"`
+		OmitRootDir bool   `yaml:"OmitRootDir"`
 	} `yaml:"Objects"`
 
 	// Options is used to configure the application and how it operates.
@@ -97,10 +97,12 @@ type Bucket struct {
 
 // Objects contain the object naming configuration.
 type Objects struct {
-	NamePrefix          string
-	RootPrefix          string
-	Naming              Naming
-	OmitOriginDirectory bool
+	NamePrefix string
+	RootPrefix string
+	Naming     Naming
+
+	// OmitRootDir is used to remove the root directory name from the object's final FormattedKey.
+	OmitRootDir bool
 }
 
 // Opts contains application level configuration options.
@@ -110,9 +112,9 @@ type Opts struct {
 	Overwrite  Overwrite
 }
 
-// Tag contain the object tagging configuration, but only the ones handled internally by the application.
+// TagOpts contain the object tagging configuration, but only the ones handled internally by the application.
 // Custom tags are put in a separate map named "Tags" inside the AppConfig struct.
-type Tag struct {
+type TagOpts struct {
 	ChecksumSHA256       bool
 	AwsChecksumAlgorithm types.ChecksumAlgorithm
 	AwsChecksumMode      types.ChecksumMode
@@ -127,15 +129,15 @@ type LogOpts struct {
 	Filepath string
 }
 
-// AppConfig is application level struct that all profile configuration details are loaded into. Log is an instance
-// of logbot/zerolog, Files and Directories are the list of files and directories to upload.
+// AppConfig is an application level struct that all profile configuration details are loaded into.
+// Log is an instance zerolog.Logger, Files and Directories are the list of files and directories to upload.
 type AppConfig struct {
 	Provider    *Provider
 	Bucket      *Bucket
 	Objects     *Objects
 	Opts        *Opts
 	Tags        map[string]string
-	Tag         *Tag
+	Tag         *TagOpts
 	LogOpts     *LogOpts
 	Log         *logbot.LogBot
 	Files       []string

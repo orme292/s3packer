@@ -48,7 +48,7 @@ func (a *AppConfig) init() {
 		MaxParts:   1,
 		Overwrite:  OverwriteNever,
 	}
-	a.Tag = &Tag{
+	a.Tag = &TagOpts{
 		ChecksumSHA256: true,
 		Origins:        true,
 	}

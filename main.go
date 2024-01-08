@@ -7,7 +7,8 @@ import (
 
 	pal "github.com/abusomani/go-palette/palette"
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3pack"
+	"github.com/orme292/s3packer/s3packs"
+	"github.com/orme292/s3packer/s3packs/objectify"
 	flag "github.com/spf13/pflag"
 )
 
@@ -60,7 +61,7 @@ main is the entry point of the program. It does the following:
 */
 func main() {
 	p := pal.New(pal.WithBackground(pal.Color(21)), pal.WithForeground(pal.BrightWhite), pal.WithSpecialEffects([]pal.Special{pal.Bold}))
-	_, _ = p.Println("s3packer v", s3pack.Version)
+	_, _ = p.Println("s3packer v", s3packs.Version)
 	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
 	_, _ = p.Println("https://github.com/orme292/s3packer\n")
 
@@ -80,30 +81,19 @@ func main() {
 		}
 	}
 
-	a, err := conf.NewAppConfig(profileF)
+	ac, err := conf.NewAppConfig(profileF)
 	if err != nil {
-		a.Log.Fatal(err.Error())
+		ac.Log.Fatal(err.Error())
 	}
 
-	var dirFilesUploaded, filesIgnored, dirFilesIgnored, filesUploaded int
-	var dirBytes, fileBytes int64
-
-	fmt.Println("Processing objects...")
-
-	if len(a.Directories) != 0 {
-		err, dirBytes, dirFilesUploaded, dirFilesIgnored = s3pack.DirectoryUploader(a, a.Directories)
-		if err != nil {
-			a.Log.Error(err.Error())
+	stats, errs := s3packs.Do(ac)
+	if len(errs.Each) > 0 {
+		for _, err := range errs.Each {
+			ac.Log.Error(err.Error())
 		}
+		os.Exit(1)
 	}
 
-	if len(a.Files) != 0 {
-		err, fileBytes, filesUploaded, filesIgnored = s3pack.IndividualFileUploader(a, a.Files)
-		if err != nil {
-			a.Log.Error(err.Error())
-		}
-	}
-
-	fmt.Printf("s3packer Finished, Uploaded %d objects, %s, Ignored %d objects.\n", dirFilesUploaded+filesUploaded, s3pack.FileSizeString(dirBytes+fileBytes), dirFilesIgnored+filesIgnored)
+	fmt.Printf("s3packer Finished. %d Objects, Uploaded %d objects, %s, Ignored %d objects.\n", stats.Objects, stats.Uploaded, objectify.FileSizeString(stats.Bytes), stats.Ignored)
 	os.Exit(0)
 }

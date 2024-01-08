@@ -131,10 +131,10 @@ func (r *readConfig) getObjects() (o *Objects, err error) {
 		err = errors.New(InvalidNamingMethod)
 	}
 	return &Objects{
-		NamePrefix:          r.Objects.NamePrefix,
-		RootPrefix:          r.Objects.RootPrefix,
-		Naming:              method,
-		OmitOriginDirectory: r.Objects.OmitOriginDirectory,
+		NamePrefix:  strings.TrimPrefix(r.Objects.NamePrefix, "/"),
+		RootPrefix:  formatPath(r.Objects.RootPrefix),
+		Naming:      method,
+		OmitRootDir: r.Objects.OmitRootDir,
 	}, err
 }
 
@@ -189,9 +189,9 @@ func (r *readConfig) getProvider() (p *Provider, err error) {
 	return &Provider{Is: ProviderNameNone}, errors.New(ErrorProviderNotSpecified)
 }
 
-// getTag() returns a Tag struct.
-func (r *readConfig) getTag() (t *Tag, err error) {
-	return &Tag{
+// getTag() returns a TagOpts struct.
+func (r *readConfig) getTag() (t *TagOpts, err error) {
+	return &TagOpts{
 		ChecksumSHA256:       r.Tagging.ChecksumSHA256,
 		AwsChecksumAlgorithm: types.ChecksumAlgorithmSha256,
 		AwsChecksumMode:      types.ChecksumModeEnabled,
