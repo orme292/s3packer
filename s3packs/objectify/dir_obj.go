@@ -20,11 +20,12 @@ func NewDirObj(ac *conf.AppConfig, p string, rr string) (do *DirObj, err error) 
 		RelativeRoot: rr,
 		Ac:           ac,
 	}
-	files, err := getFiles(p)
+	files, err := getFiles(ac, p)
 	if err != nil {
 		return nil, err
 	}
 
+	ac.Log.Info("Processing Directory: (%d objects) %q", len(files), p)
 	do.Fol, err = NewFileObjList(ac, files, rr)
 	if err != nil {
 		return nil, err

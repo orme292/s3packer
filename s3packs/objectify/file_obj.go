@@ -1,6 +1,7 @@
 package objectify
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"reflect"
@@ -38,6 +39,11 @@ func NewFileObj(ac *conf.AppConfig, p string, rel string, grp int) (fo *FileObj,
 		return nil, err
 	}
 
+	ap, err = filepath.EvalSymlinks(ap)
+	if err != nil {
+		return nil, err
+	}
+
 	fo = &FileObj{
 		OriginPath:      p,
 		OriginDir:       filepath.Dir(ap),
@@ -54,7 +60,16 @@ func NewFileObj(ac *conf.AppConfig, p string, rel string, grp int) (fo *FileObj,
 	if err != nil {
 		fo.setIgnore(s("file access issue: %q", err))
 	}
-	if !exists {
+
+	reg, err := isRegular(fo.AbsPath)
+	if err != nil {
+		fo.setIgnore(s("file access issue: %q", err))
+	}
+	if !reg {
+		fo.setIgnore("not a regular file")
+	}
+
+	if !exists && reg {
 		fo.setIgnore("file does not exist")
 	} else {
 		fo.FileSize, err = getFileSize(fo.AbsPath)
@@ -72,7 +87,13 @@ func NewFileObj(ac *conf.AppConfig, p string, rel string, grp int) (fo *FileObj,
 		fo.FName, fo.FPseudoP = formatFullKey(ac, fo.Base, fo.OriginDir, fo.RelRoot)
 	}
 	ac.Log.Debug("Processed file: %q", fo.FKey())
-	return fo, err
+	if fo == nil {
+		return &FileObj{
+			Ignore:       true,
+			IgnoreString: "file object became nil",
+		}, errors.New("file object became nil")
+	}
+	return fo, nil
 }
 
 // setIgnore sets the Ignore field of the `FileObj` object to true.

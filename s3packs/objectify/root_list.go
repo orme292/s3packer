@@ -1,6 +1,8 @@
 package objectify
 
 import (
+	"fmt"
+
 	"github.com/orme292/s3packer/conf"
 )
 
@@ -38,6 +40,7 @@ type RootList []DirObjList
 func NewRootList(ac *conf.AppConfig, paths []string) (rl RootList, err error) {
 	rl = make(RootList, len(paths))
 	for i, p := range paths {
+		fmt.Printf("Processing Root: %q\n", p)
 		dol, err := NewDirObjList(ac, p)
 		if err != nil {
 			return nil, err

@@ -29,22 +29,39 @@ func getFileSize(ap string) (size int64, err error) {
 	return size, nil
 }
 
-func getFiles(p string) (files []string, err error) {
-	absPath, err := filepath.Abs(p)
+func getFiles(ac *conf.AppConfig, p string) (files []string, err error) {
+	ap, err := filepath.Abs(filepath.Clean(p))
 	if err != nil {
 		return nil, errors.New("Error getting absolute path: " + err.Error())
 	}
 
-	objs, err := os.ReadDir(absPath)
+	ap, err = filepath.EvalSymlinks(ap)
+	if err != nil {
+		return nil, errors.New("Error evaluating link: " + err.Error())
+	}
+
+	objs, err := os.ReadDir(ap)
 	if err != nil {
 		return nil, errors.New("Error reading directory: " + err.Error())
 	}
 	for _, file := range objs {
-		if !file.IsDir() {
-			files = append(files, fmt.Sprintf("%s/%s", absPath, file.Name()))
+		info, _ := file.Info()
+		mode := info.Mode()
+		if mode.IsRegular() && !info.IsDir() {
+			files = append(files, filepath.Join(ap, file.Name()))
+		} else if !mode.IsRegular() && !info.IsDir() {
+			ac.Log.Warn("Skipping non-regular file: %q", filepath.Join(ap, file.Name()))
 		}
 	}
 	return
+}
+
+func isRegular(ap string) (bool, error) {
+	fi, err := os.Stat(ap)
+	if err != nil {
+		return false, err
+	}
+	return fi.Mode().IsRegular(), nil
 }
 
 func getSubDirs(p string) (dirs []string, err error) {
@@ -53,12 +70,38 @@ func getSubDirs(p string) (dirs []string, err error) {
 		return nil, errors.New("Error getting absolute path: " + err.Error())
 	}
 
-	err = filepath.Walk(ap, func(path string, info os.FileInfo, err error) error {
-		if info != nil && info.IsDir() {
-			dirs = append(dirs, path)
+	ap, err = filepath.EvalSymlinks(ap)
+	if err != nil {
+		return nil, errors.New("Error evaluating link: " + err.Error())
+	}
+
+	err = filepath.WalkDir(ap, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			if d.Type()&fs.ModeSymlink != 0 {
+				path, err = os.Readlink(path)
+				if err != nil {
+					return err
+				}
+
+				rInfo, err := os.Stat(path)
+				if err != nil {
+					return err
+				}
+
+				if rInfo.IsDir() {
+					dirs = append(dirs, path)
+				}
+			} else {
+				dirs = append(dirs, path)
+			}
 		}
 		return nil
 	})
+
 	return
 }
 
@@ -85,14 +128,14 @@ func fileExists(ap string) (exists bool, err error) {
 func GetChecksumSHA256(ap string) (cs string, err error) {
 	f, err := os.Open(ap)
 	if err != nil {
+		fmt.Println("os.Open error")
 		return
 	}
-	defer func(f *os.File) {
-		err = f.Close()
-		if err != nil {
-			return
+	defer func() {
+		if closeErr := f.Close(); closeErr != nil {
+			fmt.Println("Checksum Error, closing file:", closeErr)
 		}
-	}(f)
+	}()
 
 	hash := sha256.New()
 	_, err = io.Copy(hash, f)
