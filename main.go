@@ -22,6 +22,7 @@ import (
 // Done: Add option to create sample profile YAML
 // Done: Upgrade to AWS SDK v2
 // Done: Modular Provider Support (AWS, OCI, GCP, Azure, etc)
+// TODO: Test.
 // TODO: Concurrent FileObjList creation, it's a drag.
 // TODO: Add profile support for Ignoring directories / files.
 // TODO: ^^ support blobs.
