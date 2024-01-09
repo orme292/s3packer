@@ -75,6 +75,7 @@ type Iterator interface {
 	Final() (err error)
 	Err() (err error)
 	MarkIgnore(s string)
+	MarkFailed(s string)
 }
 
 /*

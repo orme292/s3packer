@@ -121,3 +121,9 @@ func (ai *AwsIterator) MarkIgnore(s string) {
 	ai.stage.fo.IgnoreString = s
 	ai.stage.fo.Ignore = true
 }
+
+func (ai *AwsIterator) MarkFailed(s string) {
+	ai.stage.fo.IsUploaded = false
+	ai.stage.fo.IsFailed = true
+	ai.stage.fo.IsFailedString = s
+}

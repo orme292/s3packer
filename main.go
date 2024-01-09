@@ -98,6 +98,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("s3packer Finished. %d Objects, Uploaded %d objects, %s, Ignored %d objects.\n", stats.Objects, stats.Uploaded, objectify.FileSizeString(stats.Bytes), stats.Ignored)
+	fmt.Printf("s3packer Finished. %d Objects, Uploaded %d objects, %d Failed, %s, Ignored %d objects.\n", stats.Objects, stats.Uploaded, stats.Failed, objectify.FileSizeString(stats.Bytes), stats.Ignored)
+	if stats.Discrep != 0 {
+		fmt.Printf("%d objects unaccounted for. There's a discrepancy between the number of objects processed and the number of objects uploaded, failed or ignored.", stats.Discrep)
+	}
 	os.Exit(0)
 }

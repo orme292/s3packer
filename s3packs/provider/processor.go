@@ -105,7 +105,7 @@ func (p *Processor) RunIterator(fol objectify.FileObjList, grp int) (errs Errs) 
 		}
 		if err != nil {
 			p.ac.Log.Error("Error uploading %q: %q", object.Output().Key, err.Error())
-			iter.MarkIgnore(err.Error())
+			iter.MarkFailed(err.Error())
 		}
 
 		if object.After == nil {
@@ -140,6 +140,7 @@ func (p *Processor) Overwrite(object *PutObject) (exists bool, msg string) {
 func (p *Processor) populateStats() {
 	p.Stats = p.rl.GetStats()
 	p.Stats.Add(p.fol.GetStats())
+	p.Stats.Discrep = p.Stats.Objects - p.Stats.Uploaded - p.Stats.Failed - p.Stats.Ignored
 }
 
 func (p *Processor) outputIgnored() {

@@ -72,6 +72,9 @@ func (fol FileObjList) GetStats() (stats Stats) {
 			stats.Bytes += fo.FileSize
 			stats.Uploaded++
 		}
+		if fo.IsFailed {
+			stats.Failed++
+		}
 		if fo.Ignore {
 			stats.Ignored++
 		}

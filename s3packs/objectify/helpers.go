@@ -45,7 +45,11 @@ func getFiles(ac *conf.AppConfig, p string) (files []string, err error) {
 		return nil, errors.New("Error reading directory: " + err.Error())
 	}
 	for _, file := range objs {
-		info, _ := file.Info()
+		info, err := file.Info()
+		if err != nil {
+			ac.Log.Warn("Unable to stat, skipping: %q", filepath.Join(ap, file.Name()))
+			continue
+		}
 		mode := info.Mode()
 		if mode.IsRegular() && !info.IsDir() {
 			files = append(files, filepath.Join(ap, file.Name()))
