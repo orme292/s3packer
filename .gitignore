@@ -3,3 +3,4 @@ s3packer
 .idea/
 *.log
 /scripts/
+/s3pack-old/*

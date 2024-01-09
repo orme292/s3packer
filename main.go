@@ -7,32 +7,33 @@ import (
 
 	pal "github.com/abusomani/go-palette/palette"
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3pack"
+	"github.com/orme292/s3packer/s3packs"
+	"github.com/orme292/s3packer/s3packs/objectify"
 	flag "github.com/spf13/pflag"
 )
 
-// Done: Option to turn off checksum tagging (big bottleneck)
-// TODO: More debug messages
-// TODO: Concurrent checksum tagging
+// Partial: Overwrite options -- only-if checksum changes (overwrite: always, on-change, never)
+// Done: Generate checksums concurrently
 // Done: Remove FileObject attribute ShouldMultiPart, not used.
-// TODO: Overwrite options -- only-if checksum changes (overwrite: always, on-change, never)
-// TODO: Upload/Ignore function return args can be removed -- they can be counted on the fly
 // Done: LogBot, support sprintf style formatting
 // Done: Config, add naming section for KeyNamingMethod, pathPrefix, etc
 // Done: Config, rename indexes from camel case to dashed "pathPrefix" to "path-prefix"
+// Done: Upload/Ignore function return args can be removed -- they can be counted on the fly
+// Done: Add option to create sample profile YAML
+// Done: Upgrade to AWS SDK v2
+// Done: Modular Provider Support (AWS, OCI, GCP, Azure, etc)
+// TODO: Test.
+// TODO: Concurrent FileObjList creation, it's a drag.
+// TODO: Add profile support for Ignoring directories / files.
+// TODO: ^^ support blobs.
+// TODO: More debug messages
+// TODO: Concurrent checksum tagging
+// TODO: Support checksum-only overwrite mode
 // TODO: Add some console styling, maybe a progress bar.
 // TODO: Add silent option
-// TODO: Add option to create sample profile YAML
 // TODO: Update all comments for each function/method.
-// TODO: Update CHANGELOG.md
-// TODO: Update README.md
-// TODO: Update VERSION
 // TODO: Add more readable log output, check log levels make sense
 // TODO: Consider ErrorAs implementation and hard coding error messages in Const
-// Done: Upgrade to aws SDK v2
-// TODO: GCP Support
-// TODO: Azure Support
-// TODO: OCI support
 
 /*
 getFlags uses the flag package to configure and get command line arguments. It returns:
@@ -64,7 +65,7 @@ main is the entry point of the program. It does the following:
 */
 func main() {
 	p := pal.New(pal.WithBackground(pal.Color(21)), pal.WithForeground(pal.BrightWhite), pal.WithSpecialEffects([]pal.Special{pal.Bold}))
-	_, _ = p.Println("s3packer v", s3pack.Version)
+	_, _ = p.Println("s3packer v", s3packs.Version)
 	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
 	_, _ = p.Println("https://github.com/orme292/s3packer\n")
 
@@ -84,30 +85,22 @@ func main() {
 		}
 	}
 
-	a, err := conf.New(profileF)
+	ac, err := conf.NewAppConfig(profileF)
 	if err != nil {
-		a.Log.Fatal(err.Error())
+		ac.Log.Fatal(err.Error())
 	}
 
-	var dirFilesUploaded, filesIgnored, dirFilesIgnored, filesUploaded int
-	var dirBytes, fileBytes int64
-
-	fmt.Println("Processing objects...")
-
-	if len(a.Directories) != 0 {
-		err, dirBytes, dirFilesUploaded, dirFilesIgnored = s3pack.DirectoryUploader(a, a.Directories)
-		if err != nil {
-			a.Log.Error(err.Error())
+	stats, errs := s3packs.Do(ac)
+	if len(errs.Each) > 0 {
+		for _, err := range errs.Each {
+			ac.Log.Error(err.Error())
 		}
+		os.Exit(1)
 	}
 
-	if len(a.Files) != 0 {
-		err, fileBytes, filesUploaded, filesIgnored = s3pack.IndividualFileUploader(a, a.Files)
-		if err != nil {
-			a.Log.Error(err.Error())
-		}
+	fmt.Printf("s3packer Finished. %d Objects, Uploaded %d objects, %d Failed, %s, Ignored %d objects.\n", stats.Objects, stats.Uploaded, stats.Failed, objectify.FileSizeString(stats.Bytes), stats.Ignored)
+	if stats.Discrep != 0 {
+		fmt.Printf("%d objects unaccounted for. There's a discrepancy between the number of objects processed and the number of objects uploaded, failed or ignored.", stats.Discrep)
 	}
-
-	fmt.Printf("s3packer Finished, Uploaded %d objects, %s, Ignored %d objects.\n", dirFilesUploaded+filesUploaded, s3pack.FileSizeString(dirBytes+fileBytes), dirFilesIgnored+filesIgnored)
 	os.Exit(0)
 }
