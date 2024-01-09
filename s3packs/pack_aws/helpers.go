@@ -3,6 +3,8 @@ package pack_aws
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -20,6 +22,7 @@ func buildUploader(ac *conf.AppConfig) (uploader *manager.Uploader, client *s3.C
 	client, err = buildClient(ac)
 	uploader = manager.NewUploader(client, func(u *manager.Uploader) {
 		u.MaxUploadParts = int32(ac.Opts.MaxParts)
+		u.LeavePartsOnError = false
 	})
 	return
 }
@@ -91,4 +94,49 @@ func awsTag(tags map[string]string) string {
 		}
 	}
 	return tag
+}
+
+func genTempFile(ac *conf.AppConfig, p string) (temp string, err error) {
+	ac.Log.Debug("Creating Temp File...")
+	td := os.TempDir()
+	ac.Log.Debug("Using Temp Dir: " + td)
+
+	f, err := os.Open(p)
+	if err != nil {
+		ac.Log.Error(s("TMP: Unable to open file: %q", err))
+		return
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			ac.Log.Warn(s("TMP: Unable to close file: %q", err))
+		}
+	}(f)
+
+	tf, err := os.CreateTemp(td, "s3packer-")
+	if err != nil {
+		ac.Log.Error(s("TMP: Unable to create temp file: %q", err))
+		return
+	}
+
+	_, err = io.Copy(tf, f)
+	if err != nil {
+		ac.Log.Error(s("TMP: Unable to copy file: %q", err))
+		return
+	}
+
+	err = tf.Close()
+	if err != nil {
+		ac.Log.Error(s("TMP: Unable to close temp file: %q", err))
+		return
+	}
+
+	temp = tf.Name()
+	ac.Log.Info("Using Temp File: " + temp)
+
+	return
+}
+
+func destroyTempFile(tf string) (err error) {
+	return os.Remove(tf)
 }
