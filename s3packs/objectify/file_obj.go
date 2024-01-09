@@ -76,16 +76,19 @@ func NewFileObj(ac *conf.AppConfig, p, rel string, grp int) (fo *FileObj, err er
 		if err != nil {
 			fo.setIgnore(s("could not get file size: %q", err))
 		}
-		fo.ChecksumSHA256, err = GetChecksumSHA256(fo.AbsPath)
-		if err != nil {
-			fo.setIgnore(s("could not get checksum: %q", err))
+		if ac.Tag.ChecksumSHA256 {
+			fo.ChecksumSHA256, err = GetChecksumSHA256(fo.AbsPath)
+			if err != nil {
+				fo.setIgnore(s("could not get checksum: %q", err))
+			}
+			fo.addTag("ChecksumSHA256", fo.ChecksumSHA256)
 		}
 		for k, v := range ac.Tags {
 			fo.addTag(k, v)
 		}
-		fo.addTag("ChecksumSHA256", fo.ChecksumSHA256)
 		fo.FName, fo.FPseudoP = formatFullKey(ac, fo.Base, fo.OriginDir, fo.RelRoot)
 	}
+
 	ac.Log.Debug("Processed file: %q", fo.FKey())
 	if fo == nil {
 		return &FileObj{
