@@ -21,7 +21,10 @@ import (
 // Done: Upload/Ignore function return args can be removed -- they can be counted on the fly
 // Done: Add option to create sample profile YAML
 // Done: Upgrade to AWS SDK v2
-// TODO: Modular Provider Support (AWS, OCI, GCP, Azure, etc)
+// Done: Modular Provider Support (AWS, OCI, GCP, Azure, etc)
+// TODO: Concurrent FileObjList creation, it's a drag.
+// TODO: Add profile support for Ignoring directories / files.
+// TODO: ^^ support blobs.
 // TODO: More debug messages
 // TODO: Concurrent checksum tagging
 // TODO: Support checksum-only overwrite mode
