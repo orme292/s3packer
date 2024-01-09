@@ -101,15 +101,16 @@ func (op *AwsOperator) MultipartParallelize() (err error) {
 		go func(wg *sync.WaitGroup, group int) {
 			defer wg.Done()
 			for index := range op.ctl.upload {
-				if op.ctl.upload[index].group == group {
-					complete, output, oErr := op.MultipartUpload(index)
-					op.ctl.upload[index].complete = complete
-					op.ctl.upload[index].output = output
-					op.ctl.upload[index].err = oErr
-					if oErr != nil {
-						errChan <- oErr
-						op.ctl.cancel()
-					}
+				if op.ctl.upload[index].group != group {
+					continue
+				}
+				complete, output, oErr := op.MultipartUpload(index)
+				op.ctl.upload[index].complete = complete
+				op.ctl.upload[index].output = output
+				op.ctl.upload[index].err = oErr
+				if oErr != nil {
+					errChan <- oErr
+					op.ctl.cancel()
 				}
 			}
 		}(&wg, i)
