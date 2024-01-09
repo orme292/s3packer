@@ -72,7 +72,7 @@ func (p *Processor) Run() (errs Errs) {
 }
 
 func (p *Processor) RunIterator(fol objectify.FileObjList, grp int) (errs Errs) {
-	if len(fol) <= 0 {
+	if len(fol) == 0 {
 		return
 	}
 
