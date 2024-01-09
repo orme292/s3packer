@@ -8,11 +8,12 @@ bug fix, feature addition, or minor tweak.
 - s3packs: Added s3packs, which has modular support for multiple providers.
 - s3packs/objectify: added objectify, that has an object-models for directory trees
 - s3packs/objectify: a lot less code than s3pack used to be, but with a ton of for loops, which might not be a good thing...
+- s3packs/objectify: more robust and resilient file tree builder.
 - s3packs/provider: added provider, which is the start of a modular provider system.
 - s3packs/provider: add interface for creating a bucket.
 - s3packs/pack_aws: added pack_aws, which is the first provider, AWS S3.
 - s3packs/pack_aws: add support for creating a bucket.
-- s3packs/pack_aws: added support for multipart uploads with integrity checks.
+- s3packs/pack_aws: added support for multipart parallel uploads with integrity checks.
 
 ### **1.2.0** (2023-12-29)
 - config: Remove config module
