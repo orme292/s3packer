@@ -33,7 +33,7 @@ type FileObj struct {
 	ac *conf.AppConfig
 }
 
-func NewFileObj(ac *conf.AppConfig, p string, rel string, grp int) (fo *FileObj, err error) {
+func NewFileObj(ac *conf.AppConfig, p, rel string, grp int) (fo *FileObj, err error) {
 	ap, err := filepath.Abs(filepath.Clean(p))
 	if err != nil {
 		return nil, err

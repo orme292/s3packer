@@ -14,7 +14,7 @@ type DirObj struct {
 	Ac           *conf.AppConfig
 }
 
-func NewDirObj(ac *conf.AppConfig, p string, rr string) (do *DirObj, err error) {
+func NewDirObj(ac *conf.AppConfig, p, rr string) (do *DirObj, err error) {
 	do = &DirObj{
 		Path:         p,
 		RelativeRoot: rr,

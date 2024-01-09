@@ -165,7 +165,7 @@ func GetChecksumSHA256Reader(r io.Reader) (cs string, err error) {
 // `RootPrefix` defined in `AppConfig` and the formatted directory (`fPseudo`), and sanitizes it.
 // The function finally returns the sanitized `fName` and `fPseudo`, which can be used directly in
 // object storage operations.
-func formatFullKey(ac *conf.AppConfig, base string, od string, rr string) (fName string, fPseudo string) {
+func formatFullKey(ac *conf.AppConfig, base, od, rr string) (fName, fPseudo string) {
 	fName = s("%s%s", ac.Objects.NamePrefix, base)
 	fName = stripSafePath(fName)
 	if rr != EmptyString {
@@ -189,7 +189,7 @@ func formatFullKey(ac *conf.AppConfig, base string, od string, rr string) (fName
 // If `OmitRootDir` is false, the function trims the leading directory paths from the original
 // path up to the depth of the relative path and returns the resulting path. The depth is
 // determined by the count of slashes in the relative path.
-func formatPseudoPath(ac *conf.AppConfig, od string, rr string) string {
+func formatPseudoPath(ac *conf.AppConfig, od, rr string) string {
 	if ac.Objects.OmitRootDir {
 		return strings.TrimPrefix(strings.TrimPrefix(od, rr), "/")
 	} else {
