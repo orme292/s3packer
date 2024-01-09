@@ -77,8 +77,7 @@ func (op *AwsOperator) BucketExists() (exists bool, errs provider.Errs) {
 	})
 	if err != nil {
 		if errors.As(err, &s3Error) {
-			switch {
-			case errors.As(s3Error, &s3NotFound) || errors.As(s3Error, &s3NoSuchBucket):
+			if errors.As(s3Error, &s3NotFound) || errors.As(s3Error, &s3NoSuchBucket) {
 				exists = false
 				errs.Add(errors.New(s("aws says bucket %q does not exist", op.ac.Bucket.Name)))
 			}
