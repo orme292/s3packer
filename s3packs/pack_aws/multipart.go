@@ -15,29 +15,6 @@ import (
 	"github.com/orme292/s3packer/s3packs/provider"
 )
 
-type MultipartControl struct {
-	uploadId string
-	upload   map[int]*mpu
-	cmo      *s3.CreateMultipartUploadOutput
-	ctx      context.Context
-	cancel   context.CancelFunc
-	obj      *s3.PutObjectInput
-	max      int
-	retry    int
-}
-
-type mpu struct {
-	index    int
-	input    *s3.UploadPartInput
-	output   *s3.UploadPartOutput
-	cs       string
-	data     []byte
-	etag     string
-	group    int
-	err      error
-	complete bool
-}
-
 func (op *AwsOperator) SupportsMultipartUploads() bool { return true }
 
 func (op *AwsOperator) UploadMultipart(po provider.PutObject) (err error) {

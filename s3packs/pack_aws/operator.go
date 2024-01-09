@@ -5,19 +5,11 @@ import (
 	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/provider"
 )
-
-type AwsOperator struct {
-	ac     *conf.AppConfig
-	client *s3.Client
-	svc    *manager.Uploader
-	ctl    *MultipartControl
-}
 
 func NewAwsOperator(ac *conf.AppConfig) (*AwsOperator, error) {
 	svc, client, err := buildUploader(ac)
