@@ -14,7 +14,7 @@ const (
 
 	DisregardGroups = -1
 
-	MultipartThreshold = 10000000
+	MultipartThreshold = 16777216
 	ObjectExists       = "object already exists"
 )
 

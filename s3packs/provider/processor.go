@@ -68,6 +68,7 @@ func (p *Processor) Run() (errs Errs) {
 		errs.Append(iterErrs)
 	}
 	p.populateStats()
+	p.outputIgnored()
 	return errs
 }
 
@@ -104,6 +105,7 @@ func (p *Processor) RunIterator(fol objectify.FileObjList, grp int) (errs Errs) 
 		}
 		if err != nil {
 			p.ac.Log.Error("Error uploading %q: %q", object.Output().Key, err.Error())
+			iter.MarkIgnore(err.Error())
 		}
 
 		if object.After == nil {
@@ -138,6 +140,27 @@ func (p *Processor) Overwrite(object *PutObject) (exists bool, msg string) {
 func (p *Processor) populateStats() {
 	p.Stats = p.rl.GetStats()
 	p.Stats.Add(p.fol.GetStats())
+}
+
+func (p *Processor) outputIgnored() {
+	if len(p.rl) > 0 {
+		for rli := range p.rl {
+			for doli := range p.rl[rli] {
+				for foli := range p.rl[rli][doli].Fol {
+					if p.rl[rli][doli].Fol[foli].Ignore {
+						p.ac.Log.Warn("Ignored %q: %q", p.rl[rli][doli].Fol[foli].FKey(), p.rl[rli][doli].Fol[foli].IgnoreString)
+					}
+				}
+			}
+		}
+	}
+	if len(p.fol) > 0 {
+		for i := range p.fol {
+			if p.fol[i].Ignore {
+				p.ac.Log.Warn("Ignored %q: %q", p.fol[i].FKey(), p.fol[i].IgnoreString)
+			}
+		}
+	}
 }
 
 /* DEBUG */

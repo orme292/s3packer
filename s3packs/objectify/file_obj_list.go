@@ -67,9 +67,9 @@ func (fol FileObjList) MaxGroup() (max int) {
 }
 func (fol FileObjList) GetStats() (stats Stats) {
 	for _, fo := range fol {
-		stats.Bytes += fo.FileSize
 		stats.Objects++
 		if fo.IsUploaded {
+			stats.Bytes += fo.FileSize
 			stats.Uploaded++
 		}
 		if fo.Ignore {
