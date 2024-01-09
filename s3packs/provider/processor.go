@@ -7,20 +7,13 @@ import (
 	"github.com/orme292/s3packer/s3packs/objectify"
 )
 
-type Processor struct {
-	ac     *conf.AppConfig
-	ops    Operator
-	iterFn IteratorFunc
-	rl     objectify.RootList
-	fol    objectify.FileObjList
-	Stats  *objectify.Stats
-}
-
 func NewProcessor(ac *conf.AppConfig, ops Operator, iterFn IteratorFunc) (p *Processor, err error) {
 	var (
 		rl  objectify.RootList
 		fol objectify.FileObjList
 	)
+
+	fmt.Printf("Starting Processor...\n")
 	if len(ac.Directories) > 0 {
 		rl, err = objectify.NewRootList(ac, ac.Directories)
 		if err != nil {
