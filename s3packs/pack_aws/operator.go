@@ -40,10 +40,6 @@ func (op *AwsOperator) CreateBucket() (err error) {
 	return
 }
 
-func (op *AwsOperator) Get(key string) (obj *provider.GetObject, err error) {
-	return nil, errors.New(ErrorNotImplemented)
-}
-
 func (op *AwsOperator) ObjectExists(key string) (exists bool, err error) {
 	input := &s3.HeadObjectInput{
 		Bucket: aws.String(op.ac.Bucket.Name),

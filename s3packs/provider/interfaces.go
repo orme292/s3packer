@@ -12,26 +12,23 @@ are required to implement this interface:
 
 These methods are required:
 
-			CreateBucket() (err error)
-				- CreateBucket creates a new bucket at the provider.
-			Get(key string) (obj *GetObject, err error)
-				- Get returns a GetObject struct for a given key.
-	            - This method is required, but does not need to be implemented.
-			ObjectExists(key string) (exists bool, err error)
-				- ObjectExists returns true if the object exists at the provider.
-			Upload(po PutObject) (err error)
-				- Upload uploads an object to the provider.
-			UploadMultipart(po PutObject) (err error)
-				- UploadMultipart uploads an object to the provider using a multipart
-		          upload.
-				- This method is required, but does not need to be implemented. Make
-				  sure SupportsMultipartUploads returns false if this is not implemented.
-			BucketExists() (exists bool, errs Errs)
-				- BucketExists returns true if the bucket exists at the provider.
+		CreateBucket() (err error)
+			- CreateBucket creates a new bucket at the provider.
+		ObjectExists(key string) (exists bool, err error)
+			- ObjectExists returns true if the object exists at the provider.
+		Upload(po PutObject) (err error)
+			- Upload uploads an object to the provider.
+		UploadMultipart(po PutObject) (err error)
+			- UploadMultipart uploads an object to the provider using a multipart
+	          upload.
+			- This method is required, but does not need to be implemented. Make
+			  sure SupportsMultipartUploads returns false if this is not implemented.
+		BucketExists() (exists bool, errs Errs)
+			- BucketExists returns true if the bucket exists at the provider.
 
-			SupportsMultipartUploads() bool
-				- SupportsMultipartUploads returns true if the provider supports
-				  multipart uploads.
+		SupportsMultipartUploads() bool
+			- SupportsMultipartUploads returns true if the provider supports
+			  multipart uploads.
 
 These fields are required:
 
@@ -40,7 +37,6 @@ These fields are required:
 type Operator interface {
 	CreateBucket() (err error)
 
-	Get(key string) (obj *GetObject, err error)
 	Upload(po PutObject) (err error)
 	UploadMultipart(po PutObject) (err error)
 
@@ -48,12 +44,6 @@ type Operator interface {
 
 	BucketExists() (exists bool, errs Errs)
 	ObjectExists(key string) (exists bool, err error)
-}
-
-type GetObject interface {
-	Object() Object
-	Before()
-	After()
 }
 
 /*
