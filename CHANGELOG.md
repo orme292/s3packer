@@ -9,18 +9,21 @@ bug fix, feature addition, or minor tweak.
 - s3packs/objectify: added objectify, that has an object-models for directory trees
 - s3packs/objectify: a lot less code than s3pack used to be, but with a ton of for loops, which might not be a good thing...
 - s3packs/objectify: more robust and resilient file tree builder.
+- s3packs/objectify: don't automatically generate checksums, unless the option to tag them is set.
 - s3packs/provider: added provider, which is the start of a modular provider system.
 - s3packs/provider: add interface for creating a bucket.
+- s3packs/provider: stats generation and population done with provider, calculated by objectify.
 - s3packs/pack_aws: added pack_aws, which is the first provider, AWS S3.
 - s3packs/pack_aws: add support for creating a bucket.
 - s3packs/pack_aws: added support for multipart parallel uploads with integrity checks.
+- s3packs/pack_aws: lets aws automatically calculate checksums, except for multipart uploads.
 
 ### **1.2.0** (2023-12-29)
 - config: Remove config module
 - conf: Add conf module with new AppConfig model
 - conf: Profiles are not versioned, only version 2 will be supported
 - conf: Adding conf support for the checksum overwrite method and multipart upload, but neither are supported yet
-- conf: Add feature to write out a sample profile, `s3packer --create=\"file.yaml\"`
+- conf: Add feature to write out a sample profile, `s3packer --create="file.yaml"`
 - logbot: Logging now has fmt.Sprintf style formatting
 - s3pack: started using the new conf.AppConfig model, removed old config.Configuration model. Much cleaner.
 - README updated to reflect new config format and `--create` feature
