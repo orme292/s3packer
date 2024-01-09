@@ -62,6 +62,7 @@ func (ai *AwsIterator) Next() bool {
 	f, err := os.Open(ai.fol[ai.stage.index].AbsPath)
 	ai.err = err
 	ai.stage.f = f
+
 	ai.stage.fo = ai.fol[ai.stage.index]
 
 	return ai.Err() == nil
@@ -81,7 +82,6 @@ func (ai *AwsIterator) Prepare() *provider.PutObject {
 				Body:              f,
 				Bucket:            aws.String(ai.ac.Bucket.Name),
 				ChecksumAlgorithm: types.ChecksumAlgorithmSha256,
-				ChecksumSHA256:    aws.String(ai.stage.fo.ChecksumSHA256),
 				Key:               aws.String(ai.stage.fo.FKey()),
 				StorageClass:      ai.ac.Provider.AwsStorage,
 				Tagging:           aws.String(awsTag(ai.stage.fo.TagsMap)),
