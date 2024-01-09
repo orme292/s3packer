@@ -18,17 +18,28 @@ import (
 func (op *AwsOperator) SupportsMultipartUploads() bool { return true }
 
 func (op *AwsOperator) UploadMultipart(po provider.PutObject) (err error) {
+	op.ctl = &MultipartControl{
+		max:   op.ac.Opts.MaxUploads,
+		retry: 5,
+	}
 	var start int64 = 0
 	var bufferSize int64 = 10000000
 	var i int32 = 1
-	file, _ := os.Open(po.Fo().AbsPath)
+
+	op.ctl.temp, err = genTempFile(op.ac, po.Fo().AbsPath)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Open(op.ctl.temp)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
 	fi, _ := file.Stat()
 	size := fi.Size()
 
-	op.ctl = &MultipartControl{
-		max:   5,
-		retry: 5,
-	}
 	op.ctl.upload = make(map[int]*mpu)
 	op.ctl.ctx, op.ctl.cancel = context.WithCancel(context.Background())
 
@@ -53,6 +64,7 @@ func (op *AwsOperator) UploadMultipart(po provider.PutObject) (err error) {
 		op.ctl.upload[int(i)] = &mpu{}
 		bufferSize = min(size-start, bufferSize)
 		op.ctl.upload[int(i)].data = make([]byte, bufferSize)
+
 		_, _ = file.Read(op.ctl.upload[int(i)].data)
 
 		op.ctl.upload[int(i)].cs, err = objectify.GetChecksumSHA256Reader(bytes.NewReader(op.ctl.upload[int(i)].data))
@@ -83,6 +95,7 @@ func (op *AwsOperator) UploadMultipart(po provider.PutObject) (err error) {
 	if err != nil {
 		op.ac.Log.Error("Error uploading %q: %q", obj.Key, err.Error())
 	}
+
 	return op.MultipartFinalize()
 }
 
@@ -174,9 +187,20 @@ func (op *AwsOperator) MultipartFinalize() (err error) {
 			Parts: parts,
 		},
 	})
+	if err != nil {
+		_ = op.MultipartAbort()
+		return
+	}
+
+	err = destroyTempFile(op.ctl.temp)
+	if err != nil {
+		op.ac.Log.Warn("Unable to destroy temp file: %q", err.Error())
+	}
+
 	op.ac.Log.Debug("Completed Multipart Upload: %q", *op.ctl.obj.Key)
 	return
 }
+
 func (op *AwsOperator) MultipartAbort() (err error) {
 	op.ac.Log.Error("Aborting multipart upload: %q" + op.ctl.uploadId)
 	abortInput := &s3.AbortMultipartUploadInput{

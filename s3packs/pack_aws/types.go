@@ -56,6 +56,7 @@ type MultipartControl struct {
 	obj      *s3.PutObjectInput
 	max      int
 	retry    int
+	temp     string
 }
 
 type mpu struct {
