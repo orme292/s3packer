@@ -83,6 +83,9 @@ func (p *Processor) RunIterator(fol objectify.FileObjList, grp int) (errs Errs) 
 		return
 	}
 
+	if len(fol) > 0 {
+		fmt.Printf("Uploading %q...", fol[0].OriginDir)
+	}
 	if err := iter.First(); err != nil {
 		errs.Add(err)
 	}
