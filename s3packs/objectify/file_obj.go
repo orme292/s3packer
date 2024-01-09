@@ -26,6 +26,8 @@ type FileObj struct {
 	Ignore          bool
 	IgnoreString    string
 	IsDirectoryPart bool
+	IsFailed        bool
+	IsFailedString  string
 	IsUploaded      bool
 
 	Group int
@@ -105,6 +107,12 @@ func NewFileObj(ac *conf.AppConfig, p, rel string, grp int) (fo *FileObj, err er
 func (fo *FileObj) setIgnore(s string) {
 	fo.Ignore = true
 	fo.IgnoreString = s
+}
+
+func (fo *FileObj) setFailed(s string) {
+	fo.IsUploaded = false
+	fo.IsFailed = true
+	fo.IsFailedString = s
 }
 
 func (fo *FileObj) setRelRoot(p string) {
