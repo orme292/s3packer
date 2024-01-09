@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/objectify"
 )
 
@@ -16,6 +17,15 @@ const (
 	MultipartThreshold = 10000000
 	ObjectExists       = "object already exists"
 )
+
+type Processor struct {
+	ac     *conf.AppConfig
+	ops    Operator
+	iterFn IteratorFunc
+	rl     objectify.RootList
+	fol    objectify.FileObjList
+	Stats  *objectify.Stats
+}
 
 type Object struct {
 	F        os.File
