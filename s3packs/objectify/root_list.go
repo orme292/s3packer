@@ -10,9 +10,9 @@ import (
 A RootList, DirObjList, DirObj, FileObjList and FileObj are all components of a nested,
 tree-like file structure. Here's a simple representation of their relationships:
 
- RootList ........................................ -> RootList is the list of directories specified
+ RootList                                          -> RootList is the list of directories specified
  | ...............................................    in the profile.
- +-> DirObjList, DirObjList, DirObjList, ......... -> Each DirObjList is built from a directory in
+ +-> DirObjList, DirObjList, DirObjList, ......... -> Each DirObjList is built from a directory in the RootList
  | ...............................................    and contains all subdirectories, with infinite
  | ...............................................    depth. Each subdirectory is represented by a
  | ...............................................    DirObj.
@@ -23,16 +23,18 @@ tree-like file structure. Here's a simple representation of their relationships:
  | ...............................................    files in that directory. Each file is
  | ...............................................    represented by a FileObj.
  +-> FileObj, FileObj, FileObj, .................. -> Each FileObj is a single file and contains
- | ...............................................    all the information needed to upload that file.
+                                                      all the information needed to upload that file.
 
-  Echo branch of the tree has its own type and methods. Uploads are intended to happen at either
+  Each branch of the tree has its own type and methods. Uploads are intended to happen at either
   the RootList or FileObjList level. Traversing the nested references can be confusing when using
   the range keyword. See RootList.repairRedundantKeys() for an example of how to do this.
 
   An alternative way of executing a method would be to code the same method in each type and
   call it down the tree. For example, RootList.Count() calls DirObjList.Count() which calls
   DirObj.Count() which calls FileObjList.Count() which calls FileObj.Count(). The results are
-  passed back up the tree.
+  passed back up the tree. Or, maybe, the whole DirObj/DirObjList could be eliminated. Having
+  to use of "for loops" is a mess, even though the "tree" makes some sense.
+
 */
 
 type RootList []DirObjList

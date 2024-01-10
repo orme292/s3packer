@@ -1,23 +1,37 @@
-Authentication:
-  aws-profile: "default"
+Version: 2
+AWS:
+    Profile: default
+    Key: ""
+    Secret: ""
+    ACL: private
+    Storage: standard
 Bucket:
-  name: "my-bucket"
-  region: "us-east-1"
+    Create: false
+    Name: my-bucket
+    Region: us-east-1
 Options:
-  acl: "private"
-  storage: "STANDARD"
-  tagOrigins: true
-  overwrite: true
-Tags:
-  "author": "forrest"
-  "project": "jenny"
-Dirs:
-- "/Users/forrest/docs/stocks/apple"
-- "/Users/jenny/docs/lyrics"
-Files:
-- "/Users/forrest/docs/job-application-lawn-mower.pdf"
-- "/Users/forrest/docs/dr-pepper-recipe.txt"
-- "/Users/jenny/letters/from-forrest.docx"
+    MaxUploads: 10
+    Overwrite: never
+Tagging:
+    Checksum: true
+    Origins: true
+    Tags:
+        author: me
+        hostname: this host
+Objects:
+    NamePrefix: "daily-"
+    RootPrefix: "backups/"
+    Naming: relative
+    OmitRootDir: false
 Logging:
-  console: true
-  file: false
+    Level: 2
+    Console: true
+    File: true
+    Filepath: ./s3packer.log
+Uploads:
+    Files:
+        - file1.txt
+        - file2.txt
+    Directories:
+        - /home/me/dir1
+        - /home/me/dir2
