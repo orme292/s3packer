@@ -3,6 +3,10 @@ This is the Changelog. Between each version, major or minor, I'll document all c
 bug fix, feature addition, or minor tweak. 
 
 ---
+### **1.3.1** (2023-01-10)
+- replaced old example profiles with a new one that's up to date
+- s3packs/objectify: comment update
+
 ### **1.3.0** (2023-01-07)
 - s3pack: Removed s3pack
 - s3packs: Added s3packs, which has modular support for multiple providers.
