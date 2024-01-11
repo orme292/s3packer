@@ -5,11 +5,11 @@ import (
 	"github.com/orme292/s3packer/logbot"
 )
 
-// New will build a new AppConfig object out of the specified yaml file.
+// NewAppConfig will build a new AppConfig object out of the specified yaml file.
 // It creates a readConfig object and called the load() method to open, read, and unmarshal the yaml file.
 // There is also a versionOK() method that will eventually be fleshed out to make sure difference profile
 // versions are unmarshalled correctly.
-func New(file string) (a *AppConfig, err error) {
+func NewAppConfig(file string) (a *AppConfig, err error) {
 	r := &readConfig{}
 	err = r.load(file)
 	if err != nil {
@@ -48,7 +48,7 @@ func (a *AppConfig) init() {
 		MaxParts:   1,
 		Overwrite:  OverwriteNever,
 	}
-	a.Tag = &Tag{
+	a.Tag = &TagOpts{
 		ChecksumSHA256: true,
 		Origins:        true,
 	}

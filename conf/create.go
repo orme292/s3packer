@@ -21,6 +21,7 @@ type outputProfile struct {
 		Storage string `yaml:"Storage"`
 	} `yaml:"AWS"`
 	Bucket struct {
+		Create bool   `yaml:"Create"`
 		Name   string `yaml:"Name"`
 		Region string `yaml:"Region"`
 	} `yaml:"Bucket"`
@@ -37,7 +38,7 @@ type outputProfile struct {
 		NamePrefix          string `yaml:"NamePrefix"`
 		RootPrefix          string `yaml:"RootPrefix"`
 		Naming              string `yaml:"Naming"`
-		OmitOriginDirectory bool   `yaml:"OmitOriginDirectory"`
+		OmitOriginDirectory bool   `yaml:"OmitRootDir"`
 	} `yaml:"Objects"`
 	Logging struct {
 		Level    int    `yaml:"Level"`
