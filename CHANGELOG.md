@@ -3,6 +3,9 @@ This is the Changelog. Between each version, major or minor, I'll document all c
 bug fix, feature addition, or minor tweak. 
 
 ---
+### **1.3.2** (2023-01-12)
+- s3packs/objectify: removed DirObjList and DirObj. RootList is now a slice of FileObjLists.
+
 ### **1.3.1** (2023-01-10)
 - replaced old example profiles with a new one that's up to date
 - s3packs/objectify: comment update
