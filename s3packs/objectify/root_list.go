@@ -28,6 +28,9 @@ func NewRootList(ac *conf.AppConfig, paths []string) (rl RootList, err error) {
 				return nil, err
 			}
 			fol, err := NewFileObjList(ac, files, p)
+			if err != nil {
+				return nil, err
+			}
 			rl = append(rl, fol)
 		}
 	}
