@@ -206,6 +206,7 @@ func formatPseudoPath(ac *conf.AppConfig, od, rr string) string {
 // (removes any unnecessary slashes) using the path.Clean method.
 // It removes invalid characters, such as (`:`, `*`, `?`, `"`, `<`, `>`, `|`),
 // After that, any leading and trailing slashes are removed.
+// "/foo?/<bar>/" => "foo/bar"
 func stripSafePath(p string) string {
 	invalidChars := []string{":", "*", "?", "\"", "<", ">", "|"}
 	p = strings.TrimSpace(path.Clean(p))
