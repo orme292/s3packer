@@ -56,11 +56,9 @@ func (p *Processor) Run() (errs Errs) {
 	}
 
 	if len(p.rl) > 0 {
-		for rli := range p.rl {
-			for doli := range p.rl[rli] {
-				iterErrs := p.RunIterator(p.rl[rli][doli].Fol, DisregardGroups)
-				errs.Append(iterErrs)
-			}
+		for i := range p.rl {
+			iterErrs := p.RunIterator(p.rl[i], DisregardGroups)
+			errs.Append(iterErrs)
 		}
 	}
 	if len(p.fol) > 0 {
@@ -148,16 +146,15 @@ func (p *Processor) populateStats() {
 
 func (p *Processor) outputIgnored() {
 	if len(p.rl) > 0 {
-		for rli := range p.rl {
-			for doli := range p.rl[rli] {
-				for foli := range p.rl[rli][doli].Fol {
-					if p.rl[rli][doli].Fol[foli].Ignore {
-						p.ac.Log.Warn("Ignored %q: %q", p.rl[rli][doli].Fol[foli].FKey(), p.rl[rli][doli].Fol[foli].IgnoreString)
-					}
+		for i := range p.rl {
+			for file := range p.rl[i] {
+				if p.rl[i][file].Ignore {
+					p.ac.Log.Warn("Ignored %q: %q", p.rl[i][file].FKey(), p.rl[i][file].IgnoreString)
 				}
 			}
 		}
 	}
+
 	if len(p.fol) > 0 {
 		for i := range p.fol {
 			if p.fol[i].Ignore {
