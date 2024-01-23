@@ -13,7 +13,8 @@ readConfig is only used to unmarshal a YAML profile, it is not used in the appli
 */
 type readConfig struct {
 	// Version will be used for feature support
-	Version int `yaml:"Version"`
+	Version  int    `yaml:"Version"`
+	Provider string `yaml:"Provider"`
 
 	// AWS will contain only AWS specific configuration details. Other providers will have their own
 	// struct and fields.
@@ -24,6 +25,12 @@ type readConfig struct {
 		ACL     string `yaml:"ACL"`
 		Storage string `yaml:"Storage"`
 	} `yaml:"AWS"`
+
+	// OCI will contain only OCI specific configuration details. Other providers will have their own
+	OCI struct {
+		Profile     string `yaml:"Profile"`
+		Compartment string `yaml:"Compartment"`
+	}
 
 	// Bucket should be universal across all providers, though there may be different fields depending on the
 	// provider.
@@ -80,12 +87,14 @@ type readConfig struct {
 // Provider level configuration fields are prefaced with the provider name, e.g. AwsProfile, AwsACL, etc, whereas
 // Key and Secret may be used by multiple providers.
 type Provider struct {
-	Is         ProviderName
-	AwsProfile string
-	AwsACL     types.ObjectCannedACL
-	AwsStorage types.StorageClass
-	Key        string
-	Secret     string
+	Is             ProviderName
+	AwsProfile     string
+	AwsACL         types.ObjectCannedACL
+	AwsStorage     types.StorageClass
+	OciProfile     string
+	OciCompartment string
+	Key            string
+	Secret         string
 }
 
 // Bucket contains all details related to the bucket, for any provider. Create is not implemented.
@@ -193,7 +202,8 @@ func S(format string, a ...any) string {
 }
 
 const (
-	Empty = ""
+	Empty             = ""
+	OciDefaultProfile = "DEFAULT"
 )
 
 // Errors
@@ -210,6 +220,7 @@ const (
 	ErrorReadingYaml                 = "error reading yaml"
 	ErrorAWSProfileAndKeys           = "both aws profile and keys are specified, use profile or keys"
 	ErrorAWSKeyOrSecretNotSpecified  = "profile should specified both key and secret"
+	ErrorOCICompartmentNotSpecified  = "oracle cloud compartment not specified"
 	ErrorLoggingFilepathNotSpecified = "path to log file not specified"
 	ErrorLoggingFilepath             = "error determining log file path"
 	ErrorGettingFileInfo             = "error getting file info"

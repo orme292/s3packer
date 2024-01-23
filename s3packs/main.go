@@ -31,6 +31,12 @@ func getProvider(ac *conf.AppConfig) (ops provider.Operator, fn provider.Iterato
 			return nil, nil, err
 		}
 		return ops, pack_aws.AwsIteratorFunc, nil
+	//case conf.ProviderNameOCI:
+	//	ops, err = pack_oci.NewOracleOperator(ac)
+	//	if err != nil {
+	//		return nil, nil, err
+	//	}
+	//	return ops, pack_oci.OracleIteratorFunc, nil
 	default:
 		return nil, nil, errors.New("unknown provider")
 	}

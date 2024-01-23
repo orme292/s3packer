@@ -164,7 +164,9 @@ func (r *readConfig) getOpts() (opts *Opts, err error) {
 // getProvider() returns a Provider struct. If the provider is not specified, then an error is returned.
 // There is only support for a single provider right now, so there's no real complexity here.
 func (r *readConfig) getProvider() (p *Provider, err error) {
-	if r.AWS.Profile != Empty || r.AWS.Key != Empty || r.AWS.Secret != Empty {
+	pn := whichProvider(r.Provider)
+	switch pn {
+	case ProviderNameAWS:
 		err = r.validateProviderAWS()
 		if err != nil {
 			return nil, err
@@ -185,8 +187,19 @@ func (r *readConfig) getProvider() (p *Provider, err error) {
 			Key:        r.AWS.Key,
 			Secret:     r.AWS.Secret,
 		}, nil
+	case ProviderNameOCI:
+		err = r.validateProviderOCI()
+		if err != nil {
+			return nil, err
+		}
+		return &Provider{
+			Is:             ProviderNameOCI,
+			OciProfile:     r.OCI.Profile,
+			OciCompartment: r.OCI.Compartment,
+		}, nil
+	default:
+		return &Provider{Is: ProviderNameNone}, errors.New(ErrorProviderNotSpecified)
 	}
-	return &Provider{Is: ProviderNameNone}, errors.New(ErrorProviderNotSpecified)
 }
 
 // getTag() returns a TagOpts struct.
@@ -257,4 +270,14 @@ func (r *readConfig) validateProviderAWS() (err error) {
 		err = errors.New(ErrorAWSKeyOrSecretNotSpecified)
 	}
 	return
+}
+
+func (r *readConfig) validateProviderOCI() (err error) {
+	if r.OCI.Profile == Empty {
+		r.OCI.Profile = OciDefaultProfile
+	}
+	if r.OCI.Compartment == Empty {
+		return errors.New(ErrorOCICompartmentNotSpecified)
+	}
+	return nil
 }
