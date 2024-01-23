@@ -30,7 +30,7 @@ type readConfig struct {
 	OCI struct {
 		Profile     string `yaml:"Profile"`
 		Compartment string `yaml:"Compartment"`
-	}
+	} `yaml:"OCI"`
 
 	// Bucket should be universal across all providers, though there may be different fields depending on the
 	// provider.

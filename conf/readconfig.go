@@ -17,7 +17,6 @@ import (
 // version, and the files and directories. The rest of the fields are left as they are until each individual
 // method is called.
 func (r *readConfig) load(file string) (err error) {
-	r.Version = 2
 	r.Logging.Console = true
 	r.Logging.File = false
 	r.Logging.Level = int(logbot.WARN)
@@ -254,7 +253,7 @@ func (r *readConfig) validateLogging() (err error) {
 // versionOK() checks that the profile is at version 2, otherwise an error is returned. If there are future versions
 // of the profile, then this method will be fleshed out. For now, there's only the un-versioned profile and version 2.
 func (r *readConfig) versionOK() (v int, err error) {
-	if r.Version != 2 {
+	if r.Version != 3 {
 		return r.Version, errors.New(ErrorUnsupportedProfileVersion)
 	}
 	return r.Version, nil

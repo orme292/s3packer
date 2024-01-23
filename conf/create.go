@@ -12,14 +12,19 @@ import (
 // outputProfile is used to write out a sample configuration profile. It is based on readConfig, but only includes
 // necessary fields. This prevents any hidden or unsupported fields from being revealed.
 type outputProfile struct {
-	Version int `yaml:"Version"`
-	AWS     struct {
+	Version  int    `yaml:"Version"`
+	Provider string `yaml:"Provider"`
+	AWS      struct {
 		Profile string `yaml:"Profile"`
 		Key     string `yaml:"Key"`
 		Secret  string `yaml:"Secret"`
 		ACL     string `yaml:"ACL"`
 		Storage string `yaml:"Storage"`
 	} `yaml:"AWS"`
+	OCI struct {
+		Profile     string `yaml:"Profile"`
+		Compartment string `yaml:"Compartment"`
+	} `yaml:"OCI"`
 	Bucket struct {
 		Create bool   `yaml:"Create"`
 		Name   string `yaml:"Name"`
@@ -56,12 +61,15 @@ type outputProfile struct {
 // The structure is built using a new struct, outputProfile, that is based on readConfig
 func Create(filename string) (err error) {
 	r := outputProfile{}
-	r.Version = 2
+	r.Version = 3
+	r.Provider = "aws|oci"
 	r.AWS.Profile = "default"
 	r.AWS.Key = ""
 	r.AWS.Secret = ""
 	r.AWS.ACL = "private"
 	r.AWS.Storage = "standard"
+	r.OCI.Profile = OciDefaultProfile
+	r.OCI.Compartment = "ocid1.compartment.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
 	r.Bucket.Name = "my-bucket"
 	r.Bucket.Region = "us-east-1"
 	r.Options.MaxUploads = 10
