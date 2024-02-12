@@ -6,6 +6,7 @@ import (
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/objectify"
 	"github.com/orme292/s3packer/s3packs/pack_aws"
+	"github.com/orme292/s3packer/s3packs/pack_oci"
 	"github.com/orme292/s3packer/s3packs/provider"
 )
 
@@ -31,12 +32,12 @@ func getProvider(ac *conf.AppConfig) (ops provider.Operator, fn provider.Iterato
 			return nil, nil, err
 		}
 		return ops, pack_aws.AwsIteratorFunc, nil
-	//case conf.ProviderNameOCI:
-	//	ops, err = pack_oci.NewOracleOperator(ac)
-	//	if err != nil {
-	//		return nil, nil, err
-	//	}
-	//	return ops, pack_oci.OracleIteratorFunc, nil
+	case conf.ProviderNameOCI:
+		ops, err = pack_oci.NewOracleOperator(ac)
+		if err != nil {
+			return nil, nil, err
+		}
+		return ops, pack_oci.OracleIteratorFunc, nil
 	default:
 		return nil, nil, errors.New("unknown provider")
 	}

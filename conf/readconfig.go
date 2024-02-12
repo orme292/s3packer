@@ -207,19 +207,14 @@ func (rc *readConfig) buildProviderAWS() (p *Provider) {
 }
 
 func (rc *readConfig) buildProviderOCI() (p *Provider) {
+	if strings.TrimSpace(strings.ToUpper(rc.OCI.Profile)) == OciDefaultProfile {
+		rc.OCI.Profile = OciDefaultProfile
+	}
 	return &Provider{
 		Is: ProviderNameOCI,
 		OCI: &ProviderOCI{
-			Profile:     rc.OCI.Profile,
+			Profile:     strings.TrimSpace(rc.OCI.Profile),
 			Compartment: rc.OCI.Compartment,
-			Builder: &ProviderOCIBuilder{
-				Tenancy:     rc.OCI.AuthTenancy,
-				User:        rc.OCI.AuthUser,
-				PrivateKey:  rc.OCI.AuthPrivateKey,
-				Passphrase:  rc.OCI.AuthPassphrase,
-				Fingerprint: rc.OCI.AuthFingerprint,
-				Region:      rc.OCI.AuthRegion,
-			},
 		},
 	}
 }

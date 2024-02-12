@@ -45,12 +45,8 @@ func (rc *readConfig) validateProviderAWS() (err error) {
 
 func (rc *readConfig) validateProviderOCI() (err error) {
 	if rc.OCI.Profile == Empty && rc.OCI.Compartment == Empty {
-		if rc.OCI.AuthPassphrase == Empty || rc.OCI.AuthTenancy == Empty || rc.OCI.AuthUser == Empty ||
-			rc.OCI.AuthRegion == Empty || rc.OCI.AuthFingerprint == Empty || rc.OCI.AuthPrivateKey == Empty {
-			return errors.New(ErrorOCIAuthNotSpecified)
-		}
+		return errors.New(ErrorOCIAuthNotSpecified)
 	}
-
 	return nil
 }
 

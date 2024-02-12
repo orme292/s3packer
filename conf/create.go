@@ -22,12 +22,6 @@ func Create(filename string) (err error) {
 	r.AWS.Storage = "standard"
 	r.OCI.Profile = OciDefaultProfile
 	r.OCI.Compartment = "ocid1.compartment.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
-	r.OCI.AuthTenancy = "ocid1.tenancy.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
-	r.OCI.AuthUser = "ocid1.user.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
-	r.OCI.AuthPrivateKey = "/home/me/.oci/oci_api_key.pem"
-	r.OCI.AuthPassphrase = "my passphrase"
-	r.OCI.AuthFingerprint = "12:34:56:78:90:ab:cd:ef:12:34:56:78:90:ab:cd:ef"
-	r.OCI.AuthRegion = "us-ashburn-1"
 	r.Bucket.Name = "my-bucket"
 	r.Bucket.Region = "us-east-1"
 	r.Options.MaxUploads = 10

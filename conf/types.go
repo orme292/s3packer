@@ -23,14 +23,8 @@ type createProfile struct {
 		Storage string `yaml:"Storage"`
 	} `yaml:"AWS"`
 	OCI struct {
-		Profile         string `yaml:"Profile"`
-		Compartment     string `yaml:"Compartment"`
-		AuthTenancy     string `yaml:"AuthTenancy"`
-		AuthUser        string `yaml:"AuthUser"`
-		AuthRegion      string `yaml:"AuthRegion"`
-		AuthFingerprint string `yaml:"AuthFingerprint"`
-		AuthPrivateKey  string `yaml:"AuthPrivateKey"`
-		AuthPassphrase  string `yaml:"AuthPassphrase"`
+		Profile     string `yaml:"Profile"`
+		Compartment string `yaml:"Compartment"`
 	} `yaml:"OCI"`
 	Bucket struct {
 		Create bool   `yaml:"Create"`
@@ -84,14 +78,8 @@ type readConfig struct {
 
 	// OCI will contain only OCI specific configuration details. Other providers will have their own
 	OCI struct {
-		Profile         string `yaml:"Profile"`
-		Compartment     string `yaml:"Compartment"`
-		AuthTenancy     string `yaml:"AuthTenancy"`
-		AuthUser        string `yaml:"AuthUser"`
-		AuthRegion      string `yaml:"AuthRegion"`
-		AuthFingerprint string `yaml:"AuthFingerprint"`
-		AuthPrivateKey  string `yaml:"AuthPrivateKey"`
-		AuthPassphrase  string `yaml:"AuthPassphrase"`
+		Profile     string `yaml:"Profile"`
+		Compartment string `yaml:"Compartment"`
 	} `yaml:"OCI"`
 
 	// Bucket should be universal across all providers, though there may be different fields depending on the
@@ -183,30 +171,6 @@ type ProviderAWS struct {
 type ProviderOCI struct {
 	Profile     string
 	Compartment string
-	Builder     *ProviderOCIBuilder
-}
-
-// ProviderOCIBuilder is a struct that holds the required attributes
-// for building an OCI provider. These attributes include the tenancy,
-// user, region, fingerprint, private key, and passphrase.
-//
-// Example usage:
-//
-//	ociBuilder := &ProviderOCIBuilder{
-//	  Tenancy:     "my-tenancy",
-//	  User:        "my-user",
-//	  PrivateKey:  "my-private-key",
-//	  Passphrase:  "my-passphrase",
-//	  Fingerprint: "my-fingerprint",
-//	  Region:      "my-region",
-//	}
-type ProviderOCIBuilder struct {
-	Tenancy     string
-	User        string
-	Region      string
-	Fingerprint string
-	PrivateKey  string
-	Passphrase  string
 }
 
 // Bucket contains all details related to the bucket, for any provider. Create is not implemented.
