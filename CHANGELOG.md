@@ -3,6 +3,10 @@ This is the Changelog. Between each version, major or minor, I'll document all c
 bug fix, feature addition, or minor tweak. 
 
 ---
+### **1.3.3** (2023-02-12)
+- s3packs/conf: Added support for the OCI provider
+- s3packs/pack_oci: initial support for OCI Object Storage (Oracle Cloud)
+
 ### **1.3.2** (2023-01-12)
 - s3packs/objectify: removed DirObjList and DirObj. RootList is now a slice of FileObjLists.
 
