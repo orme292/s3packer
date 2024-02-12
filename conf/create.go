@@ -9,58 +9,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// outputProfile is used to write out a sample configuration profile. It is based on readConfig, but only includes
-// necessary fields. This prevents any hidden or unsupported fields from being revealed.
-type outputProfile struct {
-	Version  int    `yaml:"Version"`
-	Provider string `yaml:"Provider"`
-	AWS      struct {
-		Profile string `yaml:"Profile"`
-		Key     string `yaml:"Key"`
-		Secret  string `yaml:"Secret"`
-		ACL     string `yaml:"ACL"`
-		Storage string `yaml:"Storage"`
-	} `yaml:"AWS"`
-	OCI struct {
-		Profile     string `yaml:"Profile"`
-		Compartment string `yaml:"Compartment"`
-	} `yaml:"OCI"`
-	Bucket struct {
-		Create bool   `yaml:"Create"`
-		Name   string `yaml:"Name"`
-		Region string `yaml:"Region"`
-	} `yaml:"Bucket"`
-	Options struct {
-		MaxUploads int    `yaml:"MaxUploads"`
-		Overwrite  string `yaml:"Overwrite"`
-	} `yaml:"Options"`
-	Tagging struct {
-		ChecksumSHA256 bool              `yaml:"Checksum"`
-		Origins        bool              `yaml:"Origins"`
-		Tags           map[string]string `yaml:"Tags"`
-	} `yaml:"Tagging"`
-	Objects struct {
-		NamePrefix          string `yaml:"NamePrefix"`
-		RootPrefix          string `yaml:"RootPrefix"`
-		Naming              string `yaml:"Naming"`
-		OmitOriginDirectory bool   `yaml:"OmitRootDir"`
-	} `yaml:"Objects"`
-	Logging struct {
-		Level    int    `yaml:"Level"`
-		Console  bool   `yaml:"Console"`
-		File     bool   `yaml:"File"`
-		Filepath string `yaml:"Filepath"`
-	} `yaml:"Logging"`
-	Uploads struct {
-		Files       []string `yaml:"Files"`
-		Directories []string `yaml:"Directories"`
-	} `yaml:"Uploads"`
-}
-
 // Create takes a filename as a string, and writes out a sample configuration profile. The file must not exist.
-// The structure is built using a new struct, outputProfile, that is based on readConfig
+// The structure is built using a new struct, createProfile, that is based on readConfig
 func Create(filename string) (err error) {
-	r := outputProfile{}
+	r := createProfile{}
 	r.Version = 3
 	r.Provider = "aws|oci"
 	r.AWS.Profile = "default"
@@ -70,6 +22,12 @@ func Create(filename string) (err error) {
 	r.AWS.Storage = "standard"
 	r.OCI.Profile = OciDefaultProfile
 	r.OCI.Compartment = "ocid1.compartment.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
+	r.OCI.AuthTenancy = "ocid1.tenancy.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
+	r.OCI.AuthUser = "ocid1.user.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
+	r.OCI.AuthPrivateKey = "/home/me/.oci/oci_api_key.pem"
+	r.OCI.AuthPassphrase = "my passphrase"
+	r.OCI.AuthFingerprint = "12:34:56:78:90:ab:cd:ef:12:34:56:78:90:ab:cd:ef"
+	r.OCI.AuthRegion = "us-ashburn-1"
 	r.Bucket.Name = "my-bucket"
 	r.Bucket.Region = "us-east-1"
 	r.Options.MaxUploads = 10

@@ -9,6 +9,62 @@ import (
 )
 
 /*
+createProfile is used to write out a sample configuration profile.
+It is based on readConfig and will only include required fields rather than hidden, optional, or unsupported fields.
+*/
+type createProfile struct {
+	Version  int    `yaml:"Version"`
+	Provider string `yaml:"Provider"`
+	AWS      struct {
+		Profile string `yaml:"Profile"`
+		Key     string `yaml:"Key"`
+		Secret  string `yaml:"Secret"`
+		ACL     string `yaml:"ACL"`
+		Storage string `yaml:"Storage"`
+	} `yaml:"AWS"`
+	OCI struct {
+		Profile         string `yaml:"Profile"`
+		Compartment     string `yaml:"Compartment"`
+		AuthTenancy     string `yaml:"AuthTenancy"`
+		AuthUser        string `yaml:"AuthUser"`
+		AuthRegion      string `yaml:"AuthRegion"`
+		AuthFingerprint string `yaml:"AuthFingerprint"`
+		AuthPrivateKey  string `yaml:"AuthPrivateKey"`
+		AuthPassphrase  string `yaml:"AuthPassphrase"`
+	} `yaml:"OCI"`
+	Bucket struct {
+		Create bool   `yaml:"Create"`
+		Name   string `yaml:"Name"`
+		Region string `yaml:"Region"`
+	} `yaml:"Bucket"`
+	Options struct {
+		MaxUploads int    `yaml:"MaxUploads"`
+		Overwrite  string `yaml:"Overwrite"`
+	} `yaml:"Options"`
+	Tagging struct {
+		ChecksumSHA256 bool              `yaml:"Checksum"`
+		Origins        bool              `yaml:"Origins"`
+		Tags           map[string]string `yaml:"Tags"`
+	} `yaml:"Tagging"`
+	Objects struct {
+		NamePrefix          string `yaml:"NamePrefix"`
+		RootPrefix          string `yaml:"RootPrefix"`
+		Naming              string `yaml:"Naming"`
+		OmitOriginDirectory bool   `yaml:"OmitRootDir"`
+	} `yaml:"Objects"`
+	Logging struct {
+		Level    int    `yaml:"Level"`
+		Console  bool   `yaml:"Console"`
+		File     bool   `yaml:"File"`
+		Filepath string `yaml:"Filepath"`
+	} `yaml:"Logging"`
+	Uploads struct {
+		Files       []string `yaml:"Files"`
+		Directories []string `yaml:"Directories"`
+	} `yaml:"Uploads"`
+}
+
+/*
 readConfig is only used to unmarshal a YAML profile, it is not used in the application.
 */
 type readConfig struct {
@@ -28,8 +84,14 @@ type readConfig struct {
 
 	// OCI will contain only OCI specific configuration details. Other providers will have their own
 	OCI struct {
-		Profile     string `yaml:"Profile"`
-		Compartment string `yaml:"Compartment"`
+		Profile         string `yaml:"Profile"`
+		Compartment     string `yaml:"Compartment"`
+		AuthTenancy     string `yaml:"AuthTenancy"`
+		AuthUser        string `yaml:"AuthUser"`
+		AuthRegion      string `yaml:"AuthRegion"`
+		AuthFingerprint string `yaml:"AuthFingerprint"`
+		AuthPrivateKey  string `yaml:"AuthPrivateKey"`
+		AuthPassphrase  string `yaml:"AuthPassphrase"`
 	} `yaml:"OCI"`
 
 	// Bucket should be universal across all providers, though there may be different fields depending on the
@@ -40,7 +102,8 @@ type readConfig struct {
 		Region string `yaml:"Region"`
 	} `yaml:"Bucket"`
 
-	// Objects contains object level configuration details, mostly related to object naming. Tagging is separate.
+	// The Objects struct contains object level configuration details, mostly related to object naming
+	// Note: Object tags will be handled in the Tagging struct
 	Objects struct {
 		NamePrefix  string `yaml:"NamePrefix"`
 		RootPrefix  string `yaml:"RootPrefix"`
@@ -48,7 +111,7 @@ type readConfig struct {
 		OmitRootDir bool   `yaml:"OmitRootDir"`
 	} `yaml:"Objects"`
 
-	// Options is used to configure the application and how it operates.
+	// The Options struct is used to configure the application and how it operates.
 	Options struct {
 		MaxParts   int    `yaml:"MaxParts"`
 		MaxUploads int    `yaml:"MaxUploads"`
@@ -62,14 +125,15 @@ type readConfig struct {
 		Tags           map[string]string `yaml:"Tags"`
 	} `yaml:"Tagging"`
 
-	// Uploads contains the list of files, folders, and directories to upload.
+	// The Uploads struct contains the list of files, folders, and directories to upload.
+	// Folders and Directories will be merged.
 	Uploads struct {
 		Files       []string `yaml:"Files"`
 		Folders     []string `yaml:"Folders"`
 		Directories []string `yaml:"Directories"`
 	} `yaml:"Uploads"`
 
-	// Logging is used to configure the logging output, which is handled by logbot/zerolog.
+	// Logging is used to configure the logging output, which is handled by the 'logbot' package.
 	Logging struct {
 		Level    int    `yaml:"Level"`
 		Console  bool   `yaml:"Console"`
@@ -81,20 +145,68 @@ type readConfig struct {
 	Log *logbot.LogBot
 }
 
-// Provider contains all details related to the provider, for any provider.
-// Provider.Is can be used to determine which provider is specified in the loaded profile. The ProviderName type
-// is a string enum of the supported providers.
-// Provider level configuration fields are prefaced with the provider name, e.g. AwsProfile, AwsACL, etc, whereas
-// Key and Secret may be used by multiple providers.
+// Provider represents the configuration for a provider.
+//
+// Fields:
+// - Is (ProviderName): The name of the provider. (e.g., "AWS", "OCI")
+// - AWS (*ProviderAWS): The configuration for AWS.
+// - OCI (*ProviderOCI): The configuration for OCI.
+// - Key (string): The provider key.
+// - Secret (string): The provider secret.
+//
+// Usage examples can be found in the surrounding code.
 type Provider struct {
-	Is             ProviderName
-	AwsProfile     string
-	AwsACL         types.ObjectCannedACL
-	AwsStorage     types.StorageClass
-	OciProfile     string
-	OciCompartment string
-	Key            string
-	Secret         string
+	Is     ProviderName
+	AWS    *ProviderAWS
+	OCI    *ProviderOCI
+	Key    string
+	Secret string
+}
+
+// ProviderAWS represents the AWS provider configuration.
+//
+// Fields:
+// - Profile: The profile name used for authentication.
+// - ACL: The access control list for the storage objects.
+// - Storage: The storage class for the objects.
+// - Key: The AWS access key ID.
+// - Secret: The AWS secret access key.
+type ProviderAWS struct {
+	Profile string
+	ACL     types.ObjectCannedACL
+	Storage types.StorageClass
+	Key     string
+	Secret  string
+}
+
+// ProviderOCI represents the OCI provider configuration.
+type ProviderOCI struct {
+	Profile     string
+	Compartment string
+	Builder     *ProviderOCIBuilder
+}
+
+// ProviderOCIBuilder is a struct that holds the required attributes
+// for building an OCI provider. These attributes include the tenancy,
+// user, region, fingerprint, private key, and passphrase.
+//
+// Example usage:
+//
+//	ociBuilder := &ProviderOCIBuilder{
+//	  Tenancy:     "my-tenancy",
+//	  User:        "my-user",
+//	  PrivateKey:  "my-private-key",
+//	  Passphrase:  "my-passphrase",
+//	  Fingerprint: "my-fingerprint",
+//	  Region:      "my-region",
+//	}
+type ProviderOCIBuilder struct {
+	Tenancy     string
+	User        string
+	Region      string
+	Fingerprint string
+	PrivateKey  string
+	Passphrase  string
 }
 
 // Bucket contains all details related to the bucket, for any provider. Create is not implemented.
@@ -130,7 +242,7 @@ type TagOpts struct {
 	Origins              bool
 }
 
-// LogOpts contains the logging configuration, but not an instance of logbot/zerolog.
+// LogOpts contains the logging configuration, but not an instance of logbot.
 type LogOpts struct {
 	Level    zerolog.Level
 	Console  bool
@@ -139,7 +251,8 @@ type LogOpts struct {
 }
 
 // AppConfig is an application level struct that all profile configuration details are loaded into.
-// Log is an instance zerolog.Logger, Files and Directories are the list of files and directories to upload.
+// Log is an instance zerolog.Logger, which is built in logbot.
+// The Files and Directories structs are the list of files and directories to upload.
 type AppConfig struct {
 	Provider    *Provider
 	Bucket      *Bucket
@@ -184,7 +297,6 @@ func (o Overwrite) String() string {
 }
 
 // Naming type is a string enum of the supported object naming methods.
-// Naming.String() will return the string representation of the enum of convenience, either in output or logging.
 type Naming string
 
 const (
@@ -192,18 +304,19 @@ const (
 	NamingAbsolute Naming = "absolute"
 )
 
+// String returns the string representation of the Naming object.
+// It converts the Naming object to a string by using the underlying string value.
 func (n Naming) String() string {
 	return string(n)
 }
 
-// S is a shortcut for fmt.Sprintf. Really the only purpose is to reduce the number of times that is called.
+// S is a shortcut for fmt.Sprintf. The only real purpose is to reduce clutter and line lengths.
 func S(format string, a ...any) string {
 	return fmt.Sprintf(format, a...)
 }
 
 const (
-	Empty             = ""
-	OciDefaultProfile = "DEFAULT"
+	Empty = ""
 )
 
 // Errors
@@ -215,19 +328,19 @@ const (
 	InvalidOverwriteMethod = "invalid overwrite method"
 	InvalidTagChars        = "invalid characters removed from tag"
 
-	ErrorProfilePath                 = "error determining profile path"
-	ErrorOpeningProfile              = "error opening profile"
-	ErrorReadingYaml                 = "error reading yaml"
-	ErrorAWSProfileAndKeys           = "both aws profile and keys are specified, use profile or keys"
-	ErrorAWSKeyOrSecretNotSpecified  = "profile should specified both key and secret"
-	ErrorOCICompartmentNotSpecified  = "oracle cloud compartment not specified"
+	ErrorProfilePath    = "error determining profile path"
+	ErrorOpeningProfile = "error opening profile"
+	ErrorReadingYaml    = "error reading yaml"
+
 	ErrorLoggingFilepathNotSpecified = "path to log file not specified"
 	ErrorLoggingFilepath             = "error determining log file path"
+	ErrorLoggingLevelTooHigh         = "logging level too high, setting to 5"
+	ErrorLoggingLevelTooLow          = "logging level too low, setting to 0"
 	ErrorGettingFileInfo             = "error getting file info"
-	ErrorFileIsDirectory             = "listed file is directory"
+	ErrorFileIsDirectory             = "listed file is a directory"
 	ErrorNoFilesSpecified            = "no files, folders, directories specified"
 	ErrorNoReadableFiles             = "no readable files or directories specified"
-	ErrorUnsupportedProfileVersion   = "profile version 2 required"
+	ErrorUnsupportedProfileVersion   = "profile version not supported"
 	ErrorProviderNotSpecified        = "provider not specified"
 	ErrorBucketNotSpecified          = "bucket or region not specified"
 )

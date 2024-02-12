@@ -26,7 +26,7 @@ func NewAwsOperator(ac *conf.AppConfig) (*AwsOperator, error) {
 func (op *AwsOperator) CreateBucket() (err error) {
 	input := &s3.CreateBucketInput{
 		Bucket: aws.String(op.ac.Bucket.Name),
-		ACL:    types.BucketCannedACL(op.ac.Provider.AwsACL),
+		ACL:    types.BucketCannedACL(op.ac.Provider.AWS.ACL),
 		CreateBucketConfiguration: &types.CreateBucketConfiguration{
 			LocationConstraint: types.BucketLocationConstraint(op.ac.Bucket.Region),
 		},

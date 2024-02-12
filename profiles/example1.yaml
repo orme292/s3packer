@@ -1,10 +1,14 @@
-Version: 2
+Version: 3
+Provider: aws|oci
 AWS:
     Profile: default
     Key: ""
     Secret: ""
     ACL: private
     Storage: standard
+OCI:
+    Profile: DEFAULT
+    Compartment: ocid1.compartment.oc1..abcdefghi0jklmn1op2qr3stuvwxyz...................
 Bucket:
     Create: false
     Name: my-bucket
@@ -16,18 +20,18 @@ Tagging:
     Checksum: true
     Origins: true
     Tags:
-        owner: dave
-        hostname: my macbook pro
+        author: me
+        hostname: this host
 Objects:
     NamePrefix: ""
-    RootPrefix: "/backups/2023/"
+    RootPrefix: ""
     Naming: absolute
     OmitRootDir: false
 Logging:
     Level: 2
     Console: true
-    File: true
-    Filepath: "./s3packer.log"
+    File: false
+    Filepath: ""
 Uploads:
     Files:
         - file1.txt

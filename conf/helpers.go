@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"regexp"
 	"strings"
 )
 
@@ -9,6 +10,11 @@ func formatPath(p string) string {
 	// Trimming ending slash if exists
 	p = strings.TrimSuffix(p, "/")
 	return p
+}
+
+func alphaNumericString(s string) string {
+	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
+	return reg.ReplaceAllString(s, "")
 }
 
 func tidyString(s string) string {

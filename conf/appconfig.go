@@ -1,56 +1,52 @@
 package conf
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/orme292/s3packer/logbot"
 )
 
 // NewAppConfig will build a new AppConfig object out of the specified yaml file.
-// It creates a readConfig object and called the load() method to open, read, and unmarshal the yaml file.
-// There is also a versionOK() method that will eventually be fleshed out to make sure difference profile
+// It creates a readConfig object and called the loadProfile() method to open, read, and unmarshal the yaml file.
+// There is also a validateVersion() method that will eventually be fleshed out to make sure difference profile
 // versions are unmarshalled correctly.
-func NewAppConfig(file string) (a *AppConfig, err error) {
-	r := &readConfig{}
-	err = r.load(file)
+func NewAppConfig(file string) (ac *AppConfig, err error) {
+	rc := &readConfig{}
+	err = rc.loadProfile(file)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = r.versionOK()
+	_, err = rc.validateVersion()
 	if err != nil {
 		return nil, err
 	}
 
-	a = &AppConfig{
-		Log: &logbot.LogBot{
-			Level:       logbot.ERROR,
-			FlagConsole: true,
-			FlagFile:    false,
-		},
-	}
-	a.init()
-	err = a.apply(r)
-	return a, err
+	ac = &AppConfig{}
+	ac.setDefaults()
+	err = ac.transpose(rc)
+	return
 }
 
-// init() sets the default values for the AppConfig object. It should be one of the first methods called after
+// setDefaults() sets the default values for the AppConfig object.
+//
+// It should be one of the first methods called after
 // creating a new AppConfig object, but before the readConfig object values are transferred, or before apply() is
 // called.
-func (a *AppConfig) init() {
-	a.Bucket = &Bucket{Create: false}
-	a.Objects = &Objects{Naming: NamingAbsolute}
-	a.Provider = &Provider{
-		AwsACL:     types.ObjectCannedACLPrivate,
-		AwsStorage: types.StorageClassStandard,
-	}
-	a.Opts = &Opts{
+func (ac *AppConfig) setDefaults() {
+	ac.Bucket = &Bucket{Create: false}
+	ac.Objects = &Objects{Naming: NamingAbsolute}
+	ac.Opts = &Opts{
 		MaxUploads: 5,
 		MaxParts:   1,
 		Overwrite:  OverwriteNever,
 	}
-	a.Tag = &TagOpts{
+	ac.Tag = &TagOpts{
 		ChecksumSHA256: true,
 		Origins:        true,
+	}
+	ac.Log = &logbot.LogBot{
+		Level:       logbot.ERROR,
+		FlagConsole: true,
+		FlagFile:    false,
 	}
 }
 
@@ -58,42 +54,42 @@ func (a *AppConfig) init() {
 // init() and after the readConfig object has been loaded and validated.
 // Each struct of the AppConfig object is handled separately, and each should have its own readConfig method
 // to handle validation of the values and transfer.
-func (a *AppConfig) apply(r *readConfig) (err error) {
-	a.LogOpts, err = r.getLogging()
-	a.Log = &logbot.LogBot{
-		Level:       a.LogOpts.Level,
-		FlagConsole: a.LogOpts.Console,
-		FlagFile:    a.LogOpts.File,
-		Path:        a.LogOpts.Filepath,
+func (ac *AppConfig) transpose(r *readConfig) (err error) {
+	ac.LogOpts, err = r.transposeStructLogging()
+	ac.Log = &logbot.LogBot{
+		Level:       ac.LogOpts.Level,
+		FlagConsole: ac.LogOpts.Console,
+		FlagFile:    ac.LogOpts.File,
+		Path:        ac.LogOpts.Filepath,
 	}
 	if err != nil {
 		return
 	}
-	a.Provider, err = r.getProvider()
+	ac.Provider, err = r.transposeStructProvider()
 	if err != nil {
 		return
 	}
-	a.Bucket, err = r.getBucket()
+	ac.Bucket, err = r.transposeStructBucket()
 	if err != nil {
 		return
 	}
-	a.Objects, err = r.getObjects()
+	ac.Objects, err = r.transposeStructObjects()
 	if err != nil {
 		return
 	}
-	a.Opts, err = r.getOpts()
+	ac.Opts, err = r.transposeStructOpts()
 	if err != nil {
 		return
 	}
-	a.Tag, err = r.getTag()
+	ac.Tag, err = r.transposeStructTagOpts()
 	if err != nil {
 		return
 	}
-	a.Tags, err = r.getValidTags()
+	ac.Tags, err = r.transposeStructTags()
 	if err != nil {
 		return
 	}
-	a.Files, a.Directories, err = r.getTargets()
+	ac.Files, ac.Directories, err = r.transposeStructFileTargets()
 	if err != nil {
 		return
 	}

@@ -72,3 +72,8 @@ func awsMatchStorage(class string) (sClass types.StorageClass, err error) {
 	}
 	return sClass, nil
 }
+
+const (
+	ErrorAWSProfileAndKeys          = "both aws profile and keys are specified, use profile or keys"
+	ErrorAWSKeyOrSecretNotSpecified = "profile should specified both key and secret"
+)

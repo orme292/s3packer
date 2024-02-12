@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -13,13 +12,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// load() reads the profile file and returns a readConfig struct. The only validated fields are the logging fields,
+// loadProfile() reads the profile file and returns a readConfig struct. The only validated fields are the logging fields,
 // version, and the files and directories. The rest of the fields are left as they are until each individual
 // method is called.
-func (r *readConfig) load(file string) (err error) {
-	r.Logging.Console = true
-	r.Logging.File = false
-	r.Logging.Level = int(logbot.WARN)
+func (rc *readConfig) loadProfile(file string) (err error) {
+	rc.Logging.Console = true
+	rc.Logging.File = false
+	rc.Logging.Level = int(logbot.WARN)
+
 	file, err = filepath.Abs(file)
 	if err != nil {
 		return errors.New(S(ErrorProfilePath, err.Error()))
@@ -30,65 +30,65 @@ func (r *readConfig) load(file string) (err error) {
 		return errors.New(S(ErrorOpeningProfile, err.Error()))
 	}
 
-	err = yaml.Unmarshal(f, &r)
+	err = yaml.Unmarshal(f, &rc)
 	if err != nil {
 		return errors.New(S(ErrorReadingYaml, err.Error()))
 	}
 
-	err = r.validateLogging()
-	r.Log = &logbot.LogBot{
-		Level:       logbot.ParseIntLevel(r.Logging.Level),
-		FlagConsole: r.Logging.Console,
-		FlagFile:    r.Logging.File,
-		Path:        r.Logging.Filepath,
+	err = rc.validateLogging()
+	rc.Log = &logbot.LogBot{
+		Level:       logbot.ParseIntLevel(rc.Logging.Level),
+		FlagConsole: rc.Logging.Console,
+		FlagFile:    rc.Logging.File,
+		Path:        rc.Logging.Filepath,
 	}
 	if err != nil {
-		r.Log.Warn(err.Error())
+		rc.Log.Warn(err.Error())
 	}
 
-	err = r.validateFiles()
+	err = rc.validateFiles()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// getBucket() returns a Bucket struct. If the bucket name or region is not specified, an error is returned.
-// Create is not implemented, so it's value doesn't matter.
-func (r *readConfig) getBucket() (b *Bucket, err error) {
-	if r.Bucket.Name == Empty || r.Bucket.Region == Empty {
+// transposeStructBucket() returns a Bucket struct. If the bucket name or region is not specified, an error is returned.
+// Create is not implemented, so its value doesn't matter.
+func (rc *readConfig) transposeStructBucket() (b *Bucket, err error) {
+	if rc.Bucket.Name == Empty || rc.Bucket.Region == Empty {
 		return nil, errors.New(ErrorBucketNotSpecified)
 	}
 	return &Bucket{
-		Create: r.Bucket.Create,
-		Name:   r.Bucket.Name,
-		Region: r.Bucket.Region,
+		Create: rc.Bucket.Create,
+		Name:   rc.Bucket.Name,
+		Region: rc.Bucket.Region,
 	}, nil
 }
 
-// getTargets() returns a slice of files and directories to be uploaded. If no files or directories are specified,
+// transposeStructFileTargets() returns a slice of files and directories to be uploaded. If no files or directories are specified,
 // an error is returned.
 // Directories and Folders slices are consolidated here, since they are just two different names for the same thing.
 // TODO: Check files and dirs for duplicate entries.
 // TODO: Add support for globs.
-func (r *readConfig) getTargets() (files, dirs []string, err error) {
-	for _, file := range r.Uploads.Files {
+func (rc *readConfig) transposeStructFileTargets() (files, dirs []string, err error) {
+	for _, file := range rc.Uploads.Files {
 		s, err := os.Stat(file)
 		if err != nil {
-			r.Log.Warn("%s: %q", ErrorGettingFileInfo, file)
+			rc.Log.Warn("%s: %q", ErrorGettingFileInfo, file)
 		} else {
 			if s.IsDir() == true {
 				dirs = append(dirs, strings.TrimRight(file, "/"))
-				r.Log.Warn("%s: %q", ErrorFileIsDirectory, file)
+				rc.Log.Warn("%s: %q", ErrorFileIsDirectory, file)
 			} else {
 				files = append(files, file)
 			}
 		}
 	}
-	for _, folder := range r.Uploads.Folders {
+	for _, folder := range rc.Uploads.Folders {
 		dirs = append(dirs, strings.TrimRight(folder, "/"))
 	}
-	for _, dir := range r.Uploads.Directories {
+	for _, dir := range rc.Uploads.Directories {
 		dirs = append(dirs, strings.TrimRight(dir, "/"))
 	}
 	if len(files) == 0 && len(dirs) == 0 {
@@ -97,30 +97,30 @@ func (r *readConfig) getTargets() (files, dirs []string, err error) {
 	return
 }
 
-// getLogging() returns a LogOpts struct. If the logging file is enabled and the path is specified, then the
+// transposeStructLogging() returns a LogOpts struct. If the logging file is enabled and the path is specified, then the
 // path is converted to an absolute path. Any actual validation is handled elsewhere.
-func (r *readConfig) getLogging() (lo *LogOpts, err error) {
+func (rc *readConfig) transposeStructLogging() (lo *LogOpts, err error) {
 	var abs string
-	if r.Logging.File == true && r.Logging.Filepath != Empty {
-		abs, err = filepath.Abs(filepath.Clean(r.Logging.Filepath))
+	if rc.Logging.File == true && rc.Logging.Filepath != Empty {
+		abs, err = filepath.Abs(filepath.Clean(rc.Logging.Filepath))
 		if err != nil {
 			return nil, errors.New(S("%s: %s", ErrorLoggingFilepath, err.Error()))
 		}
 	}
 
 	return &LogOpts{
-		Level:    logbot.ParseIntLevel(r.Logging.Level),
-		Console:  r.Logging.Console,
-		File:     r.Logging.File,
+		Level:    logbot.ParseIntLevel(rc.Logging.Level),
+		Console:  rc.Logging.Console,
+		File:     rc.Logging.File,
 		Filepath: abs,
 	}, nil
 }
 
-// getObjects() returns an Objects struct. If the naming method is not specified, then the default is used, but
+// transposeStructObjects() returns an Objects struct. If the naming method is not specified, then the default is used, but
 // an error is returned.
-func (r *readConfig) getObjects() (o *Objects, err error) {
+func (rc *readConfig) transposeStructObjects() (o *Objects, err error) {
 	var method Naming
-	switch strings.ToLower(strings.Trim(r.Objects.Naming, " ")) {
+	switch strings.ToLower(strings.Trim(rc.Objects.Naming, " ")) {
 	case NamingAbsolute.String():
 		method = NamingAbsolute
 	case NamingRelative.String():
@@ -130,153 +130,125 @@ func (r *readConfig) getObjects() (o *Objects, err error) {
 		err = errors.New(InvalidNamingMethod)
 	}
 	return &Objects{
-		NamePrefix:  strings.TrimPrefix(r.Objects.NamePrefix, "/"),
-		RootPrefix:  formatPath(r.Objects.RootPrefix),
+		NamePrefix:  strings.TrimPrefix(rc.Objects.NamePrefix, "/"),
+		RootPrefix:  formatPath(rc.Objects.RootPrefix),
 		Naming:      method,
-		OmitRootDir: r.Objects.OmitRootDir,
+		OmitRootDir: rc.Objects.OmitRootDir,
 	}, err
 }
 
-// getOpts() returns an Opts struct. If the overwrite method is not specified, then the default is used, and the
+// transposeStructOpts() returns an Opts struct. If the overwrite method is not specified, then the default is used, and the
 // default should always be to never overwrite an object. OverwriteChecksum support is not implemented. A MaxParts
 // value greater or less than 1 is not supported.
-func (r *readConfig) getOpts() (opts *Opts, err error) {
-	var overwrite Overwrite
-	switch strings.ToLower(strings.Trim(r.Options.Overwrite, " ")) {
+func (rc *readConfig) transposeStructOpts() (opts *Opts, err error) {
+	overwrite := OverwriteNever
+
+	switch tidyString(rc.Options.Overwrite) {
 	case OverwriteAlways.String():
 		overwrite = OverwriteAlways
-	// case OverwriteChecksum.String():
-	//	 overwrite = OverwriteChecksum
 	case OverwriteNever.String():
 		overwrite = OverwriteNever
 	default:
-		overwrite = OverwriteNever
 		err = errors.New(InvalidOverwriteMethod)
 	}
+
 	return &Opts{
-		MaxParts:   r.Options.MaxParts,
-		MaxUploads: r.Options.MaxUploads,
+		MaxParts:   rc.Options.MaxParts,
+		MaxUploads: rc.Options.MaxUploads,
 		Overwrite:  overwrite,
 	}, err
 }
 
-// getProvider() returns a Provider struct. If the provider is not specified, then an error is returned.
+// transposeStructProvider() returns a Provider struct. If the provider is not specified, then an error is returned.
 // There is only support for a single provider right now, so there's no real complexity here.
-func (r *readConfig) getProvider() (p *Provider, err error) {
-	pn := whichProvider(r.Provider)
-	switch pn {
+func (rc *readConfig) transposeStructProvider() (p *Provider, err error) {
+	provider := whichProvider(rc.Provider)
+	switch provider {
 	case ProviderNameAWS:
-		err = r.validateProviderAWS()
+		err = rc.validateProviderAWS()
 		if err != nil {
 			return nil, err
 		}
-		acl, err := awsMatchACL(r.AWS.ACL)
-		if err != nil {
-			r.Log.Warn(err.Error())
-		}
-		class, err := awsMatchStorage(r.AWS.Storage)
-		if err != nil {
-			r.Log.Warn(err.Error())
-		}
-		return &Provider{
-			Is:         ProviderNameAWS,
-			AwsProfile: r.AWS.Profile,
-			AwsACL:     acl,
-			AwsStorage: class,
-			Key:        r.AWS.Key,
-			Secret:     r.AWS.Secret,
-		}, nil
+		return rc.buildProviderAWS(), err
 	case ProviderNameOCI:
-		err = r.validateProviderOCI()
+		err = rc.validateProviderOCI()
 		if err != nil {
 			return nil, err
 		}
-		return &Provider{
-			Is:             ProviderNameOCI,
-			OciProfile:     r.OCI.Profile,
-			OciCompartment: r.OCI.Compartment,
-		}, nil
+		return rc.buildProviderOCI(), err
 	default:
 		return &Provider{Is: ProviderNameNone}, errors.New(ErrorProviderNotSpecified)
 	}
 }
 
-// getTag() returns a TagOpts struct.
-func (r *readConfig) getTag() (t *TagOpts, err error) {
+func (rc *readConfig) buildProviderAWS() (p *Provider) {
+	acl, err := awsMatchACL(rc.AWS.ACL)
+	if err != nil {
+		rc.Log.Warn(err.Error())
+	}
+
+	class, err := awsMatchStorage(rc.AWS.Storage)
+	if err != nil {
+		rc.Log.Warn(err.Error())
+	}
+
+	return &Provider{
+		Is: ProviderNameAWS,
+		AWS: &ProviderAWS{
+			Profile: rc.AWS.Profile,
+			Key:     rc.AWS.Key,
+			Secret:  rc.AWS.Secret,
+			ACL:     acl,
+			Storage: class,
+		},
+		Key:    rc.AWS.Key,
+		Secret: rc.AWS.Secret,
+	}
+}
+
+func (rc *readConfig) buildProviderOCI() (p *Provider) {
+	return &Provider{
+		Is: ProviderNameOCI,
+		OCI: &ProviderOCI{
+			Profile:     rc.OCI.Profile,
+			Compartment: rc.OCI.Compartment,
+			Builder: &ProviderOCIBuilder{
+				Tenancy:     rc.OCI.AuthTenancy,
+				User:        rc.OCI.AuthUser,
+				PrivateKey:  rc.OCI.AuthPrivateKey,
+				Passphrase:  rc.OCI.AuthPassphrase,
+				Fingerprint: rc.OCI.AuthFingerprint,
+				Region:      rc.OCI.AuthRegion,
+			},
+		},
+	}
+}
+
+// transposeStructTagOpts() returns a TagOpts struct.
+func (rc *readConfig) transposeStructTagOpts() (t *TagOpts, err error) {
 	return &TagOpts{
-		ChecksumSHA256:       r.Tagging.ChecksumSHA256,
+		ChecksumSHA256:       rc.Tagging.ChecksumSHA256,
 		AwsChecksumAlgorithm: types.ChecksumAlgorithmSha256,
 		AwsChecksumMode:      types.ChecksumModeEnabled,
-		Origins:              r.Tagging.Origins,
+		Origins:              rc.Tagging.Origins,
 	}, nil
 }
 
-// getValidTags() returns a map of valid string tags. This is both a get and validate method. It removes
+// transposeStructTags() returns a map of valid string tags. This is both a get and validate method. It removes
 // unsupported symbols from the tag key/values specified in the profile. Changes are logged as Warnings, but they
 // don't halt execution.
-func (r *readConfig) getValidTags() (tags map[string]string, err error) {
+func (rc *readConfig) transposeStructTags() (tags map[string]string, err error) {
 	tags = make(map[string]string)
-	for k, v := range r.Tagging.Tags {
-		reg := regexp.MustCompile("[^a-zA-Z0-9]+")
-		nk := reg.ReplaceAllString(k, "")
-		nv := reg.ReplaceAllString(v, "")
-		if nk != k {
-			r.Log.Warn(fmt.Sprintf("%s: %q is now %q", InvalidTagChars, k, nk))
+	for k, v := range rc.Tagging.Tags {
+		newKey := alphaNumericString(k)
+		newValue := alphaNumericString(v)
+		if newKey != k {
+			rc.Log.Warn(fmt.Sprintf("%s: %q is now %q", InvalidTagChars, k, newKey))
 		}
-		if nv != v {
-			r.Log.Warn(fmt.Sprintf("%s: %q is now %q", InvalidTagChars, v, nv))
+		if newValue != v {
+			rc.Log.Warn(fmt.Sprintf("%s: %q is now %q", InvalidTagChars, v, newValue))
 		}
-		tags[nk] = nv
+		tags[newKey] = newValue
 	}
 	return tags, nil
-}
-
-// validateFiles() checks to make sure that at least one file or directory is specified. If not, then an error
-// is returned.
-func (r *readConfig) validateFiles() (err error) {
-	if len(r.Uploads.Files) == 0 && len(r.Uploads.Folders) == 0 && len(r.Uploads.Directories) == 0 {
-		err = errors.New(ErrorNoFilesSpecified)
-	}
-	return
-}
-
-// validateLogging() checks to make sure that if logging to a file is enabled, then a path is specified. If not,
-// then an error is returned. Whether the actual file is accessible or not is not checked.
-func (r *readConfig) validateLogging() (err error) {
-	if r.Logging.File == true && r.Logging.Filepath == Empty {
-		err = errors.New(ErrorLoggingFilepathNotSpecified)
-		r.Logging.File = false
-	}
-	return
-}
-
-// versionOK() checks that the profile is at version 2, otherwise an error is returned. If there are future versions
-// of the profile, then this method will be fleshed out. For now, there's only the un-versioned profile and version 2.
-func (r *readConfig) versionOK() (v int, err error) {
-	if r.Version != 3 {
-		return r.Version, errors.New(ErrorUnsupportedProfileVersion)
-	}
-	return r.Version, nil
-}
-
-// validateProviderAWS() checks that the AWS profile and keys are not both specified. If they are, then an error
-// is returned. If A key is provided, but not a secret, or vice versa, then an error is returned, also.
-func (r *readConfig) validateProviderAWS() (err error) {
-	if r.AWS.Profile != Empty && (r.AWS.Key != Empty || r.AWS.Secret != Empty) {
-		err = errors.New(ErrorAWSProfileAndKeys)
-	}
-	if (r.AWS.Key == Empty && r.AWS.Secret != Empty) || (r.AWS.Key != Empty && r.AWS.Secret == Empty) {
-		err = errors.New(ErrorAWSKeyOrSecretNotSpecified)
-	}
-	return
-}
-
-func (r *readConfig) validateProviderOCI() (err error) {
-	if r.OCI.Profile == Empty {
-		r.OCI.Profile = OciDefaultProfile
-	}
-	if r.OCI.Compartment == Empty {
-		return errors.New(ErrorOCICompartmentNotSpecified)
-	}
-	return nil
 }

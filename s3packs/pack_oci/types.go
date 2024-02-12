@@ -27,5 +27,5 @@ type OracleIterator struct {
 
 type OracleOperator struct {
 	ac *conf.AppConfig
-	p  common.ConfigurationProvider
+	cp *common.ConfigurationProvider
 }
