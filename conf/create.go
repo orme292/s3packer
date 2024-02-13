@@ -9,59 +9,20 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// outputProfile is used to write out a sample configuration profile. It is based on readConfig, but only includes
-// necessary fields. This prevents any hidden or unsupported fields from being revealed.
-type outputProfile struct {
-	Version int `yaml:"Version"`
-	AWS     struct {
-		Profile string `yaml:"Profile"`
-		Key     string `yaml:"Key"`
-		Secret  string `yaml:"Secret"`
-		ACL     string `yaml:"ACL"`
-		Storage string `yaml:"Storage"`
-	} `yaml:"AWS"`
-	Bucket struct {
-		Create bool   `yaml:"Create"`
-		Name   string `yaml:"Name"`
-		Region string `yaml:"Region"`
-	} `yaml:"Bucket"`
-	Options struct {
-		MaxUploads int    `yaml:"MaxUploads"`
-		Overwrite  string `yaml:"Overwrite"`
-	} `yaml:"Options"`
-	Tagging struct {
-		ChecksumSHA256 bool              `yaml:"Checksum"`
-		Origins        bool              `yaml:"Origins"`
-		Tags           map[string]string `yaml:"Tags"`
-	} `yaml:"Tagging"`
-	Objects struct {
-		NamePrefix          string `yaml:"NamePrefix"`
-		RootPrefix          string `yaml:"RootPrefix"`
-		Naming              string `yaml:"Naming"`
-		OmitOriginDirectory bool   `yaml:"OmitRootDir"`
-	} `yaml:"Objects"`
-	Logging struct {
-		Level    int    `yaml:"Level"`
-		Console  bool   `yaml:"Console"`
-		File     bool   `yaml:"File"`
-		Filepath string `yaml:"Filepath"`
-	} `yaml:"Logging"`
-	Uploads struct {
-		Files       []string `yaml:"Files"`
-		Directories []string `yaml:"Directories"`
-	} `yaml:"Uploads"`
-}
-
 // Create takes a filename as a string, and writes out a sample configuration profile. The file must not exist.
-// The structure is built using a new struct, outputProfile, that is based on readConfig
+// The structure is built using a new struct, createProfile, that is based on readConfig
 func Create(filename string) (err error) {
-	r := outputProfile{}
-	r.Version = 2
+	r := createProfile{}
+	r.Version = 4
+	r.Provider = "aws|oci"
 	r.AWS.Profile = "default"
 	r.AWS.Key = ""
 	r.AWS.Secret = ""
-	r.AWS.ACL = "private"
-	r.AWS.Storage = "standard"
+	r.AWS.ACL = AwsACLPrivate
+	r.AWS.Storage = AwsClassStandard
+	r.OCI.Profile = OciDefaultProfile
+	r.OCI.Compartment = "ocid1.compartment.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
+	r.OCI.Storage = OracleStorageTierStandard
 	r.Bucket.Name = "my-bucket"
 	r.Bucket.Region = "us-east-1"
 	r.Options.MaxUploads = 10

@@ -43,7 +43,7 @@ name in the profile configuration.
 NewConfig calls NewConfigWithProfile or NewConfigWithKeypair
 */
 func newConfig(ac *conf.AppConfig) (cfg aws.Config, err error) {
-	if ac.Provider.AwsProfile != EmptyString {
+	if ac.Provider.AWS.Profile != EmptyString {
 		cfg, err = newConfigWithProfile(ac)
 	} else {
 		cfg, err = newConfigWithKeypair(ac)
@@ -57,7 +57,7 @@ func newConfig(ac *conf.AppConfig) (cfg aws.Config, err error) {
 
 func newConfigWithKeypair(ac *conf.AppConfig) (cfg aws.Config, err error) {
 	creds := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
-		ac.Provider.Key, ac.Provider.Secret, ""))
+		ac.Provider.AWS.Key, ac.Provider.AWS.Secret, ""))
 	opts := func(o *config.LoadOptions) error {
 		o.Region = ac.Bucket.Region
 		return nil
@@ -72,7 +72,7 @@ func newConfigWithProfile(ac *conf.AppConfig) (cfg aws.Config, err error) {
 		return nil
 	}
 	cfg, err = config.LoadDefaultConfig(context.Background(),
-		config.WithSharedConfigProfile(ac.Provider.AwsProfile),
+		config.WithSharedConfigProfile(ac.Provider.AWS.Profile),
 		opts)
 	return
 }

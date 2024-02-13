@@ -33,7 +33,7 @@ func awsMatchACL(acl string) (cAcl types.ObjectCannedACL, err error) {
 
 	cAcl, ok := awsCannedACLs[acl]
 	if !ok {
-		return types.ObjectCannedACLPrivate, errors.New(fmt.Sprintf("%s %q", InvalidACL, acl))
+		return types.ObjectCannedACLPrivate, errors.New(fmt.Sprintf("%s %q", InvalidAWSACL, acl))
 	}
 	return cAcl, nil
 }
@@ -72,3 +72,9 @@ func awsMatchStorage(class string) (sClass types.StorageClass, err error) {
 	}
 	return sClass, nil
 }
+
+const (
+	InvalidAWSACL                   = "invalid aws acl"
+	ErrorAWSProfileAndKeys          = "both aws profile and keys are specified, use profile or keys"
+	ErrorAWSKeyOrSecretNotSpecified = "profile should specified both key and secret"
+)

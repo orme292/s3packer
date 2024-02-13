@@ -78,17 +78,19 @@ func (ai *AwsIterator) Prepare() *provider.PutObject {
 		},
 		Object: func() any {
 			return &s3.PutObjectInput{
-				ACL:               ai.ac.Provider.AwsACL,
+				ACL:               ai.ac.Provider.AWS.ACL,
 				Body:              f,
 				Bucket:            aws.String(ai.ac.Bucket.Name),
 				ChecksumAlgorithm: types.ChecksumAlgorithmSha256,
 				Key:               aws.String(ai.stage.fo.FKey()),
-				StorageClass:      ai.ac.Provider.AwsStorage,
+				StorageClass:      ai.ac.Provider.AWS.Storage,
 				Tagging:           aws.String(awsTag(ai.stage.fo.TagsMap)),
 			}
 		},
 		After: func() error {
-			ai.stage.fo.IsUploaded = true
+			if !ai.stage.fo.IsFailed && !ai.stage.fo.Ignore {
+				ai.stage.fo.IsUploaded = true
+			}
 			ai.stage.index++
 			return f.Close()
 		},

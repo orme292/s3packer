@@ -38,12 +38,13 @@ func NewProcessor(ac *conf.AppConfig, ops Operator, iterFn IteratorFunc) (p *Pro
 func (p *Processor) Run() (errs Errs) {
 	exists, errs := p.ops.BucketExists()
 	if !exists {
-		fmt.Printf("Bucket does not exist, should create? %t\n", p.ac.Bucket.Create)
+		p.ac.Log.Info("Bucket %q does not exist.", p.ac.Bucket.Name)
 		if p.ac.Bucket.Create == true {
 			err := p.ops.CreateBucket()
 			if err != nil {
 				errs.Add(err)
 			} else {
+				p.ac.Log.Info("Created bucket %q", p.ac.Bucket.Name)
 				errs.Release()
 			}
 		} else {
@@ -82,7 +83,7 @@ func (p *Processor) RunIterator(fol objectify.FileObjList, grp int) (errs Errs) 
 	}
 
 	if len(fol) > 0 {
-		fmt.Printf("Uploading %q...", fol[0].OriginDir)
+		fmt.Printf("Uploading %q...\n", fol[0].OriginDir)
 	}
 	if err := iter.First(); err != nil {
 		errs.Add(err)
