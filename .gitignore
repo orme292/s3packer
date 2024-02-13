@@ -1,4 +1,5 @@
 profiles/myprofile_aws.yaml
+profiles/myprofile_oci.yaml
 s3packer
 .idea/
 *.log
