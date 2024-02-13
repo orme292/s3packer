@@ -4,8 +4,15 @@ bug fix, feature addition, or minor tweak.
 
 ---
 ### **1.3.3** (2023-02-12)
-- s3packs/conf: Added support for the OCI provider
-- s3packs/pack_oci: initial support for OCI Object Storage (Oracle Cloud)
+- conf: Added support for the OCI provider
+- conf: Fixed a bug where ChecksumSHA256 was never read from the profile
+- s3packs/pack_oci: full support for OCI Object Storage (Oracle Cloud)
+- s3packs/pack_oci: workaround OCI SDK's broken metadata handling when using the UploadManager.
+- s3packs/pack_aws: fixed broken stats for failed uploads
+- s3packs/objectify: fixed broken tagging for ChecksumSHA256 and Origins
+- profiles: updated and added example2.yaml
+- README: updated with OCI information
+- README_OCI: added
 
 ### **1.3.2** (2023-01-12)
 - s3packs/objectify: removed DirObjList and DirObj. RootList is now a slice of FileObjLists.
