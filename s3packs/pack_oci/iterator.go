@@ -84,11 +84,7 @@ func (oi *OracleIterator) Prepare() *provider.PutObject {
 			return nil
 		},
 		Object: func() any {
-			//tags := make(map[string]string)
-			//for k, v := range oi.ac.Tags {
-			//	tags[s("%s%s", "opc-meta-", k)] = v
-			//}
-			return transfer.UploadRequest{
+			request := transfer.UploadRequest{
 				NamespaceName:                       common.String(oi.namespace),
 				BucketName:                          common.String(oi.ac.Bucket.Name),
 				ObjectName:                          common.String(oi.stage.fo.FKey()),
@@ -96,8 +92,24 @@ func (oi *OracleIterator) Prepare() *provider.PutObject {
 				EnableMultipartChecksumVerification: common.Bool(true),
 				StorageTier:                         oi.ac.Provider.OCI.PutStorage,
 				PartSize:                            common.Int64(1024 * 1024 * 5),
-				Metadata:                            oi.ac.Tags,
 			}
+			// This is a workaround for an issue with how metadata is handled when using transfer.UploadManager
+			// to handle uploads. When UploadManager handles a single-part upload, it automatically prefixes the
+			// metadata tags with "opc-meta-", which is required by OCI. When handling a multipart upload, it
+			// does not prefix the metadata tags which can cause the upload to fail. So, here we see if the file
+			// meets the multipart threshold (set in the UploadRequest above), and if it does, we prefix all the
+			// tags with "opc-meta-".
+			if oi.stage.fo.FileSize > int64(1024*1024*5) {
+				tags := make(map[string]string)
+				for k, v := range oi.stage.fo.TagsMap {
+					tags[s("%s%s", "opc-meta-", k)] = v
+				}
+				request.Metadata = tags
+			} else {
+				request.Metadata = oi.stage.fo.TagsMap
+			}
+			// end workaround
+			return request
 		},
 		After: func() error {
 			if !oi.stage.fo.IsFailed && !oi.stage.fo.Ignore {
