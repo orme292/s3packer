@@ -1,0 +1,35 @@
+Version: 4
+Provider: akamai
+Akamai:
+  Key: zzzyyyyxxxxx1111222
+  Secret: aabbbcccddddeeeffff999988888
+Bucket:
+  Create: false
+  Name: code-backups
+  Region: se-sto-1
+Options:
+  MaxUploads: 10
+  Overwrite: never
+Tagging:
+  Checksum: true
+  Origins: true
+  Tags:
+    company: big data llc
+    project: code backups
+Objects:
+  NamePrefix: ""
+  RootPrefix: "2024-Feb/"
+  Naming: relative
+  OmitRootDir: false
+Logging:
+  Level: 1
+  Console: true
+  File: true
+  Filepath: "/var/log/code-backups.log"
+Uploads:
+  Files:
+    - file1.txt
+    - file2.txt
+  Directories:
+    - /home/me/dir1
+    - /home/me/dir2
