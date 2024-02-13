@@ -88,7 +88,9 @@ func (ai *AwsIterator) Prepare() *provider.PutObject {
 			}
 		},
 		After: func() error {
-			ai.stage.fo.IsUploaded = true
+			if !ai.stage.fo.IsFailed && !ai.stage.fo.Ignore {
+				ai.stage.fo.IsUploaded = true
+			}
 			ai.stage.index++
 			return f.Close()
 		},
