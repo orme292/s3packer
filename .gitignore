@@ -1,6 +1,8 @@
-profiles/myprofile.yaml
+profiles/myprofile_aws.yaml
 s3packer
 .idea/
 *.log
 /scripts/
 /s3pack-old/*
+/profiles/myprofile_aws.yaml
+/profiles/myprofile_oci.yaml
