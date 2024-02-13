@@ -1,17 +1,12 @@
-Version: 3
-Provider: aws|oci
+Version: 4
+Provider: aws
 AWS:
     Profile: default
-    Key: ""
-    Secret: ""
     ACL: private
     Storage: standard
-OCI:
-    Profile: DEFAULT
-    Compartment: ocid1.compartment.oc1..abcdefghi0jklmn1op2qr3stuvwxyz...................
 Bucket:
     Create: false
-    Name: my-bucket
+    Name: code-backups
     Region: us-east-1
 Options:
     MaxUploads: 10
@@ -20,18 +15,18 @@ Tagging:
     Checksum: true
     Origins: true
     Tags:
-        author: me
-        hostname: this host
+        company: big data llc
+        project: code backups
 Objects:
     NamePrefix: ""
-    RootPrefix: ""
-    Naming: absolute
+    RootPrefix: "2024-Feb/"
+    Naming: relative
     OmitRootDir: false
 Logging:
-    Level: 2
+    Level: 1
     Console: true
-    File: false
-    Filepath: ""
+    File: true
+    Filepath: "/var/log/code-backups.log"
 Uploads:
     Files:
         - file1.txt

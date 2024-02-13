@@ -1,6 +1,6 @@
 # s3packer - A configurable profile-based S3 backup and upload tool.
 
-Linux/MacOS | Supports AWS S3 
+Linux/MacOS | Supports AWS S3, Oracle Cloud (OCI) Object Storage
 
 ---
 [![Go Version][go_version_img]][go_version_url]
@@ -12,6 +12,17 @@ Linux/MacOS | Supports AWS S3
 ## Download 
 
 See the [releases][releases_url] page...
+
+---
+## Providers
+
+**s3packer** supports AWS S3 and Oracle Cloud Object Storage. This readme will go over using AWS as a provider, but
+you can find information on using OCI in the [README_OCI.md][s3packer_oci_readme_url] file.
+
+You can see sample profiles here:
+- [example1.yaml][example1_url] (AWS)
+- [example2.yaml][example2_url] (OCI)
+---
 
 ## How to Use
 
@@ -33,15 +44,23 @@ $ s3packer --create="my-new-profile.yaml"
 
 s3packer profiles are written in the YAML format. To set it up, you just need to fill out a few fields, and you’ll be good to go!
 
-First, make sure you specify that you're using Version 2 of the profile format:
+First, make sure you specify that you're using Version 4 of the profile format:
 
 ```yaml
-Version: 2
+Version: 4
+```
+
+Be sure to specify a provider:
+
+```yaml
+Provider: aws
 ```
 
 Use your AWS Key/Secret pair: 
 
 ```yaml
+Version: 4
+Provider: aws
 AWS:
   Key: "my-key"
   Secret: "my-secret"
@@ -50,7 +69,8 @@ AWS:
 Or you can specify a profile that's already set up in your `~/.aws/credentials` file:
 
 ```yaml
-Version: 2
+Version: 4
+Provider: aws
 AWS:
   Profile: "my-profile"
 ```
@@ -157,7 +177,7 @@ The default is `5`. This is the maximum number of files that will be uploaded at
 directory level, so the biggest speed gains are seen when uploading a directory with many files.
 
 **Overwrite**  <br/>
-This is `never` by default. If you set it to `always`, s3packer will Overwrite any files in the bucket that
+This is `never` by default. If you set it to `always`, s3packer will overwrite any files in the bucket that
 have the same name as what you're uploading. Useful if you're uploading a file that is updated over and over again.
 
 ---
@@ -168,9 +188,7 @@ Tagging:
   Origins: true
 ```
 **ChecksumSHA256** <br/>
-This is `true` by default. Every object uploaded will be tagged with the file's calculated SHA256 checksum. It'll
-be used to verify file changes in the future. Whether this is `true` or `false`, the SHA256 checksum will still be
-calculated and used to verify the integrity of the file after it's uploaded.
+This is `true` by default. Every object uploaded will be tagged with the file's calculated SHA256 checksum.
 
 **Origins** <br/>
 This is `true` by default. Every object uploaded will be tagged with the full absolute path of the file on the
@@ -200,10 +218,10 @@ prints minimal output.
 
 **File:**<br/>
 This is `false` by default. If you set it to `true`, s3packer will write structured log (JSON) messages to 
-a file. You MUST also specify a `filename`.
+a file. You MUST also specify a `Filepath`.
 
 **Filepath:** <br/>
-File to write structured log messages to. If you set `toFile` to `true`, you must specify a filename. 
+File to write structured log messages to. If you set `File` to `true`, you must specify a filename. 
 The file will be created if it doesn't exist, and appended to if it does.
 
 ---
@@ -234,6 +252,10 @@ And if you run into any issues or have any suggestions, feel free to open a new 
 [go_report_url]: https://goreportcard.com/report/github.com/orme292/s3packer
 [repo_license_url]: https://github.com/orme292/s3packer/blob/master/LICENSE
 [s3_acl_url]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
+[s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/README_OCI.md
+
+[example1_url]:https://github.com/orme292/s3packer/blob/master/profiles/example1.yaml
+[example2_url]:https://github.com/orme292/s3packer/blob/master/profiles/example2.yaml
 
 [go_version_img]: https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go
 [go_report_img]: https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none
