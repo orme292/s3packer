@@ -210,11 +210,19 @@ func (rc *readConfig) buildProviderOCI() (p *Provider) {
 	if strings.TrimSpace(strings.ToUpper(rc.OCI.Profile)) == OciDefaultProfile {
 		rc.OCI.Profile = OciDefaultProfile
 	}
+
+	tier, put, err := ociMatchStorage(rc.OCI.Storage)
+	if err != nil {
+		rc.Log.Warn(err.Error())
+	}
+
 	return &Provider{
 		Is: ProviderNameOCI,
 		OCI: &ProviderOCI{
 			Profile:     strings.TrimSpace(rc.OCI.Profile),
 			Compartment: rc.OCI.Compartment,
+			Storage:     tier,
+			PutStorage:  put,
 		},
 	}
 }

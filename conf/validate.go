@@ -44,16 +44,21 @@ func (rc *readConfig) validateProviderAWS() (err error) {
 }
 
 func (rc *readConfig) validateProviderOCI() (err error) {
-	if rc.OCI.Profile == Empty && rc.OCI.Compartment == Empty {
+	if rc.OCI.Profile == Empty {
 		return errors.New(ErrorOCIAuthNotSpecified)
+	}
+	// This isn't fatal. The provider will just retrieve the tenancy root and use that.
+	if rc.OCI.Compartment == Empty {
+		rc.Log.Warn(ErrorOCICompartmentNotSpecified)
 	}
 	return nil
 }
 
-// validateVersion() checks that the profile is at version 3, otherwise an error is returned. If there are future versions
-// of the profile, then this method will be fleshed out. For now, there's only the un-versioned profile and version 3.
+// validateVersion() checks that the profile is at version 4; otherwise an error is returned.
+// If there are future versions of the profile, then this method will be fleshed out.
+// For now, there's only support for version 4
 func (rc *readConfig) validateVersion() (v int, err error) {
-	if rc.Version != 3 && rc.Version != 2 {
+	if rc.Version < 4 || rc.Version > 4 {
 		return rc.Version, errors.New(ErrorUnsupportedProfileVersion)
 	}
 	return rc.Version, nil

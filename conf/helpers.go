@@ -3,6 +3,7 @@ package conf
 import (
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 func formatPath(p string) string {
@@ -17,6 +18,13 @@ func alphaNumericString(s string) string {
 	return reg.ReplaceAllString(s, "")
 }
 
+func capitalize(s string) string {
+	for i, v := range s {
+		return string(unicode.ToTitle(v)) + strings.ToLower(s[i+1:])
+	}
+	return Empty
+}
+
 func tidyString(s string) string {
 	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
@@ -28,7 +36,7 @@ func whichProvider(s string) ProviderName {
 	switch s {
 	case "aws", "amazon", "s3", "amazon s3":
 		return ProviderNameAWS
-	case "oci", "oracle", "oraclecloud", "oracle cloud":
+	case "oci", "oracle", "oraclecloud", "oracle cloud", "oracle cloud infrastructure":
 		return ProviderNameOCI
 	default:
 		return ProviderNameNone

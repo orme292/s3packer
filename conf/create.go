@@ -13,15 +13,16 @@ import (
 // The structure is built using a new struct, createProfile, that is based on readConfig
 func Create(filename string) (err error) {
 	r := createProfile{}
-	r.Version = 3
+	r.Version = 4
 	r.Provider = "aws|oci"
 	r.AWS.Profile = "default"
 	r.AWS.Key = ""
 	r.AWS.Secret = ""
-	r.AWS.ACL = "private"
-	r.AWS.Storage = "standard"
+	r.AWS.ACL = AwsACLPrivate
+	r.AWS.Storage = AwsClassStandard
 	r.OCI.Profile = OciDefaultProfile
 	r.OCI.Compartment = "ocid1.compartment.oc1..abcdefghi0jklmn1op2qr3stuvwxyz..................."
+	r.OCI.Storage = OracleStorageTierStandard
 	r.Bucket.Name = "my-bucket"
 	r.Bucket.Region = "us-east-1"
 	r.Options.MaxUploads = 10

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/oracle/oci-go-sdk/v49/objectstorage"
 	"github.com/orme292/s3packer/logbot"
 	"github.com/rs/zerolog"
 )
@@ -25,6 +26,7 @@ type createProfile struct {
 	OCI struct {
 		Profile     string `yaml:"Profile"`
 		Compartment string `yaml:"Compartment"`
+		Storage     string `yaml:"Storage"`
 	} `yaml:"OCI"`
 	Bucket struct {
 		Create bool   `yaml:"Create"`
@@ -80,6 +82,7 @@ type readConfig struct {
 	OCI struct {
 		Profile     string `yaml:"Profile"`
 		Compartment string `yaml:"Compartment"`
+		Storage     string `yaml:"Storage"`
 	} `yaml:"OCI"`
 
 	// Bucket should be universal across all providers, though there may be different fields depending on the
@@ -171,6 +174,10 @@ type ProviderAWS struct {
 type ProviderOCI struct {
 	Profile     string
 	Compartment string
+	Storage     objectstorage.StorageTierEnum
+
+	// this is ridiculous, but the OCI SDK has a separate enum for PUT requests.
+	PutStorage objectstorage.PutObjectStorageTierEnum
 }
 
 // Bucket contains all details related to the bucket, for any provider. Create is not implemented.
@@ -286,7 +293,6 @@ const (
 // Errors
 
 const (
-	InvalidACL             = "invalid acl"
 	InvalidNamingMethod    = "invalid object naming method"
 	InvalidStorageClass    = "invalid storage class"
 	InvalidOverwriteMethod = "invalid overwrite method"
