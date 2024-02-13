@@ -37,7 +37,7 @@ func (op *OracleOperator) CreateBucket() (err error) {
 		CreateBucketDetails: objectstorage.CreateBucketDetails{
 			CompartmentId: common.String(op.ac.Provider.OCI.Compartment),
 			Name:          &op.ac.Bucket.Name,
-			Metadata: map[string]string{
+			FreeformTags: map[string]string{
 				"createdBy": "s3packer",
 			},
 		},
