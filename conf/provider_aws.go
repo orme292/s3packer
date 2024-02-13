@@ -2,7 +2,6 @@ package conf
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -20,7 +19,7 @@ const (
 
 // awsMatchACL will match the ACL string to the AWS ACL type. The constant values above are used to match the string.
 func awsMatchACL(acl string) (cAcl types.ObjectCannedACL, err error) {
-	acl = strings.ToLower(strings.Trim(acl, " "))
+	acl = strings.ToLower(strings.TrimSpace(acl))
 	awsCannedACLs := map[string]types.ObjectCannedACL{
 		AwsACLPrivate:                types.ObjectCannedACLPrivate,
 		AwsACLPublicRead:             types.ObjectCannedACLPublicRead,
@@ -33,7 +32,7 @@ func awsMatchACL(acl string) (cAcl types.ObjectCannedACL, err error) {
 
 	cAcl, ok := awsCannedACLs[acl]
 	if !ok {
-		return types.ObjectCannedACLPrivate, errors.New(fmt.Sprintf("%s %q", InvalidAWSACL, acl))
+		return types.ObjectCannedACLPrivate, errors.New(S("%s %q", InvalidAWSACL, acl))
 	}
 	return cAcl, nil
 }
@@ -53,7 +52,7 @@ const (
 // awsMatchStorage will match the storage class string to the AWS storage class type. The constant values above are
 // used to match the string.
 func awsMatchStorage(class string) (sClass types.StorageClass, err error) {
-	class = strings.ToUpper(strings.Trim(class, " "))
+	class = strings.ToUpper(strings.TrimSpace(class))
 	awsStorageClasses := map[string]types.StorageClass{
 		AwsClassStandard:           types.StorageClassStandard,
 		AwsClassReducedRedundancy:  types.StorageClassReducedRedundancy,
@@ -68,7 +67,7 @@ func awsMatchStorage(class string) (sClass types.StorageClass, err error) {
 
 	sClass, ok := awsStorageClasses[class]
 	if !ok {
-		return types.StorageClassStandard, errors.New(fmt.Sprintf("%s %q", InvalidStorageClass, class))
+		return types.StorageClassStandard, errors.New(S("%s %q", InvalidStorageClass, class))
 	}
 	return sClass, nil
 }
