@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/oracle/oci-go-sdk/v49/common"
-	"github.com/oracle/oci-go-sdk/v49/objectstorage"
 	"github.com/oracle/oci-go-sdk/v49/objectstorage/transfer"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/objectify"
@@ -85,17 +84,25 @@ func (oi *OracleIterator) Prepare() *provider.PutObject {
 			return nil
 		},
 		Object: func() any {
+			//tags := make(map[string]string)
+			//for k, v := range oi.ac.Tags {
+			//	tags[s("%s%s", "opc-meta-", k)] = v
+			//}
 			return transfer.UploadRequest{
 				NamespaceName:                       common.String(oi.namespace),
 				BucketName:                          common.String(oi.ac.Bucket.Name),
 				ObjectName:                          common.String(oi.stage.fo.FKey()),
+				ObjectStorageClient:                 &oi.client,
 				EnableMultipartChecksumVerification: common.Bool(true),
-				StorageTier:                         objectstorage.PutObjectStorageTierStandard,
+				StorageTier:                         oi.ac.Provider.OCI.PutStorage,
 				PartSize:                            common.Int64(1024 * 1024 * 5),
+				Metadata:                            oi.ac.Tags,
 			}
 		},
 		After: func() error {
-			oi.stage.fo.IsUploaded = true
+			if !oi.stage.fo.IsFailed && !oi.stage.fo.Ignore {
+				oi.stage.fo.IsUploaded = true
+			}
 			oi.stage.index++
 			return f.Close()
 		},
@@ -125,12 +132,13 @@ func (oi *OracleIterator) Err() (err error) {
 }
 
 func (oi *OracleIterator) MarkIgnore(s string) {
+	oi.stage.fo.IsUploaded = false
 	oi.stage.fo.IgnoreString = s
 	oi.stage.fo.Ignore = true
 }
 
 func (oi *OracleIterator) MarkFailed(s string) {
 	oi.stage.fo.IsUploaded = false
-	oi.stage.fo.IsFailed = true
 	oi.stage.fo.IsFailedString = s
+	oi.stage.fo.IsFailed = true
 }

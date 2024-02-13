@@ -28,6 +28,14 @@ func buildClients(ac *conf.AppConfig) (
 	if err != nil {
 		return
 	}
+
+	if ac.Provider.OCI.Compartment == EmptyString {
+		ac.Provider.OCI.Compartment, err = getTenancyOcid(ac, cp)
+		if err != nil {
+			return
+		}
+		ac.Log.Info("Found tenancy OCID: %s", ac.Provider.OCI.Compartment)
+	}
 	return
 }
 
@@ -39,6 +47,11 @@ func getNamespace(ac *conf.AppConfig, client objectstorage.ObjectStorageClient) 
 		return
 	}
 	return *response.Value, nil
+}
+
+func getTenancyOcid(ac *conf.AppConfig, cp common.ConfigurationProvider) (tenancy string, err error) {
+	tenancy, err = cp.TenancyOCID()
+	return
 }
 
 func s(f string, v ...any) string {

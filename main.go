@@ -69,14 +69,14 @@ func main() {
 	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
 	_, _ = p.Println("https://github.com/orme292/s3packer\n")
 
-	profileF, createF, err := getFlags()
+	pFile, cFile, err := getFlags()
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	if createF != "" {
-		err = conf.Create(createF)
+	if cFile != "" {
+		err = conf.Create(cFile)
 		if err != nil {
 			fmt.Printf("An error occurred: %q\n\n", err.Error())
 			os.Exit(1)
@@ -85,7 +85,7 @@ func main() {
 		}
 	}
 
-	ac, err := conf.NewAppConfig(profileF)
+	ac, err := conf.NewAppConfig(pFile)
 	if err != nil {
 		ac.Log.Fatal(err.Error())
 	}
@@ -98,7 +98,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("s3packer Finished. %d Objects, Uploaded %d objects, %d Failed, %s, Ignored %d objects.\n", stats.Objects, stats.Uploaded, stats.Failed, objectify.FileSizeString(stats.Bytes), stats.Ignored)
+	fmt.Printf("s3packer Finished. %d Total Objects, %d Objects and %s Successfully Transferred, %d Failed, %d Ignored.\n", stats.Objects, stats.Uploaded, objectify.FileSizeString(stats.Bytes), stats.Failed, stats.Ignored)
 	if stats.Discrep != 0 {
 		fmt.Printf("%d objects unaccounted for. There's a discrepancy between the number of objects processed and the number of objects uploaded, failed or ignored.", stats.Discrep)
 	}

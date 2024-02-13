@@ -48,9 +48,7 @@ func (op *OracleOperator) CreateBucket() (err error) {
 		return
 	}
 
-	if response.Bucket.Id != nil {
-		op.ac.Log.Info("Created bucket %q (OCID:%s)", response.Bucket.Name, response.Bucket.Id)
-	}
+	op.ac.Log.Info("Created bucket %q (OCID:%s)", response.Bucket.Name, response.Bucket.Id)
 	return
 }
 
@@ -82,6 +80,16 @@ func (op *OracleOperator) Upload(po provider.PutObject) (err error) {
 	if err != nil {
 		return err
 	}
+	if response.SinglepartUploadResponse != nil {
+		if response.SinglepartUploadResponse.RawResponse.StatusCode != 200 {
+			return errors.New(s("(single) upload failed with status code %d", response.SinglepartUploadResponse.RawResponse.StatusCode))
+		}
+	}
+	if response.MultipartUploadResponse != nil {
+		if response.MultipartUploadResponse.RawResponse.StatusCode != 200 {
+			return errors.New(s("(multi) upload failed with status code %d", response.MultipartUploadResponse.RawResponse.StatusCode))
+		}
+	}
 	op.ac.Log.Debug("Object %q upload with UploadID %v", *ur.ObjectName, response.Type)
 	return nil
 }
@@ -91,6 +99,7 @@ func (op *OracleOperator) UploadMultipart(po provider.PutObject) (err error) {
 }
 
 func (op *OracleOperator) BucketExists() (exists bool, errs provider.Errs) {
+	exists = false
 	request := objectstorage.HeadBucketRequest{
 		NamespaceName: common.String(op.namespace),
 		BucketName:    common.String(op.ac.Bucket.Name),
@@ -99,12 +108,15 @@ func (op *OracleOperator) BucketExists() (exists bool, errs provider.Errs) {
 	response, err := op.client.HeadBucket(context.Background(), request)
 	if err != nil {
 		errs.Add(err)
-		return
+		return exists, errs
 	}
+	op.ac.Log.Debug("HeadBucket %q returned status code %d", op.ac.Bucket.Name, response.RawResponse.StatusCode)
 
-	op.ac.Log.Debug("Bucket %q with status code %d", op.ac.Bucket.Name, response.RawResponse.StatusCode)
 	if response.RawResponse.StatusCode != 200 {
-		return false, errs
+		op.ac.Log.Info("Bucket %q not found", op.ac.Bucket.Name)
+		return exists, errs
 	}
-	return true, errs
+	op.ac.Log.Info("Found bucket named %q", op.ac.Bucket.Name)
+	exists = true
+	return exists, errs
 }
