@@ -111,7 +111,7 @@ type readConfig struct {
 
 	// Tagging is used only for object tagging.
 	Tagging struct {
-		ChecksumSHA256 bool              `yaml:"Checksum"`
+		ChecksumSHA256 bool              `yaml:"ChecksumSHA256"`
 		Origins        bool              `yaml:"Origins"`
 		Tags           map[string]string `yaml:"Tags"`
 	} `yaml:"Tagging"`

@@ -85,6 +85,9 @@ func NewFileObj(ac *conf.AppConfig, p, rel string, grp int) (fo *FileObj, err er
 			}
 			fo.addTag("ChecksumSHA256", fo.ChecksumSHA256)
 		}
+		if ac.Tag.Origins {
+			fo.addTag("OriginPath", fo.OriginPath)
+		}
 		for k, v := range ac.Tags {
 			fo.addTag(k, v)
 		}
