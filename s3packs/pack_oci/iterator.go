@@ -20,7 +20,7 @@ func NewIterator(ac *conf.AppConfig, fol objectify.FileObjList, grp int) (iter *
 		return nil, err
 	}
 
-	namespace, err := getNamespace(ac, ociClient)
+	namespace, err := getNamespace(ac, &ociClient)
 	if err != nil {
 		return nil, err
 	}

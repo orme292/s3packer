@@ -16,14 +16,14 @@ func NewOracleOperator(ac *conf.AppConfig) (*OracleOperator, error) {
 	if err != nil {
 		return nil, err
 	}
-	ociNamespace, err := getNamespace(ac, ociClient)
+	ociNamespace, err := getNamespace(ac, &ociClient)
 	if err != nil {
 		return nil, err
 	}
 	return &OracleOperator{
 		ac:        ac,
-		identity:  ociIdentity,
-		client:    ociClient,
+		identity:  &ociIdentity,
+		client:    &ociClient,
 		namespace: ociNamespace,
 		um:        transfer.NewUploadManager(),
 	}, err

@@ -34,8 +34,8 @@ type OracleIterator struct {
 
 type OracleOperator struct {
 	ac        *conf.AppConfig
-	identity  identity.IdentityClient
-	client    objectstorage.ObjectStorageClient
+	identity  *identity.IdentityClient
+	client    *objectstorage.ObjectStorageClient
 	um        *transfer.UploadManager
 	namespace string
 }

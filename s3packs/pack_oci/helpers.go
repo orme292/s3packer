@@ -39,7 +39,7 @@ func buildClients(ac *conf.AppConfig) (
 	return
 }
 
-func getNamespace(ac *conf.AppConfig, client objectstorage.ObjectStorageClient) (namespace string, err error) {
+func getNamespace(ac *conf.AppConfig, client *objectstorage.ObjectStorageClient) (namespace string, err error) {
 	response, err := client.GetNamespace(context.Background(), objectstorage.GetNamespaceRequest{
 		CompartmentId: &ac.Provider.OCI.Compartment,
 	})
