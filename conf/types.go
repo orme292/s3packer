@@ -28,6 +28,10 @@ type createProfile struct {
 		Compartment string `yaml:"Compartment"`
 		Storage     string `yaml:"Storage"`
 	} `yaml:"OCI"`
+	Akamai struct {
+		Key    string `yaml:"Key"`
+		Secret string `yaml:"Secret"`
+	} `yaml:"Akamai"`
 	Bucket struct {
 		Create bool   `yaml:"Create"`
 		Name   string `yaml:"Name"`
@@ -84,6 +88,12 @@ type readConfig struct {
 		Compartment string `yaml:"Compartment"`
 		Storage     string `yaml:"Storage"`
 	} `yaml:"OCI"`
+
+	// Akamai will contain only Linode and Akamai specific configuration details.
+	Akamai struct {
+		Key    string `yaml:"Key"`
+		Secret string `yaml:"Secret"`
+	} `yaml:"Akamai"`
 
 	// Bucket should be universal across all providers, though there may be different fields depending on the
 	// provider.
@@ -150,6 +160,7 @@ type Provider struct {
 	Is     ProviderName
 	AWS    *ProviderAWS
 	OCI    *ProviderOCI
+	Akamai *ProviderAkamai
 	Key    string
 	Secret string
 }
@@ -178,6 +189,13 @@ type ProviderOCI struct {
 
 	// this is ridiculous, but the OCI SDK has a separate enum for PUT requests.
 	PutStorage objectstorage.PutObjectStorageTierEnum
+}
+
+// ProviderAkamai represents the Linode/Akamai provider configuration
+type ProviderAkamai struct {
+	Key      string
+	Secret   string
+	Endpoint string
 }
 
 // Bucket contains all details related to the bucket, for any provider. Create is not implemented.
@@ -243,10 +261,10 @@ type AppConfig struct {
 type ProviderName string
 
 const (
-	ProviderNameNone ProviderName = "none"
-	ProviderNameAWS  ProviderName = "aws"
-	ProviderNameOCI  ProviderName = "oci"
-	ProviderNameGCP  ProviderName = "gcp"
+	ProviderNameNone   ProviderName = "none"
+	ProviderNameAWS    ProviderName = "aws"
+	ProviderNameOCI    ProviderName = "oci"
+	ProviderNameAkamai ProviderName = "akamai"
 )
 
 func (p ProviderName) String() string {

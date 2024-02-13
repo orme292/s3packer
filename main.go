@@ -87,7 +87,8 @@ func main() {
 
 	ac, err := conf.NewAppConfig(pFile)
 	if err != nil {
-		ac.Log.Fatal(err.Error())
+		fmt.Println("An error occurred: ", err.Error())
+		os.Exit(1)
 	}
 
 	stats, errs := s3packs.Do(ac)
