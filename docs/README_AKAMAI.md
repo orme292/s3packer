@@ -49,11 +49,8 @@ s3packer won't find the bucket and (if configured to) will create a new one in t
 `Create` defaults to `false`. If `true`, s3packer will create the bucket in the specified region if it doesn't exist.
 
 `Region` should contain the region short-code. When you create a bucket in the Cloud Manager, the short code will be 
-listed in the region dropdown. You can also see the short code in the endpoint URL provided in the Cloud Manager. 
-
-In the example `s3packer-bucket.se-sto-1.linodeobjects.com`:</br>
-- `s3packer-bucket` is the bucket name </br>
-- `se-sto-1` is the region short-code.
+listed in the region dropdown. You can also check Akamai's documentation for a list of region short-codes: 
+[Akamai Region List][akamai_region_list_url].
 
 ```yaml
 Bucket:
@@ -84,8 +81,9 @@ Unfortunately, tags are not supported by Akamai Object Storage.
 
 ### Extra Options
 
-Akamai Object Storage does support AWS-like ACLs, but these aren't supported by s3packer yet.
-Storage tiers are not supported by Akamai Object Storage.
+Akamai Object Storage does support AWS-like ACLs, but these aren't supported by s3packer yet. All uploads will
+be set to private by default.<br/><br/>
+Storage tiers are _not_ supported by Akamai Object Storage.
 
 ---
 
@@ -183,3 +181,4 @@ And if you run into any issues or have any suggestions, feel free to open a new 
 <!-- Links -->
 [s3packer_readme_url]: https://github.com/orme292/s3packer/blob/master/README.md
 [akamai_auth_url]: https://www.linode.com/docs/products/storage/object-storage/guides/access-keys/
+[akamai_region_list_url]: https://www.linode.com/docs/products/storage/object-storage/#availability
