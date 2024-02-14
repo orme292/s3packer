@@ -9,32 +9,6 @@ import (
 	"github.com/orme292/s3packer/conf"
 )
 
-type FileObj struct {
-	OriginPath string
-	OriginDir  string
-	Base       string
-	RelRoot    string
-	AbsPath    string
-
-	FileSize       int64
-	ChecksumSHA256 string
-
-	FName    string
-	FPseudoP string
-	TagsMap  map[string]string
-
-	Ignore          bool
-	IgnoreString    string
-	IsDirectoryPart bool
-	IsFailed        bool
-	IsFailedString  string
-	IsUploaded      bool
-
-	Group int
-
-	ac *conf.AppConfig
-}
-
 func NewFileObj(ac *conf.AppConfig, p, rel string, grp int) (fo *FileObj, err error) {
 	ap, err := filepath.Abs(filepath.Clean(p))
 	if err != nil {

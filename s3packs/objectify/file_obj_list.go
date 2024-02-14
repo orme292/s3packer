@@ -4,8 +4,6 @@ import (
 	"github.com/orme292/s3packer/conf"
 )
 
-type FileObjList []*FileObj
-
 func NewFileObjList(ac *conf.AppConfig, files []string, rel string) (fol FileObjList, err error) {
 	fol = make(FileObjList, len(files))
 	for i, f := range files {
