@@ -3,9 +3,10 @@ package pack_akamai
 import (
 	"context"
 	"errors"
-	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/provider"
 )
@@ -25,14 +26,31 @@ func NewAkamaiOperator(ac *conf.AppConfig) (*AkamaiOperator, error) {
 func (op *AkamaiOperator) SupportsMultipartUploads() bool { return false }
 
 func (op *AkamaiOperator) CreateBucket() (err error) {
-	op.ac.Log.Fatal("CreateBucket() not implemented")
+	input := &s3.CreateBucketInput{
+		Bucket: aws.String(op.ac.Bucket.Name),
+		ACL:    types.BucketCannedACLPrivate,
+	}
+	_, err = op.client.CreateBucket(context.Background(), input)
+	if err != nil {
+		op.ac.Log.Error("Unable to create bucket %q: %q", op.ac.Bucket.Name, err.Error())
+		return err
+	}
+	op.ac.Log.Info("Created bucket %q in %q", op.ac.Bucket.Name, op.ac.Bucket.Region)
 	return
 }
 
 func (op *AkamaiOperator) ObjectExists(key string) (exists bool, err error) {
+	exists = false
+	input := &s3.HeadObjectInput{
+		Bucket: aws.String(op.ac.Bucket.Name),
+		Key:    aws.String(key),
+	}
+	_, err = op.client.HeadObject(context.Background(), input)
+	if err != nil {
+		return exists, errors.New(s("object %q not found", key))
+	}
 	exists = true
-	key = strings.ToUpper(strings.TrimSpace(key))
-	return false, nil
+	return exists, err
 }
 
 func (op *AkamaiOperator) Upload(po provider.PutObject) (err error) {
@@ -53,6 +71,15 @@ func (op *AkamaiOperator) UploadMultipart(po provider.PutObject) (err error) {
 }
 
 func (op *AkamaiOperator) BucketExists() (exists bool, errs provider.Errs) {
+	exists = false
+	input := s3.HeadBucketInput{
+		Bucket: aws.String(op.ac.Bucket.Name),
+	}
+	_, err := op.client.HeadBucket(context.Background(), &input)
+	if err != nil {
+		errs.Add(errors.New(s("akamai says bucket %q does not exist", op.ac.Bucket.Name)))
+		return exists, errs
+	}
 	exists = true
 	return exists, errs
 }

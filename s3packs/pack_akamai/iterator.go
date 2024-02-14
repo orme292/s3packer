@@ -72,10 +72,9 @@ func (ai *AkamaiIterator) Prepare() *provider.PutObject {
 		},
 		Object: func() any {
 			return &s3.PutObjectInput{
-				Body:    f,
-				Bucket:  aws.String(ai.ac.Bucket.Name),
-				Key:     aws.String(ai.stage.fo.FKey()),
-				Tagging: aws.String(awsTag(ai.stage.fo.TagsMap)),
+				Body:   f,
+				Bucket: aws.String(ai.ac.Bucket.Name),
+				Key:    aws.String(ai.stage.fo.FKey()),
 			}
 		},
 		After: func() error {

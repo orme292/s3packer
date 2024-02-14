@@ -39,18 +39,3 @@ func buildClient(ac *conf.AppConfig) (client *s3.Client, err error) {
 func s(format string, a ...any) string {
 	return fmt.Sprintf(format, a...)
 }
-
-func awsTag(tags map[string]string) string {
-	if len(tags) == 0 {
-		return EmptyString
-	}
-	var tag string
-	for k, v := range tags {
-		if tag == EmptyString {
-			tag = s("%s=%s", k, v)
-		} else {
-			tag = s("%s&%s=%s", tag, k, v)
-		}
-	}
-	return tag
-}

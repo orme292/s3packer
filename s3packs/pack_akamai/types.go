@@ -5,6 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/objectify"
 )
@@ -15,6 +17,13 @@ const (
 
 const (
 	ErrorCouldNotAssertObject = "could not assert object"
+)
+
+var (
+	s3Error        smithy.APIError
+	s3NotFound     *types.NotFound
+	s3NoSuchKey    *types.NoSuchKey
+	s3NoSuchBucket *types.NoSuchBucket
 )
 
 type AkamaiIterator struct {
