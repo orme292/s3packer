@@ -11,9 +11,6 @@ Bucket:
 Options:
   MaxUploads: 10
   Overwrite: never
-Tagging:
-  Checksum: false
-  Origins: false
 Objects:
   NamePrefix: ""
   RootPrefix: "2024-Feb/"
