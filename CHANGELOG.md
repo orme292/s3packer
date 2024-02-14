@@ -3,6 +3,22 @@ This is the Changelog. Between each version, major or minor, I'll document all c
 bug fix, feature addition, or minor tweak. 
 
 ---
+### **1.3.4** (2023-02-13)
+- conf: Added support for the Akamai provider
+- conf: Renamed provider-specific files like: provider_aws.go
+- conf: Better whitespace trimming from profile fields.
+- conf: Fixed bugs in error text for reading the profile file.
+- main: Fixed a seg fault that occurred when trying to write to the logger after an error occurred when reading the profile file.
+- s3packs/provider: moved bucket exists check to the provider initializer, to reduce the number of times it's called
+- s3packs/pack_akamai: core support for Akamai (Linode) Object Storage)
+- s3packs/objectify: move types to the type file.
+- profiles: added the yaml header "---"
+- profiles: added example3.yaml for Akamai
+- README: updated with Akamai information, header updated, go-version updated
+- README_OCI: header updated
+- README_AKAMAI: added
+- CHANGELOG: CHANGES LOGGED
+=======
 ### **1.3.3a** (2023-02-12)
 - Use Go 1.22.0
 - Update Github Actions to use Go 1.22.0

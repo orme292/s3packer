@@ -22,17 +22,17 @@ func (rc *readConfig) loadProfile(file string) (err error) {
 
 	file, err = filepath.Abs(file)
 	if err != nil {
-		return errors.New(S(ErrorProfilePath, err.Error()))
+		return errors.New(S("%s: %s", ErrorProfilePath, err.Error()))
 	}
 
 	f, err := os.ReadFile(filepath.Clean(file))
 	if err != nil {
-		return errors.New(S(ErrorOpeningProfile, err.Error()))
+		return errors.New(S("%s: %s", ErrorOpeningProfile, err.Error()))
 	}
 
 	err = yaml.Unmarshal(f, &rc)
 	if err != nil {
-		return errors.New(S(ErrorReadingYaml, err.Error()))
+		return errors.New(S("%s: %s", ErrorReadingYaml, err.Error()))
 	}
 
 	err = rc.validateLogging()
@@ -162,8 +162,7 @@ func (rc *readConfig) transposeStructOpts() (opts *Opts, err error) {
 // transposeStructProvider() returns a Provider struct. If the provider is not specified, then an error is returned.
 // There is only support for a single provider right now, so there's no real complexity here.
 func (rc *readConfig) transposeStructProvider() (p *Provider, err error) {
-	provider := whichProvider(rc.Provider)
-	switch provider {
+	switch whichProvider(rc.Provider) {
 	case ProviderNameAWS:
 		err = rc.validateProviderAWS()
 		if err != nil {
@@ -176,6 +175,12 @@ func (rc *readConfig) transposeStructProvider() (p *Provider, err error) {
 			return nil, err
 		}
 		return rc.buildProviderOCI(), err
+	case ProviderNameAkamai:
+		err = rc.validateProviderAkamai()
+		if err != nil {
+			return nil, err
+		}
+		return rc.buildProviderAkamai(), err
 	default:
 		return &Provider{Is: ProviderNameNone}, errors.New(ErrorProviderNotSpecified)
 	}
@@ -223,6 +228,25 @@ func (rc *readConfig) buildProviderOCI() (p *Provider) {
 			Compartment: rc.OCI.Compartment,
 			Storage:     tier,
 			PutStorage:  put,
+		},
+	}
+}
+
+func (rc *readConfig) buildProviderAkamai() (p *Provider) {
+	if strings.ToLower(strings.TrimSpace(rc.Bucket.Region)) == Empty {
+		rc.Bucket.Region = AkamaiRegionAshburn
+	}
+	endpoint, err := akamaiMatchRegion(rc.Bucket.Region)
+	if err != nil {
+		rc.Log.Warn(err.Error())
+	}
+
+	return &Provider{
+		Is: ProviderNameAkamai,
+		Akamai: &ProviderAkamai{
+			Key:      rc.Akamai.Key,
+			Secret:   rc.Akamai.Secret,
+			Endpoint: endpoint,
 		},
 	}
 }

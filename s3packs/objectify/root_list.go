@@ -6,14 +6,6 @@ import (
 	"github.com/orme292/s3packer/conf"
 )
 
-/*
-RootList is a list of FileObjLists.
-When you call NewRootList and specify a list of paths, it determines
-all the subdirectories of those paths and creates a FileObjList for
-each subdirectory.
-*/
-type RootList []FileObjList
-
 func NewRootList(ac *conf.AppConfig, paths []string) (rl RootList, err error) {
 	rl = make(RootList, len(paths))
 	for _, p := range paths {

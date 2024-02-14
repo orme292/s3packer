@@ -1,5 +1,5 @@
 package s3packs
 
 const (
-	Version = "1.3.3a"
+	Version = "1.3.4"
 )

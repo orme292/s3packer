@@ -1,6 +1,6 @@
 # s3packer - A configurable profile-based S3 backup and upload tool.
 
-Linux/MacOS | Supports AWS S3, Oracle Cloud (OCI) Object Storage
+**Linux/MacOS |||||** Amazon S3 **|** Oracle Cloud Object Storage **|** Akamai (Linode) Object Storage
 
 ---
 [![Go Version][go_version_img]][go_version_url]
@@ -16,12 +16,16 @@ See the [releases][releases_url] page...
 ---
 ## Providers
 
-**s3packer** supports AWS S3 and Oracle Cloud Object Storage. This readme will go over using AWS as a provider, but
-you can find information on using OCI in the [README_OCI.md][s3packer_oci_readme_url] file.
+**s3packer** supports AWS S3, Oracle Cloud Object Storage, and Akamai (Linode) Object Storage. This readme will 
+go over using AWS as a provider, but there are additional docs available for other providers.
+
+- OCI: [README_OCI.md][s3packer_oci_readme_url]
+- Akamai: [README_AKAMAI.md][s3packer_akamai_readme_url]
 
 You can see sample profiles here:
 - [example1.yaml][example1_url] (AWS)
 - [example2.yaml][example2_url] (OCI)
+- [example3.yaml][example3_url] (Akamai/Linode)
 ---
 
 ## How to Use
@@ -248,15 +252,18 @@ And if you run into any issues or have any suggestions, feel free to open a new 
 <!-- Links -->
 [releases_url]: https://github.com/orme292/s3packer/releases
 [issue_repo_url]: https://github.com/orme292/s3packer/issues/new/choose
-[go_version_url]: https://golang.org/doc/go1.21
+[go_version_url]: https://golang.org/doc/go1.22
 [go_report_url]: https://goreportcard.com/report/github.com/orme292/s3packer
 [repo_license_url]: https://github.com/orme292/s3packer/blob/master/LICENSE
 [s3_acl_url]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
+
 [s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/README_OCI.md
+[s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/README_AKAMAI.md
 
 [example1_url]:https://github.com/orme292/s3packer/blob/master/profiles/example1.yaml
 [example2_url]:https://github.com/orme292/s3packer/blob/master/profiles/example2.yaml
+[example3_url]:https://github.com/orme292/s3packer/blob/master/profiles/example3.yaml
 
-[go_version_img]: https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go
+[go_version_img]: https://img.shields.io/badge/Go-1.22-00ADD8?style=for-the-badge&logo=go
 [go_report_img]: https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none
 [repo_license_img]: https://img.shields.io/badge/license-MIT-orange?style=for-the-badge&logo=none

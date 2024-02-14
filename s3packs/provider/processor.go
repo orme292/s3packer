@@ -26,49 +26,53 @@ func NewProcessor(ac *conf.AppConfig, ops Operator, iterFn IteratorFunc) (p *Pro
 			return nil, err
 		}
 	}
-	return &Processor{
+
+	p = &Processor{
 		ac:     ac,
 		rl:     rl,
 		fol:    fol,
 		ops:    ops,
 		iterFn: iterFn,
-	}, nil
-}
+	}
 
-func (p *Processor) Run() (errs Errs) {
-	exists, errs := p.ops.BucketExists()
-	if !exists {
+	// Single Bucket Check
+	p.ac.Log.Info("Checking if bucket %q exists...", p.ac.Bucket.Name)
+	exists, _ := p.ops.BucketExists()
+	if exists == false {
 		p.ac.Log.Info("Bucket %q does not exist.", p.ac.Bucket.Name)
 		if p.ac.Bucket.Create == true {
 			err := p.ops.CreateBucket()
 			if err != nil {
-				errs.Add(err)
+				return nil, err
 			} else {
 				p.ac.Log.Info("Created bucket %q", p.ac.Bucket.Name)
-				errs.Release()
 			}
 		} else {
-			errs.Add(fmt.Errorf("bucket %q does not exist", p.ac.Bucket.Name))
-			return
+			return nil, err
 		}
 	}
-	if len(errs.Each) > 0 {
-		return errs
-	}
 
-	if len(p.rl) > 0 {
-		for i := range p.rl {
-			iterErrs := p.RunIterator(p.rl[i], DisregardGroups)
+	return p, nil
+}
+
+func (p *Processor) Run() (errs Errs) {
+	if p.rl != nil {
+		if len(p.rl) > 0 {
+			for i := range p.rl {
+				iterErrs := p.RunIterator(p.rl[i], DisregardGroups)
+				errs.Append(iterErrs)
+			}
+		}
+	}
+	if p.fol != nil {
+		if len(p.fol) > 0 {
+			iterErrs := p.RunIterator(p.fol, DisregardGroups)
 			errs.Append(iterErrs)
 		}
 	}
-	if len(p.fol) > 0 {
-		iterErrs := p.RunIterator(p.fol, DisregardGroups)
-		errs.Append(iterErrs)
-	}
 	p.populateStats()
 	p.outputIgnored()
-	return errs
+	return
 }
 
 func (p *Processor) RunIterator(fol objectify.FileObjList, grp int) (errs Errs) {

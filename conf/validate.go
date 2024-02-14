@@ -31,8 +31,8 @@ func (rc *readConfig) validateLogging() (err error) {
 	return
 }
 
-// validateProviderAWS() checks that the AWS profile and keys are not both specified. If they are, then an error
-// is returned. If A key is provided, but not a secret, or vice versa, then an error is returned, also.
+// validateProviderAWS() checks that the AWS checks to see if the profile is empty or the key/secret are empty. If
+// the profile is empty and one or both of the key/secret are empty, then an error is returned.
 func (rc *readConfig) validateProviderAWS() (err error) {
 	if rc.AWS.Profile != Empty && (rc.AWS.Key != Empty || rc.AWS.Secret != Empty) {
 		err = errors.New(ErrorAWSProfileAndKeys)
@@ -43,6 +43,17 @@ func (rc *readConfig) validateProviderAWS() (err error) {
 	return
 }
 
+// validateProviderAkamai() checks to see if the Linode/Akamai Key or Secret are empty, if they are then an error
+// is returned.
+func (rc *readConfig) validateProviderAkamai() (err error) {
+	if rc.Akamai.Secret == Empty || rc.Akamai.Key == Empty {
+		return errors.New(ErrorAkamaiKeyOrSecretNotSpecified)
+	}
+	return
+}
+
+// validateProviderOCI() checks to see if the OCI profile is empty. If it is, then an error is returned.
+// The compartment can be empty but
 func (rc *readConfig) validateProviderOCI() (err error) {
 	if rc.OCI.Profile == Empty {
 		return errors.New(ErrorOCIAuthNotSpecified)

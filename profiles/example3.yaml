@@ -1,23 +1,16 @@
 ---
 Version: 4
-Provider: oci
-OCI:
-  Profile: "default"
-  Compartment: "ocid1.compartment.oc1..aaaaaaaaabbbbb..."
-  Storage: "InfrequentAccess"
+Provider: Akamai
+Akamai:
+  Key: zzzyyyyxxxxx1111222
+  Secret: aabbbcccddddeeeffff999988888
 Bucket:
-  Create: false
+  Create: true
   Name: code-backups
-  Region: us-ashburn-1
+  Region: se-sto-1
 Options:
   MaxUploads: 10
   Overwrite: never
-Tagging:
-  Checksum: true
-  Origins: true
-  Tags:
-    company: big data llc
-    project: code backups
 Objects:
   NamePrefix: ""
   RootPrefix: "2024-Feb/"

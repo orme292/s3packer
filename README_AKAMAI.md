@@ -3,7 +3,7 @@
 **Linux/MacOS |||||** Amazon S3 **|** Oracle Cloud Object Storage **|** Akamai (Linode) Object Storage
 
 ---
-## Using s3packer with Oracle Cloud (OCI)
+## Using s3packer with Akamai (Linode) Object Storage
 
 ◀️ [Back to s3packer][s3packer_readme_url]
 
@@ -14,46 +14,52 @@
 s3packer can create a base profile to help get you started. To create one, use the `--create` flag:
 
 ```bash
-$ s3packer --create="my-new-oci-profile.yaml"
+$ s3packer --create="my-new-akamai-profile.yaml"
 ```
 
 ## Setting up a Profile
 
 s3packer profiles are written in the YAML format. To set one up, you just need to fill out a few fields, and you’ll be good to go!
 
-First, make sure you specify that you're using Version 4 of the profile format and specify OCI as the object storage provider:
+First, make sure you specify that you're using Version 4 of the profile format and specify `Akamai` as the object storage provider:
 
 ```yaml
+---
 Version: 4
-Provider: oci
+Provider: Akamai
 ```
 
 ---
 ## Authentication
-> 💡 You can remove the **AWS** section from the profile.
+> 💡 Reminder<br/>
+> You can and should remove any provider fields that you're not using, like AWS and OCI.
 
-**s3packer** handles OCI authentication that is generated with the OCI-CLI. You can specify a profile that's already set 
-up in your `~/.oci/config` file.
-
-For info on setting up the OCI-CLI, check out the [Oracle Cloud documentation][oci_cli_url].
-
-The compartment field can be left blank. It is only required if s3packer has to create a bucket. If s3packer is creating the bucket,
-and no compartment is specified, it will use the tenancy root as the compartment.
+**s3packer** uses access keys to authenticate with Akamai. You can find and generate access keys in the Cloud Manager.
+For info on generating new access keys, check out the [Akamai Object Storage Guide][akamai_auth_url].
 
 ```yaml
-OCI:
-  Profile: "default"
-  Compartment: "ocid1.compartment.oc1..aaaaaaa..."
+Akamai:
+  Key: zzzyyyyxxxxx1111222
+  Secret: aabbbcccddddeeeffff999988888
 ```
 
-Next, configure the bucket. The `name` field is required. The `region` field **must contain something**, but
-it can be any string. s3packer can find the bucket by name. If it's creating the bucket, it will be 
-created in the tenancy's default region.
+Next, configure the bucket. The `name` and `region` fields are required. If the `region` field isn't correct,
+s3packer won't find the bucket and (if configured to) will create a new one in the specified region.
+
+`Create` defaults to `false`. If `true`, s3packer will create the bucket in the specified region if it doesn't exist.
+
+`Region` should contain the region short-code. When you create a bucket in the Cloud Manager, the short code will be 
+listed in the region dropdown. You can also see the short code in the endpoint URL provided in the Cloud Manager. 
+
+In the example `s3packer-bucket.se-sto-1.linodeobjects.com`:</br>
+- `s3packer-bucket` is the bucket name </br>
+- `se-sto-1` is the region short-code.
 
 ```yaml
 Bucket:
-  Name: "free-data"
-  Region: "eu-zurich-1"
+  Create: false
+  Name: "s3packer-bucket"
+  Region: "se-sto-1"
 ```
 
 Finally, tell s3packer what you want to upload. You can specify folders, directories, or individual files. (You can call
@@ -74,35 +80,16 @@ Uploads:
 
 ### Tags
 
-You can also add tags to your files. Just add a `Tagging` section to your profile, like this:
-
-```yaml
-Tagging:
-  Tags:
-    Author: "Forrest Gump"
-    Year: 1994
-```
----
+Unfortunately, tags are not supported by Akamai Object Storage.
 
 ### Extra Options
 
-You can also customize how your files are stored, accessed, tagged, and uploaded using these options.
+Akamai Object Storage does support AWS-like ACLs, but these aren't supported by s3packer yet.
+Storage tiers are not supported by Akamai Object Storage.
 
 ---
-```yaml
-OCI:
-  Storage: "standard"
-```
 
-**Storage** <br/>
-The default is `STANDARD`, but you can use any of the following storage classes:
-- `Standard`
-- `InfrequentAccess`
-- `Archive`
-
-Read more about OCI's storage tiers here: [https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm][oci_tier_url]
-
----
+### Object Naming Options
 
 ```yaml
 Objects:
@@ -139,22 +126,6 @@ directory level, so the biggest speed gains are seen when uploading a directory 
 **Overwrite**  <br/>
 This is `never` by default. If you set it to `always`, s3packer will Overwrite any files in the bucket that
 have the same name as what you're uploading. Useful if you're uploading a file that is updated over and over again.
-
----
-
-```yaml
-Tagging:
-  ChecksumSHA256: false
-  Origins: true
-```
-**ChecksumSHA256** <br/>
-This is `true` by default. Every object uploaded will be tagged with the file's calculated SHA256 checksum. It'll
-be used to verify file changes in the future. Whether this is `true` or `false`, the SHA256 checksum will still be
-calculated and used to verify the integrity of the file after it's uploaded.
-
-**Origins** <br/>
-This is `true` by default. Every object uploaded will be tagged with the full absolute path of the file on the
-local filesystem. This is useful if you want to be able to trace the origin of a file in S3.
 
 ---
 
@@ -211,5 +182,4 @@ And if you run into any issues or have any suggestions, feel free to open a new 
 
 <!-- Links -->
 [s3packer_readme_url]: https://github.com/orme292/s3packer/blob/master/README.md
-[oci_tier_url]: https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
-[oci_cli_url]: https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm#InstallingCLI__macos_homebrew
+[akamai_auth_url]: https://www.linode.com/docs/products/storage/object-storage/guides/access-keys/

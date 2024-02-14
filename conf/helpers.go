@@ -38,6 +38,8 @@ func whichProvider(s string) ProviderName {
 		return ProviderNameAWS
 	case "oci", "oracle", "oraclecloud", "oracle cloud", "oracle cloud infrastructure":
 		return ProviderNameOCI
+	case "akamai", "linode":
+		return ProviderNameAkamai
 	default:
 		return ProviderNameNone
 	}

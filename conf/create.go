@@ -76,6 +76,10 @@ func Create(filename string) (err error) {
 		}
 	}(f)
 
+	_, err = f.WriteString("---\n")
+	if err != nil {
+		return err
+	}
 	_, err = f.Write(o)
 	if err != nil {
 		return err
