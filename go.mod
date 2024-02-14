@@ -1,17 +1,17 @@
 module github.com/orme292/s3packer
 
-go 1.21.5
+go 1.22.0
 
 require (
 	github.com/abusomani/go-palette v1.1.0
 	github.com/aws/aws-sdk-go-v2 v1.24.1
 	github.com/aws/aws-sdk-go-v2/config v1.26.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.16
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.15.14
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.48.0
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.15.15
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.48.1
 	github.com/aws/smithy-go v1.19.0
 	github.com/oracle/oci-go-sdk/v49 v49.2.0
-	github.com/rs/zerolog v1.31.0
+	github.com/rs/zerolog v1.32.0
 	github.com/spf13/pflag v1.0.5
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -35,5 +35,4 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/sony/gobreaker v0.4.2-0.20210216022020-dd874f9dd33b // indirect
 	golang.org/x/sys v0.12.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

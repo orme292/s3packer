@@ -18,6 +18,14 @@ bug fix, feature addition, or minor tweak.
 - README_OCI: header updated
 - README_AKAMAI: added
 - CHANGELOG: CHANGES LOGGED
+=======
+### **1.3.3a** (2023-02-12)
+- Use Go 1.22.0
+- Update Github Actions to use Go 1.22.0
+- Update Dependencies: 
+    - aws-sdk-go-v2/feature/s3/manager v1.15.14 -> v1.15.15
+    - aws-sdk-go-v2/service/s3 v1.48.0 -> v1.48.1
+    - rs/zerolog v1.31.0 -> v1.32.0
 
 ### **1.3.3** (2023-02-12)
 - conf: Added support for the OCI provider
