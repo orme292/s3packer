@@ -75,5 +75,5 @@ func akamaiMatchRegion(region string) (endpoint string, err error) {
 }
 
 const (
-	ErrorAkamaiKeyOrSecretNotSpecified = "akamai key or secret not specified"
+	ErrorAkamaiKeyOrSecretNotSpecified = "akamai access keys not specified"
 )
