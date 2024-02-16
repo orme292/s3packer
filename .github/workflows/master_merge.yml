@@ -73,7 +73,7 @@ jobs:
           prerelease: false
           fail_on_unmatched_files: true
           name: Release ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.branch.outputs.branch }}-${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
           body_path: ./CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
