@@ -1,17 +1,20 @@
+---
 name: Quality Assurance
-
 on:
   push:
-    paths: [ '**.go' ]
+    paths: ['**.go']
   pull_request:
-    paths: [ '**.go' ]
+    branches:
+      - master
+    types: [opened, edited, synchronize, reopened]
+    paths: ['**.go']
 
 jobs:
-  build:
+  quality-check:
     strategy:
       matrix:
-        go: [ 1.22.0 ]
-        os: [ 'ubuntu-latest' ]
+        go: [1.22.0]
+        os: ['ubuntu-latest']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3

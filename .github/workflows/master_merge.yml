@@ -1,8 +1,9 @@
-name: prod-release
+---
+name: Prod Release
 on:
-
   push:
-    branches: [master]
+    branches:
+      - master
 
 permissions:
   contents: write
@@ -11,8 +12,8 @@ jobs:
   prod-merge-build-release:
     strategy:
       matrix:
-        go-version: [ 1.22.0 ]
-        os: [ ubuntu-latest ]
+        go-version: [1.22.0]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repo
