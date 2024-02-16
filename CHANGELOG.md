@@ -17,8 +17,11 @@ bug fix, feature addition, or minor tweak.
 - README: updated with Akamai information, header updated, go-version updated
 - README_OCI: header updated
 - README_AKAMAI: added
+- GITIGNORE: added local CI dev files
+- GHA: Updated formats, names, triggers, etc.
 - CHANGELOG: CHANGES LOGGED
-=======
+
+---
 ### **1.3.3a** (2023-02-12)
 - Use Go 1.22.0
 - Update Github Actions to use Go 1.22.0

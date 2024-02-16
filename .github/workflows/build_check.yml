@@ -1,15 +1,21 @@
-name: general-build-check
-on: [push, pull_request]
+---
+name: Build Check
+on:
+  push:
+    branches-ignore:
+      - master
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   contents: write
 
 jobs:
-  general-build-check:
+  build-check:
     strategy:
       matrix:
-        go-version: [ 1.22.0 ]
-        os: [ 'ubuntu-latest' ]
+        go-version: [1.22.0]
+        os: ['ubuntu-latest']
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repo
@@ -32,7 +38,7 @@ jobs:
       - name: Make Artifact Directory
         run: mkdir -p ./bin
 
-#     Compile Binaries
+      # Compile Binaries
       - name: Build Linux ARM64 Artifact
         run: GOOS=linux GOOARCH=arm64 go build -o ./bin/s3packer-linux-arm64 .
 

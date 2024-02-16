@@ -3,5 +3,6 @@ s3packer
 *.log
 /scripts/
 /s3pack-old/*
-/profiles/myprofile*
+/profiles/test_profile*
 /playground
+/terraform
