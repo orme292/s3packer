@@ -9,6 +9,17 @@
 
 [![Code Quality](https://github.com/orme292/s3packer/actions/workflows/golang.yml/badge.svg)](https://github.com/orme292/s3packer/actions/workflows/golang.yml)
 
+---
+## About
+**s3packer is aiming to be a highly configurable profile-based S3 storage upload and backup tool. Instead of crafting
+and managing long complex commands, you can create YAML based profiles that will tell s3packer what to upload, 
+where to upload, how to name, and how to tag the files.**
+
+**If you're going for redundancy, you can use profiles to upload to multiple S3 providers. s3packer currently supports 
+several services, like AWS, OCI (Oracle Cloud), and Akamai (Linode). I'm also fleshing out a plug-in system that makes
+is easier to build out your own provider packs to support unsupported services.**
+
+---
 ## Download 
 
 See the [releases][releases_url] page...
@@ -244,9 +255,10 @@ directories with a large number of files can take some time as the checksums are
 
 ---
 
-### Issues
+### Issues & Suggestions
 
-And if you run into any issues or have any suggestions, feel free to open a new issue on [GitHub][issue_repo_url].
+If you run into any problems, errors, or have feature suggestions PLEASE feel free to open a new issue on 
+[GitHub][issue_repo_url].
 
 
 <!-- Links -->
