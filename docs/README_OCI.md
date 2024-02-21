@@ -206,6 +206,15 @@ directories with a large number of files can take some time as the checksums are
 
 And if you run into any issues or have any suggestions, feel free to open a new issue on [GitHub][issue_repo_url].
 
+---
+
+### Development
+
+s3packer was built with Jetbrains GoLand
+
+[![Jetbrains_OSS][GoLand logo]][jetbrains_goland_url]
+
+---
 
 ◀️ [Back to s3packer][s3packer_readme_url]
 
@@ -213,3 +222,6 @@ And if you run into any issues or have any suggestions, feel free to open a new 
 [s3packer_readme_url]: https://github.com/orme292/s3packer/blob/master/README.md
 [oci_tier_url]: https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
 [oci_cli_url]: https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm#InstallingCLI__macos_homebrew
+
+[GoLand logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/GoLand_icon.svg
+[jetbrains_goland_url]: https://www.jetbrains.com/go/

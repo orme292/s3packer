@@ -175,6 +175,15 @@ directories with a large number of files can take some time as the checksums are
 
 And if you run into any issues or have any suggestions, feel free to open a new issue on [GitHub][issue_repo_url].
 
+---
+
+### Development
+
+s3packer was built with Jetbrains GoLand
+
+[![Jetbrains_OSS][GoLand logo]][jetbrains_goland_url]
+
+---
 
 ◀️ [Back to s3packer][s3packer_readme_url]
 
@@ -182,3 +191,6 @@ And if you run into any issues or have any suggestions, feel free to open a new 
 [s3packer_readme_url]: https://github.com/orme292/s3packer/blob/master/README.md
 [akamai_auth_url]: https://www.linode.com/docs/products/storage/object-storage/guides/access-keys/
 [akamai_region_list_url]: https://www.linode.com/docs/products/storage/object-storage/#availability
+
+[GoLand logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/GoLand_icon.svg
+[jetbrains_goland_url]: https://www.jetbrains.com/go/
