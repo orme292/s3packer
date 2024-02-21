@@ -260,6 +260,14 @@ directories with a large number of files can take some time as the checksums are
 If you run into any problems, errors, or have feature suggestions PLEASE feel free to open a new issue on 
 [GitHub][issue_repo_url].
 
+---
+
+### Development
+
+s3packer was built with Jetbrains GoLand
+
+[![Jetbrains_OSS][GoLand logo]][jetbrains_goland_url]
+
 
 <!-- Links -->
 [releases_url]: https://github.com/orme292/s3packer/releases
@@ -279,3 +287,6 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 [go_version_img]: https://img.shields.io/badge/Go-1.22-00ADD8?style=for-the-badge&logo=go
 [go_report_img]: https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none
 [repo_license_img]: https://img.shields.io/badge/license-MIT-orange?style=for-the-badge&logo=none
+
+[GoLand logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/GoLand_icon.svg
+[jetbrains_goland_url]: https://www.jetbrains.com/go/
