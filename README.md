@@ -10,6 +10,13 @@
 [![Code Quality](https://github.com/orme292/s3packer/actions/workflows/golang.yml/badge.svg)](https://github.com/orme292/s3packer/actions/workflows/golang.yml)
 
 ---
+
+[![Jetbrains_OSS][jetbrains_logo]][jetbrains_oss_url] [![Jetbrains_GoLand][jetbrains_goland_logo]][jetbrains_goland_url]
+
+Special thanks to JetBrains! </br>
+**s3packer** is developed with support from the JetBrains Open Source program.
+
+---
 ## About
 **s3packer is aiming to be a highly configurable profile-based S3 storage upload and backup tool. Instead of crafting
 and managing long complex commands, you can create YAML based profiles that will tell s3packer what to upload, 
@@ -20,6 +27,7 @@ several services, like AWS, OCI (Oracle Cloud), and Akamai (Linode). I'm also fl
 is easier to build out your own provider packs to support unsupported services.**
 
 ---
+
 ## Download 
 
 See the [releases][releases_url] page...
@@ -262,12 +270,6 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 
 ---
 
-### Development
-
-s3packer was built with Jetbrains GoLand
-
-[![Jetbrains_OSS][GoLand logo]][jetbrains_goland_url]
-
 
 <!-- Links -->
 [releases_url]: https://github.com/orme292/s3packer/releases
@@ -288,5 +290,7 @@ s3packer was built with Jetbrains GoLand
 [go_report_img]: https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none
 [repo_license_img]: https://img.shields.io/badge/license-MIT-orange?style=for-the-badge&logo=none
 
-[GoLand logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/GoLand_icon.svg
-[jetbrains_goland_url]: https://www.jetbrains.com/go/
+[jetbrains_logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/jb_square.svg
+[jetbrains_oss_url]: https://www.jetbrains.com/community/opensource/#support
+[jetbrains_goland_logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/GoLand_icon.svg
+[jetbrains_goland_url]: https://www.jetbrains.com/goland]
