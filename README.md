@@ -293,4 +293,4 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 [jetbrains_logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/jb_square.svg
 [jetbrains_oss_url]: https://www.jetbrains.com/community/opensource/#support
 [jetbrains_goland_logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/GoLand_icon.svg
-[jetbrains_goland_url]: https://www.jetbrains.com/goland]
+[jetbrains_goland_url]: https://www.jetbrains.com/goland
