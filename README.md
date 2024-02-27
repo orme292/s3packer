@@ -19,23 +19,23 @@ Special thanks to JetBrains! </br>
 ---
 ## About
 **s3packer is aiming to be a highly configurable profile-based S3 storage upload and backup tool. Instead of crafting
-and managing long complex commands, you can create YAML based profiles that will tell s3packer what to upload, 
+and managing long complex commands, you can create YAML based profiles that will tell s3packer what to upload,
 where to upload, how to name, and how to tag the files.**
 
-**If you're going for redundancy, you can use profiles to upload to multiple S3 providers. s3packer currently supports 
+**If you're going for redundancy, you can use profiles to upload to multiple S3 providers. s3packer currently supports
 several services, like AWS, OCI (Oracle Cloud), and Akamai (Linode). I'm also fleshing out a plug-in system that makes
 is easier to build out your own provider packs to support unsupported services.**
 
 ---
 
-## Download 
+## Download
 
 See the [releases][releases_url] page...
 
 ---
 ## Providers
 
-**s3packer** supports AWS S3, Oracle Cloud Object Storage, and Akamai (Linode) Object Storage. This readme will 
+**s3packer** supports AWS S3, Oracle Cloud Object Storage, and Akamai (Linode) Object Storage. This readme will
 go over using AWS as a provider, but there are additional docs available for other providers.
 
 - OCI: [README_OCI.md][s3packer_oci_readme_url]
@@ -79,7 +79,7 @@ Be sure to specify a provider:
 Provider: aws
 ```
 
-Use your AWS Key/Secret pair: 
+Use your AWS Key/Secret pair:
 
 ```yaml
 Version: 4
@@ -232,7 +232,7 @@ Logging:
  ```
 
 **Level:**<br/>
-This is `2` by default. The setting is by severity, with 0 being least severe and 5 being most severe. 0 will log 
+This is `2` by default. The setting is by severity, with 0 being least severe and 5 being most severe. 0 will log
 all messages (including debug), and 5 will only log fatal messages which cause the program to exit.
 
 **Console:**<br/>
@@ -240,11 +240,11 @@ This is `true` by default. Outputs logging messages to standard output. If you s
 prints minimal output.
 
 **File:**<br/>
-This is `false` by default. If you set it to `true`, s3packer will write structured log (JSON) messages to 
+This is `false` by default. If you set it to `true`, s3packer will write structured log (JSON) messages to
 a file. You MUST also specify a `Filepath`.
 
 **Filepath:** <br/>
-File to write structured log messages to. If you set `File` to `true`, you must specify a filename. 
+File to write structured log messages to. If you set `File` to `true`, you must specify a filename.
 The file will be created if it doesn't exist, and appended to if it does.
 
 ---
@@ -259,13 +259,13 @@ Also, if you’ve got multiple files with the same name (like if you have five �
 **Directories**
 
 When you’re uploading directories, all the subdirectories and files will be uploaded to the bucket as well. Processing
-directories with a large number of files can take some time as the checksums are calculated. 
+directories with a large number of files can take some time as the checksums are calculated.
 
 ---
 
 ### Issues & Suggestions
 
-If you run into any problems, errors, or have feature suggestions PLEASE feel free to open a new issue on 
+If you run into any problems, errors, or have feature suggestions PLEASE feel free to open a new issue on
 [GitHub][issue_repo_url].
 
 ---
