@@ -4,12 +4,12 @@ go 1.22.0
 
 require (
 	github.com/abusomani/go-palette v1.1.0
-	github.com/aws/aws-sdk-go-v2 v1.24.1
+	github.com/aws/aws-sdk-go-v2 v1.26.0
 	github.com/aws/aws-sdk-go-v2/config v1.26.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.16
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.15.15
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.48.1
-	github.com/aws/smithy-go v1.19.0
+	github.com/aws/smithy-go v1.20.1
 	github.com/oracle/oci-go-sdk/v49 v49.2.0
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/pflag v1.0.5
