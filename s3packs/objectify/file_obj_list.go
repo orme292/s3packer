@@ -49,15 +49,15 @@ func (fol FileObjList) repairRedundantKeys() {
 	}
 }
 
-func (fol FileObjList) MaxGroup() (max int) {
+func (fol FileObjList) MaxGroup() (maxVal int) {
 	if len(fol) == 0 {
 		return 0
 	}
 
-	max = fol[0].Group
+	maxVal = fol[0].Group
 	for _, fo := range fol {
-		if fo.Group > max {
-			max = fo.Group
+		if fo.Group > maxVal {
+			maxVal = fo.Group
 		}
 	}
 

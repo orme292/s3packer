@@ -1,8 +1,6 @@
 package objectify
 
 import (
-	"fmt"
-
 	"github.com/orme292/s3packer/conf"
 )
 
@@ -14,7 +12,7 @@ func NewRootList(ac *conf.AppConfig, paths []string) (rl RootList, err error) {
 			return nil, err
 		}
 		for _, d := range dirs {
-			fmt.Printf("Processing directory: %q\n", d)
+			ac.Log.Info("Found directory: %q", d)
 			files, err := getFiles(ac, d)
 			if err != nil {
 				return nil, err

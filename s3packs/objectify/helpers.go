@@ -9,10 +9,10 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/orme292/s3packer/conf"
+	sw "github.com/orme292/symwalker"
 )
 
 // getFileSize returns the size of a file in bytes.
@@ -30,32 +30,17 @@ func getFileSize(ap string) (size int64, err error) {
 }
 
 func getFiles(ac *conf.AppConfig, p string) (files []string, err error) {
-	ap, err := filepath.Abs(filepath.Clean(p))
+	results, err := sw.SymWalker(sw.NewSymConf(
+		sw.WithStartPath(p),
+		sw.WithFollowedSymLinks(),
+		sw.WithDepth(sw.FLAT),
+	))
 	if err != nil {
-		return nil, errors.New("Error getting absolute path: " + err.Error())
+		return
 	}
 
-	ap, err = filepath.EvalSymlinks(ap)
-	if err != nil {
-		return nil, errors.New("Error evaluating link: " + err.Error())
-	}
-
-	objs, err := os.ReadDir(ap)
-	if err != nil {
-		return nil, errors.New("Error reading directory: " + err.Error())
-	}
-	for _, file := range objs {
-		info, err := file.Info()
-		if err != nil {
-			ac.Log.Warn("Unable to stat, skipping: %q", filepath.Join(ap, file.Name()))
-			continue
-		}
-		mode := info.Mode()
-		if mode.IsRegular() && !info.IsDir() {
-			files = append(files, filepath.Join(ap, file.Name()))
-		} else if !mode.IsRegular() && !info.IsDir() {
-			ac.Log.Warn("Skipping non-regular file: %q", filepath.Join(ap, file.Name()))
-		}
+	for _, file := range results.Files {
+		files = append(files, file.Path)
 	}
 	return
 }
@@ -69,43 +54,18 @@ func isRegular(ap string) (bool, error) {
 }
 
 func getSubDirs(p string) (dirs []string, err error) {
-	ap, err := filepath.Abs(filepath.Clean(p))
+	results, err := sw.SymWalker(sw.NewSymConf(
+		sw.WithStartPath(p),
+		sw.WithFollowedSymLinks(),
+		sw.WithoutFiles(),
+	))
 	if err != nil {
-		return nil, errors.New("Error getting absolute path: " + err.Error())
+		return
 	}
 
-	ap, err = filepath.EvalSymlinks(ap)
-	if err != nil {
-		return nil, errors.New("Error evaluating link: " + err.Error())
+	for _, dir := range results.Dirs {
+		dirs = append(dirs, dir.Path)
 	}
-
-	err = filepath.WalkDir(ap, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if d.IsDir() {
-			if d.Type()&fs.ModeSymlink != 0 {
-				path, err = os.Readlink(path)
-				if err != nil {
-					return err
-				}
-
-				rInfo, err := os.Stat(path)
-				if err != nil {
-					return err
-				}
-
-				if rInfo.IsDir() {
-					dirs = append(dirs, path)
-				}
-			} else {
-				dirs = append(dirs, path)
-			}
-		}
-		return nil
-	})
-
 	return
 }
 
