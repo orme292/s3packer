@@ -111,7 +111,7 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 		return err
 	}
 
-	if len(inc.Files) <= 0 && len(inc.Dirs) <= 0 {
+	if len(inc.Files) == 0 && len(inc.Dirs) == 0 {
 		return fmt.Errorf("bad profile config: %s", ErrorNoFilesSpecified)
 	}
 
