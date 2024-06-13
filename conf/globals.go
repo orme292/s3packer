@@ -28,10 +28,10 @@ const (
 )
 
 const (
-	InvalidAWSACL                   = "invalid aws acl"
-	ErrorAWSProfileAndKeys          = "you provided AWS profile name and key/secret pair, use profile or keys"
-	ErrorAWSKeyOrSecretNotSpecified = "must specify both AWS key and secret"
-	ErrorAWSAuthNeeded              = "must provider either AWS profile name or key/secret pair"
+	InvalidAWSACL          = "invalid aws acl"
+	ErrorAWSProfileAndKeys = "you provided AWS profile name and key/secret pair, use profile or keys"
+	ErrorAWSMissingAuth    = "must provide a valid AWS key pair"
+	ErrorAWSAuthNeeded     = "must provide AWS profile name or key pair"
 )
 
 // OCI Constants
@@ -93,8 +93,8 @@ const (
 )
 
 const (
-	LinodeInvalidRegion           = "invalid Linode region provided"
-	LinodeKeyOrSecretNotSpecified = "Linode access keys not specified"
+	LinodeInvalidRegion = "invalid Linode region provided"
+	LinodeAuthNeeded    = "Linode authentication not specified"
 )
 
 // Conf Errors

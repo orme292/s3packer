@@ -61,7 +61,7 @@ func (l *ProviderLinode) matchRegion(region string) error {
 func (l *ProviderLinode) validate() error {
 
 	if l.Secret == Empty || l.Key == Empty {
-		return fmt.Errorf("bad Linode config: %v", LinodeKeyOrSecretNotSpecified)
+		return fmt.Errorf("bad Linode config: %v", LinodeAuthNeeded)
 	}
 
 	return nil

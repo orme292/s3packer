@@ -99,7 +99,7 @@ func (aws *ProviderAWS) validate() error {
 		return fmt.Errorf("bad AWS config: %v", ErrorAWSProfileAndKeys)
 	}
 	if aws.Profile == Empty && (aws.Key == Empty || aws.Secret == Empty) {
-		return fmt.Errorf("bad AWS config: %v", ErrorAWSKeyOrSecretNotSpecified)
+		return fmt.Errorf("bad AWS config: %v", ErrorAWSMissingAuth)
 	}
 	if aws.Profile == Empty && aws.Key == Empty && aws.Secret == Empty {
 		return fmt.Errorf("bad AWS config: %v", ErrorAWSAuthNeeded)
