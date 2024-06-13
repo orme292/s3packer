@@ -16,9 +16,7 @@ type Builder struct {
 
 func NewBuilder(path string) *Builder {
 
-	fpath := expandHome(path)
-
-	fpath, err := filepath.Abs(path)
+	fpath, err := filepath.Abs(expandHome(path))
 	if err != nil {
 		fpath = path
 	}
