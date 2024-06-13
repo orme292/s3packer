@@ -1,0 +1,46 @@
+---
+Version: 0
+Provider:
+  Use: aws
+  Profile: myAwsProfile
+  Key: key_value
+  Secret: secret_value
+AWS:
+  ACL: private
+  Storage: intelligent_tiering
+OCI:
+  Compartment: ocid1.compartment.oc1..aaaaaaaaa2qfwzyec6js1ua2ybtyyh3m39ze
+  Storage: standard
+Linode:
+  Region: us-lax-1
+Bucket:
+  Create: true
+  Name: MyBackupBucket
+  Region: us-lax-1
+Options:
+  MaxParts: 10
+  MaxUploads: 5
+  OverwriteObjects: never
+Tagging:
+  OriginPath: true
+  ChecksumSHA256: true
+Tags:
+  Author: Forrest Gump
+  Title: Letters to Jenny
+Objects:
+  NamingType: relative
+  NamePrefix: backup-
+  PathPrefix: /backups/april/2023
+  OmitRootDir: true
+Logging:
+  Level: 4
+  OutputToConsole: true
+  OutputToFile: true
+  Path: /var/log/s3packer.log
+Files:
+  - /documents/to_jenny/letter_1.doc
+  - /documents/to_jenny/letter_2.doc
+  - /documents/to_jenny/letter_3.doc
+Dirs:
+  - /documents/from_jenny
+  - /documents/stock_certificates

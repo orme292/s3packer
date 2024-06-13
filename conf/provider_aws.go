@@ -1,25 +1,50 @@
 package conf
 
 import (
-	"errors"
-	"strings"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-const (
-	AwsACLPrivate                = "private"
-	AwsACLPublicRead             = "public-read"
-	AwsACLPublicReadWrite        = "public-read-write"
-	AwsACLAuthenticatedRead      = "authenticated-read"
-	AwsACLAwsExecRead            = "aws-exec-read"
-	AwsACLBucketOwnerRead        = "bucket-owner-read"
-	AwsACLBucketOwnerFullControl = "bucket-owner-full-control"
-)
+// ProviderAWS represents the AWS provider configuration.
+//
+// Fields:
+// - Profile: The profile name used for authentication.
+// - ACL: The access control list for the storage objects.
+// - Storage: The storage class for the objects.
+// - Key: The AWS access key ID.
+// - Secret: The AWS secret access key.
+type ProviderAWS struct {
+	Profile string
+	Key     string
+	Secret  string
+	ACL     types.ObjectCannedACL
+	Storage types.StorageClass
+}
+
+func (aws *ProviderAWS) build(inc *ProfileIncoming) error {
+
+	err := aws.matchACL(inc.AWS.ACL)
+	if err != nil {
+		return err
+	}
+
+	err = aws.matchStorage(inc.AWS.Storage)
+	if err != nil {
+		return err
+	}
+
+	aws.Key = inc.Provider.Key
+	aws.Secret = inc.Provider.Secret
+	aws.Profile = inc.Provider.Profile
+
+	return aws.validate()
+
+}
 
 // awsMatchACL will match the ACL string to the AWS ACL type. The constant values above are used to match the string.
-func awsMatchACL(acl string) (cAcl types.ObjectCannedACL, err error) {
-	acl = strings.ToLower(strings.TrimSpace(acl))
+func (aws *ProviderAWS) matchACL(acl string) error {
+
 	awsCannedACLs := map[string]types.ObjectCannedACL{
 		AwsACLPrivate:                types.ObjectCannedACLPrivate,
 		AwsACLPublicRead:             types.ObjectCannedACLPublicRead,
@@ -30,29 +55,21 @@ func awsMatchACL(acl string) (cAcl types.ObjectCannedACL, err error) {
 		AwsACLBucketOwnerFullControl: types.ObjectCannedACLBucketOwnerFullControl,
 	}
 
-	cAcl, ok := awsCannedACLs[acl]
+	validAcl, ok := awsCannedACLs[tidyString(acl)]
 	if !ok {
-		return types.ObjectCannedACLPrivate, errors.New(S("%s %q", InvalidAWSACL, acl))
+		aws.ACL = types.ObjectCannedACLPrivate
+		return fmt.Errorf("%s %q", InvalidAWSACL, acl)
 	}
-	return cAcl, nil
-}
+	aws.ACL = validAcl
 
-const (
-	AwsClassStandard           = "STANDARD"
-	AwsClassReducedRedundancy  = "REDUCED_REDUNDANCY"
-	AwsClassGlacierIR          = "GLACIER_IR"
-	AwsClassSnow               = "SNOW"
-	AwsClassStandardIA         = "STANDARD_IA"
-	AwsClassOneZoneIA          = "ONEZONE_IA"
-	AwsClassIntelligentTiering = "INTELLIGENT_TIERING"
-	AwsClassGlacier            = "GLACIER"
-	AwsClassDeepArchive        = "DEEP_ARCHIVE"
-)
+	return nil
+
+}
 
 // awsMatchStorage will match the storage class string to the AWS storage class type. The constant values above are
 // used to match the string.
-func awsMatchStorage(class string) (sClass types.StorageClass, err error) {
-	class = strings.ToUpper(strings.TrimSpace(class))
+func (aws *ProviderAWS) matchStorage(class string) error {
+
 	awsStorageClasses := map[string]types.StorageClass{
 		AwsClassStandard:           types.StorageClassStandard,
 		AwsClassReducedRedundancy:  types.StorageClassReducedRedundancy,
@@ -65,15 +82,29 @@ func awsMatchStorage(class string) (sClass types.StorageClass, err error) {
 		AwsClassSnow:               types.StorageClassGlacier,
 	}
 
-	sClass, ok := awsStorageClasses[class]
+	validClass, ok := awsStorageClasses[tidyUpString(class)]
 	if !ok {
-		return types.StorageClassStandard, errors.New(S("%s %q", InvalidStorageClass, class))
+		aws.Storage = types.StorageClassStandard
+		return fmt.Errorf("%s %q", InvalidStorageClass, class)
 	}
-	return sClass, nil
+	aws.Storage = validClass
+
+	return nil
+
 }
 
-const (
-	InvalidAWSACL                   = "invalid aws acl"
-	ErrorAWSProfileAndKeys          = "both aws profile and keys are specified, use profile or keys"
-	ErrorAWSKeyOrSecretNotSpecified = "profile should specified both key and secret"
-)
+func (aws *ProviderAWS) validate() error {
+
+	if aws.Profile != Empty && (aws.Key != Empty || aws.Secret != Empty) {
+		return fmt.Errorf("bad AWS config: %v", ErrorAWSProfileAndKeys)
+	}
+	if aws.Profile == Empty && (aws.Key == Empty || aws.Secret == Empty) {
+		return fmt.Errorf("bad AWS config: %v", ErrorAWSKeyOrSecretNotSpecified)
+	}
+	if aws.Profile == Empty && aws.Key == Empty && aws.Secret == Empty {
+		return fmt.Errorf("bad AWS config: %v", ErrorAWSAuthNeeded)
+	}
+
+	return nil
+
+}

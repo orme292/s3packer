@@ -1,0 +1,38 @@
+---
+Version: 5
+Provider:
+  Use: Linode
+  Key: mykey
+  Secret: mysecret
+Linode:
+  Region: se-sto-1
+Bucket:
+  Create: true
+  Name: "forrests-backup-bucket"
+  Region: se-sto-1
+Options:
+  MaxParts: 10
+  MaxUploads: 5
+  OverwriteObjects: never
+Tagging:
+  OriginPath: true
+  ChecksumSHA256: true
+Tags:
+  test: true
+  user: anorme
+Objects:
+  NamingType: relative
+  NamePrefix: backup-
+  PathPrefix: /test1/
+  OmitRootDir: true
+Logging:
+  Level: 4
+  OutputToConsole: true
+  OutputToFile: false
+  Path: /var/log/s3packer.log
+Files:
+  - "/Users/aorme/github/litejacket/bizdna/terraform/aws/main.tf"
+  - "/Users/aorme/github/litejacket/bizdna/terraform/aws/output.tf"
+  - "/Users/aorme/github/litejacket/bizdna/terraform/aws/variables.tf"
+Dirs:
+  - "/Users/aorme/github/s3packer"
