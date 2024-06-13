@@ -18,21 +18,22 @@ Tagging:
   OriginPath: true
   ChecksumSHA256: true
 Tags:
-  test: true
-  user: anorme
+  Author: Forrest Gump
+  Title: Letters to Jenny
 Objects:
   NamingType: relative
   NamePrefix: backup-
-  PathPrefix: /test1/
+  PathPrefix: /backups/april/2023
   OmitRootDir: true
 Logging:
   Level: 4
   OutputToConsole: true
-  OutputToFile: false
+  OutputToFile: true
   Path: /var/log/s3packer.log
 Files:
-  - "/Users/aorme/github/litejacket/bizdna/terraform/aws/main.tf"
-  - "/Users/aorme/github/litejacket/bizdna/terraform/aws/output.tf"
-  - "/Users/aorme/github/litejacket/bizdna/terraform/aws/variables.tf"
+  - /documents/to_jenny/letter_1.doc
+  - /documents/to_jenny/letter_2.doc
+  - /documents/to_jenny/letter_3.doc
 Dirs:
-  - "/Users/aorme/github/s3packer"
+  - /documents/from_jenny
+  - /documents/stock_certificates
