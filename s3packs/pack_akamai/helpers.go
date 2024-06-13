@@ -24,7 +24,10 @@ func buildUploader(ac *conf.AppConfig) (uploader *manager.Uploader, client *s3.C
 func buildClient(ac *conf.AppConfig) (client *s3.Client, err error) {
 	creds := credentials.NewStaticCredentialsProvider(ac.Provider.Linode.Key,
 		ac.Provider.Linode.Secret, "")
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithCredentialsProvider(creds))
+	cfg, err := config.LoadDefaultConfig(context.Background(),
+		config.WithCredentialsProvider(creds),
+		config.WithRegion(ac.Bucket.Region),
+	)
 	if err != nil {
 		return nil, err
 	}

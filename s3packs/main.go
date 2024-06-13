@@ -20,6 +20,7 @@ func Do(ac *conf.AppConfig) (stats *objectify.Stats, errs provider.Errs) {
 	p, err := provider.NewProcessor(ac, ops, fn)
 	if err != nil {
 		errs.Add(err)
+		return
 	}
 
 	if p != nil {
