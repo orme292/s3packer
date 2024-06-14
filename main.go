@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	pal "github.com/abusomani/go-palette/palette"
@@ -40,7 +41,8 @@ getFlags uses the flag package to configure and get command line arguments. It r
 -- profile: The filename of the profile to load.
 */
 func getFlags() (profile, create string, err error) {
-	flag.StringVar(&profile, "profile", "", "The profile filename you want to use.")
+
+	flag.StringVar(&profile, "profile", "", "The filename of the profile you want to open.")
 	flag.StringVar(&create, "create", "", "Create a new profile with the specified filename.")
 	flag.Parse()
 
@@ -52,6 +54,7 @@ func getFlags() (profile, create string, err error) {
 		err = errors.New("use either --create or --profile, not both")
 	}
 	return
+
 }
 
 /*
@@ -64,31 +67,35 @@ main is the entry point of the program. It does the following:
  5. Any returned errors from either of the above are printed as warnings and the program terminates with a 0.
 */
 func main() {
+
 	p := pal.New(pal.WithBackground(pal.Color(21)), pal.WithForeground(pal.BrightWhite), pal.WithSpecialEffects([]pal.Special{pal.Bold}))
-	_, _ = p.Println("s3packer v", s3packs.Version)
+	_, _ = p.Println("s3packer ", s3packs.Version)
 	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
 	_, _ = p.Println("https://github.com/orme292/s3packer\n")
 
-	pFile, cFile, err := getFlags()
+	profile, create, err := getFlags()
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	if cFile != "" {
-		err = conf.Create(cFile)
+	if create != "" {
+
+		builder := conf.NewBuilder(create)
+		err = builder.YamlOut()
 		if err != nil {
-			fmt.Printf("An error occurred: %q\n\n", err.Error())
-			os.Exit(1)
-		} else {
-			os.Exit(0)
+			log.Fatalf("Unable to write profile: %v", err)
 		}
+
+		log.Printf("File written: %s", create)
+		os.Exit(0)
+
 	}
 
-	ac, err := conf.NewAppConfig(pFile)
+	builder := conf.NewBuilder(profile)
+	ac, err := builder.FromYaml()
 	if err != nil {
-		fmt.Println("An error occurred: ", err.Error())
-		os.Exit(1)
+		log.Fatalf("Error loading profile: %v", err)
 	}
 
 	stats, errs := s3packs.Do(ac)

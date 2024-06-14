@@ -18,13 +18,15 @@ Special thanks to JetBrains! </br>
 
 ---
 ## About
-**s3packer is aiming to be a highly configurable profile-based S3 storage upload and backup tool. Instead of crafting
-and managing long complex commands, you can create YAML based profiles that will tell s3packer what to upload,
-where to upload, how to name, and how to tag the files.**
 
-**If you're going for redundancy, you can use profiles to upload to multiple S3 providers. s3packer currently supports
-several services, like AWS, OCI (Oracle Cloud), and Akamai (Linode). I'm also fleshing out a plug-in system that makes
-is easier to build out your own provider packs to support unsupported services.**
+**s3packer is a configurable yaml-based S3 storage upload and backup tool. Instead of figuring out and managing complex
+commands, you can create a YAML config that tells s3packer what to upload, where to upload it, how to name, and how to
+tag the files.**
+
+**s3packer makes redundancy a breeze. Just use profiles to upload to multiple S3 providers. s3packer supports several
+services: AWS, OCI (Oracle Cloud), and Linode (Akamai).**
+
+**Build support for other major projects by using the interfaces in the Provider package (s3packs/provider/).**
 
 ---
 
@@ -35,7 +37,7 @@ See the [releases][releases_url] page...
 ---
 ## Providers
 
-**s3packer** supports AWS S3, Oracle Cloud Object Storage, and Akamai (Linode) Object Storage. This readme will
+**s3packer** supports AWS S3, Oracle Cloud Object Storage, and Linode (Akamai) Object Storage. This readme will
 go over using AWS as a provider, but there are additional docs available for other providers.
 
 - OCI: [README_OCI.md][s3packer_oci_readme_url]
@@ -44,7 +46,7 @@ go over using AWS as a provider, but there are additional docs available for oth
 You can see sample profiles here:
 - [example1.yaml][example1_url] (AWS)
 - [example2.yaml][example2_url] (OCI)
-- [example3.yaml][example3_url] (Akamai/Linode)
+- [example3.yaml][example3_url] (Linode/Akamai)
 ---
 
 ## How to Use
@@ -55,6 +57,8 @@ To start a session with an existing profile, just type in the following command:
 $ s3packer --profile="myprofile.yaml"
 ```
 
+---
+
 ## Creating a new Profile
 
 s3packer can create a base profile to help get you started. To create one, use the `--create` flag:
@@ -63,28 +67,31 @@ s3packer can create a base profile to help get you started. To create one, use t
 $ s3packer --create="my-new-profile.yaml"
 ```
 
+---
+
 ## Setting up a Profile
 
-s3packer profiles are written in the YAML format. To set it up, you just need to fill out a few fields, and you’ll be good to go!
+s3packer profiles are written in YAML. To set one up, you just need to fill out a few fields, and you’ll be good to go!
 
 First, make sure you specify that you're using Version 4 of the profile format:
 
 ```yaml
-Version: 4
+Version: 5
 ```
 
 Be sure to specify a provider:
 
 ```yaml
-Provider: aws
+Provider:
+  Use: aws
 ```
 
 Use your AWS Key/Secret pair:
 
 ```yaml
-Version: 4
-Provider: aws
-AWS:
+Version: 5
+Provider:
+  Use: aws
   Key: "my-key"
   Secret: "my-secret"
 ```
@@ -92,34 +99,33 @@ AWS:
 Or you can specify a profile that's already set up in your `~/.aws/credentials` file:
 
 ```yaml
-Version: 4
-Provider: aws
-AWS:
-  Profile: "my-profile"
+Version: 5
+Provider:
+  Use: aws
+  Profile: "myAwsCliProfile""
 ```
 
 Configure your bucket:
 
 ```yaml
 Bucket:
+  Create: true
   Name: "deep-freeze"
   Region: "eu-north-1"
 ```
 
-And then, tell s3packer what you want to upload. You can specify folders, directories or individual files. (You can call
-it the Folders section or the Directories section, it doesn't matter.)
+And then, tell s3packer what you want to upload. You can specify directories or individual files. When you specify a
+directory, s3packer will traverse all subdirectories.
 
 ```yaml
-Uploads:
-  Folders:
-    - "/Users/forrest/docs/stocks/apple"
-    - "/Users/jenny/docs/song_lyrics"
-  Files:
-    - "/Users/forrest/docs/job-application-lawn-mower.pdf"
-    - "/Users/forrest/docs/dr-pepper-recipe.txt"
-    - "/Users/jenny/letters/from-forrest.docx"
+Files:
+  - "/Users/forrest/docs/stocks/apple"
+  - "/Users/jenny/docs/song_lyrics"
+Dirs:
+  - "/Users/forrest/docs/job-application-lawn-mower.pdf"
+  - "/Users/forrest/docs/dr-pepper-recipe.txt"
+  - "/Users/jenny/letters/from-forrest.docx"
 ```
-
 --- 
 
 ### Tags
@@ -127,23 +133,22 @@ Uploads:
 You can also add tags to your files. Just add a `Tags` section to your profile:
 
 ```yaml
-Tagging:
-  Tags:
-    Author: "Forrest Gump"
-    Year: 1994
+Tags:
+  Author: "Forrest Gump"
+  Year: 1994
 ```
 ---
 
-### Extra Options
+### AWS Specific Options
 
-You can also customize how your files are stored, accessed, tagged, and uploaded using these options.
+Configure your object ACLs and the storage type.
 
----
 ```yaml
 AWS:
   ACL: "private"
   Storage: "ONEZONE_IA"
 ```
+
 **ACL** <br/>
 The default is `private`, but you can use any canned ACL:
 - `public-read`
@@ -167,39 +172,50 @@ The default is `STANDARD`, but you can use any of the following storage classes:
 
 ---
 
+### Extra Options
+
+You can also customize how your files are stored, accessed, tagged, and uploaded using these options.
+
+---
+
 ```yaml
 Objects:
+  NamingType: "relative"
   NamePrefix: "monthly-"
-  RootPrefix: "/backups/monthly"
-  Naming: "relative"
+  PathPrefix: "/backups/monthly"
 ```
+
+**NamingType** <br/>
+The default is `relative`.
+
+- `relative`: The key will be prepended with the relative path of the file on the local filesystem (individual files
+  specified in the profile will always end up at the root of the bucket, plus the `pathPrefix` and then `objectPrefix`).
+- `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
 
 **NamePrefix** <br/>
 This is blank by default. Any value you put here will be added before the filename when it's uploaded to S3.
 Using something like `weekly-` will add that string to any file you're uploading, like `weekly-log.log` or `weekly-2021-01-01.log`.
 
-**RootPrefix** <br/>
+**PathPrefix** <br/>
 This is blank by default. Any value put here will be added before the file path when it's uploaded to S3.
 If you use something like `/backups/monthly`, the file will be uploaded to `/backups/monthly/your-file.txt`.
-
-**Naming** <br/>
-The default is `relative`.
-- `relative`: The key will be prepended with the relative path of the file on the local filesystem (individual files specified in the profile will always end up at the root of the bucket, plus the `pathPrefix` and then `objectPrefix`).
-- `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
 
 ---
 
 ```yaml
 Options:
-  MaxUploads: 100
-  Overwrite: "never"
+  OverwriteObjects: "never"
 ```
+
+**MaxParts** <br/>
+The default depends on the provider. The AWS default is `100`. MaxParts specifies the number of pieces a large file will
+be broken up into before uploading and reassembling.
 
 **MaxUploads** <br/>
 The default is `5`. This is the maximum number of files that will be uploaded at the same time. Concurrency is at the
 directory level, so the biggest speed gains are seen when uploading a directory with many files.
 
-**Overwrite**  <br/>
+**OverwriteObjects**  <br/>
 This is `never` by default. If you set it to `always`, s3packer will overwrite any files in the bucket that
 have the same name as what you're uploading. Useful if you're uploading a file that is updated over and over again.
 
@@ -207,15 +223,18 @@ have the same name as what you're uploading. Useful if you're uploading a file t
 
 ```yaml
 Tagging:
+  OriginPath: true
   ChecksumSHA256: false
-  Origins: true
 ```
-**ChecksumSHA256** <br/>
-This is `true` by default. Every object uploaded will be tagged with the file's calculated SHA256 checksum.
 
-**Origins** <br/>
-This is `true` by default. Every object uploaded will be tagged with the full absolute path of the file on the
-local filesystem. This is useful if you want to be able to trace the origin of a file in S3.
+**OriginPath** <br/>
+This is `true` by default. Every object uploaded will be tagged with the full absolute path of the file on the local
+filesystem. This is useful if you want to be able to trace the origin of a file in S3. The tag name will be
+`s3packer-origin-path`.
+
+**ChecksumSHA256** <br/>
+This is `true` by default. Every object uploaded will be tagged with the file's calculated SHA256 checksum. The tag name
+will be `s3packer-checksum-sha256`.
 
 ---
 
@@ -226,25 +245,25 @@ And if you like keeping track of things or want a paper trail, you can set up lo
 ```yaml
 Logging:
   Level: 1
-  Console: true
-  File: true
-  Filepath: "/var/log/backup.log"
+  OutputToConsole: true
+  OutputToFile: true
+  Path: "/var/log/backup.log"
  ```
 
 **Level:**<br/>
 This is `2` by default. The setting is by severity, with 0 being least severe and 5 being most severe. 0 will log
 all messages (including debug), and 5 will only log fatal messages which cause the program to exit.
 
-**Console:**<br/>
+**OutputToConsole:**<br/>
 This is `true` by default. Outputs logging messages to standard output. If you set it to `false`, s3packer
 prints minimal output.
 
-**File:**<br/>
-This is `false` by default. If you set it to `true`, s3packer will write structured log (JSON) messages to
-a file. You MUST also specify a `Filepath`.
+**OutputToFile:**<br/>
+This is `false` by default. If you set it to `true`, s3packer will write structured log (JSON) messages to a file. You
+MUST also specify a `Path`.
 
-**Filepath:** <br/>
-File to write structured log messages to. If you set `File` to `true`, you must specify a filename.
+**Path:** <br/>
+Path of the file to write structured log messages to. If you set `OutputToFile` to `true`, you must specify a filename.
 The file will be created if it doesn't exist, and appended to if it does.
 
 ---

@@ -14,8 +14,8 @@ func NewProcessor(ac *conf.AppConfig, ops Operator, iterFn IteratorFunc) (p *Pro
 	)
 
 	fmt.Printf("Starting Processor...\n")
-	if len(ac.Directories) > 0 {
-		rl, err = objectify.NewRootList(ac, ac.Directories)
+	if len(ac.Dirs) > 0 {
+		rl, err = objectify.NewRootList(ac, ac.Dirs)
 		if err != nil {
 			return nil, err
 		}
