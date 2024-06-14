@@ -1,46 +1,65 @@
 package conf
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
-	"unicode"
 )
 
-func formatPath(p string) string {
-	p = strings.TrimPrefix(p, "/")
-	// Trimming ending slash if exists
-	p = strings.TrimSuffix(p, "/")
-	return p
+func canCreate(path string) (bool, error) {
+
+	filename := expandHome(path)
+
+	filename, err := filepath.Abs(filename)
+	if err != nil {
+		return false, err
+	}
+
+	// Resolve G304: Potential file inclusion via variable
+	if strings.Contains(filename, "..") {
+		return false, fmt.Errorf("invalid filename: %s", filename)
+	}
+
+	_, err = os.Stat(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return true, nil
+		}
+		return false, err
+	}
+
+	return false, fmt.Errorf("file %s already exists", filename)
+
 }
 
-func alphaNumericString(s string) string {
-	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
+func expandHome(path string) string {
+	if strings.HasPrefix(path, "~/") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Println(err)
+		}
+		return strings.Replace(path, "~", home, 1)
+	}
+	return path
+}
+
+func sanitizeString(s string) string {
+	reg := regexp.MustCompile("[^a-zA-Z0-9-+_]+")
 	return reg.ReplaceAllString(s, "")
 }
 
-func capitalize(s string) string {
-	for i, v := range s {
-		return string(unicode.ToTitle(v)) + strings.ToLower(s[i+1:])
-	}
-	return Empty
-}
-
+// tidyString takes a string and performs two operations on it: trimming any leading/trailing whitespace and converting it to lowercase.
+// It then returns the resulting modified string.
 func tidyString(s string) string {
-	s = strings.TrimSpace(s)
-	s = strings.ToLower(s)
-	return s
+	return strings.TrimSpace(strings.ToLower(s))
 }
 
-func whichProvider(s string) ProviderName {
-	s = tidyString(s)
-	switch s {
-	case "aws", "amazon", "s3", "amazon s3":
-		return ProviderNameAWS
-	case "oci", "oracle", "oraclecloud", "oracle cloud", "oracle cloud infrastructure":
-		return ProviderNameOCI
-	case "akamai", "linode":
-		return ProviderNameAkamai
-	default:
-		return ProviderNameNone
-	}
+func tidyUpString(s string) string {
+	return strings.TrimSpace(strings.ToUpper(s))
+}
+
+func trimPaths(path string) string {
+	return strings.TrimRight(path, "/")
 }
