@@ -32,7 +32,7 @@ func (op *AkamaiOperator) CreateBucket() (err error) {
 	}
 	_, err = op.client.CreateBucket(context.Background(), input)
 	if err != nil {
-		op.ac.Log.Error("Unable to create bucket %q: %q", op.ac.Bucket.Name, err.Error())
+		op.ac.Log.Fatal("Unable to create bucket %q in %q: %q", op.ac.Bucket.Name, op.ac.Bucket.Region, err.Error())
 		return err
 	}
 	op.ac.Log.Info("Created bucket %q in %q", op.ac.Bucket.Name, op.ac.Bucket.Region)
