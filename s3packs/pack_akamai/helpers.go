@@ -22,15 +22,18 @@ func buildUploader(ac *conf.AppConfig) (uploader *manager.Uploader, client *s3.C
 }
 
 func buildClient(ac *conf.AppConfig) (client *s3.Client, err error) {
-	creds := credentials.NewStaticCredentialsProvider(ac.Provider.Akamai.Key,
-		ac.Provider.Akamai.Secret, "")
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithCredentialsProvider(creds))
+	creds := credentials.NewStaticCredentialsProvider(ac.Provider.Linode.Key,
+		ac.Provider.Linode.Secret, "")
+	cfg, err := config.LoadDefaultConfig(context.Background(),
+		config.WithCredentialsProvider(creds),
+		config.WithRegion(ac.Bucket.Region),
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	client = s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.BaseEndpoint = aws.String(s("https://%s", ac.Provider.Akamai.Endpoint))
+		o.BaseEndpoint = aws.String(s("https://%s", ac.Provider.Linode.Endpoint))
 	})
 
 	return client, nil

@@ -20,8 +20,14 @@ func Do(ac *conf.AppConfig) (stats *objectify.Stats, errs provider.Errs) {
 	p, err := provider.NewProcessor(ac, ops, fn)
 	if err != nil {
 		errs.Add(err)
+		return
 	}
-	errs = p.Run()
+
+	if p != nil {
+		errs = p.Run()
+	} else {
+		ac.Log.Fatal("Processor is empty.")
+	}
 	return p.Stats, errs
 }
 
@@ -39,7 +45,7 @@ func getProvider(ac *conf.AppConfig) (ops provider.Operator, fn provider.Iterato
 			return nil, nil, err
 		}
 		return ops, pack_oci.OracleIteratorFunc, nil
-	case conf.ProviderNameAkamai:
+	case conf.ProviderNameLinode:
 		ops, err = pack_akamai.NewAkamaiOperator(ac)
 		if err != nil {
 			return nil, nil, err

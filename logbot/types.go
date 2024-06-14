@@ -38,7 +38,7 @@ func ParseIntLevel(n any) zerolog.Level {
 		}
 		n = x
 	case bool:
-		return DEBUG
+		return ERROR
 	case int:
 		n = v
 	default:
