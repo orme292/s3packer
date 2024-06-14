@@ -19,28 +19,41 @@ $ s3packer --create="my-new-akamai-profile.yaml"
 
 ## Setting up a Profile
 
-s3packer profiles are written in the YAML format. To set one up, you just need to fill out a few fields, and you’ll be good to go!
+s3packer profiles are written in YAML. To set one up, you just need to fill out a few fields, and you’ll be good to go!
 
-First, make sure you specify that you're using Version 4 of the profile format and specify `Akamai` as the object storage provider:
+First, make sure you specify that you're using Version 4 of the profile format:
 
 ```yaml
----
-Version: 4
-Provider: Akamai
+Version: 5
+```
+
+Be sure to specify a provider:
+
+```yaml
+Version: 5
+Provider:
+  Use: Linode
 ```
 
 ---
 ## Authentication
-> 💡 Reminder<br/>
-> You can and should remove any provider fields that you're not using, like AWS and OCI.
 
-**s3packer** uses access keys to authenticate with Akamai. You can find and generate access keys in the Cloud Manager.
-For info on generating new access keys, check out the [Akamai Object Storage Guide][akamai_auth_url].
+**s3packer** uses object storage access keys to authenticate with Linode. You can find and generate access keys in the
+Cloud Manager. For info on generating new access keys, check out the [Linode Object Storage Guide][akamai_auth_url].
 
 ```yaml
-Akamai:
-  Key: zzzyyyyxxxxx1111222
-  Secret: aabbbcccddddeeeffff999988888
+Version: 5
+Provider:
+  Use: Linode
+  Key: "zzzyyyyxxxxx1111222"
+  Secret: "aabbbcccddddeeeffff999988888"
+```
+
+Configure the `region` to generate a Linode object storage endpoint name.
+
+```yaml
+Linode:
+  Region: se-sto-1
 ```
 
 Next, configure the bucket. The `name` and `region` fields are required. If the `region` field isn't correct,
@@ -48,9 +61,9 @@ s3packer won't find the bucket and (if configured to) will create a new one in t
 
 `Create` defaults to `false`. If `true`, s3packer will create the bucket in the specified region if it doesn't exist.
 
-`Region` should contain the region short-code. When you create a bucket in the Cloud Manager, the short code will be 
-listed in the region dropdown. You can also check Akamai's documentation for a list of region short-codes: 
-[Akamai Region List][akamai_region_list_url].
+`Region` should contain the region short-code. When you create a bucket in the Cloud Manager, the short code will be
+listed in the region dropdown. You can also check Linode's documentation for a list of region short-codes:
+[Linode Region List][akamai_region_list_url].
 
 ```yaml
 Bucket:
@@ -59,70 +72,78 @@ Bucket:
   Region: "se-sto-1"
 ```
 
-Finally, tell s3packer what you want to upload. You can specify folders, directories, or individual files. (You can call
-it the `Folders` section or the `Directories` section, it doesn't matter.)
+And then, tell s3packer what you want to upload. You can specify directories or individual files. When you specify a
+directory, s3packer will traverse all subdirectories.
 
 ```yaml
-Uploads:
-  Folders:
-    - "/Users/forrest/docs/stocks/apple"
-    - "/Users/jenny/docs/song_lyrics"
-  Files:
-    - "/Users/forrest/docs/job-application-lawn-mower.pdf"
-    - "/Users/forrest/docs/dr-pepper-recipe.txt"
-    - "/Users/jenny/letters/from-forrest.docx"
+Files:
+  - "/Users/forrest/docs/stocks/apple"
+  - "/Users/jenny/docs/song_lyrics"
+Dirs:
+  - "/Users/forrest/docs/job-application-lawn-mower.pdf"
+  - "/Users/forrest/docs/dr-pepper-recipe.txt"
+  - "/Users/jenny/letters/from-forrest.docx"
 ```
 
 --- 
 
 ### Tags
 
-Unfortunately, tags are not supported by Akamai Object Storage.
-
-### Extra Options
-
-Akamai Object Storage does support AWS-like ACLs, but these aren't supported by s3packer yet. All uploads will
-be set to private by default.<br/><br/>
-Storage tiers are _not_ supported by Akamai Object Storage.
+Unfortunately, tags are not supported by Linode Object Storage.
 
 ---
 
-### Object Naming Options
+### Linode Specific Options
+
+Unfortunately, s3packer does not support assigning ACLs to Linode objects. Linode does not support storage tiers.
+
+---
+
+### Extra Options
+
+You can customize how your files are named and uploaded to Linode object storage.
+
+---
 
 ```yaml
 Objects:
+  NamingType: "relative"
   NamePrefix: "monthly-"
-  RootPrefix: "/backups/monthly"
-  Naming: "relative"
+  PathPrefix: "/backups/monthly"
 ```
+
+**NamingType** <br/>
+The default is `relative`.
+
+- `relative`: The key will be prepended with the relative path of the file on the local filesystem (individual files
+  specified in the profile will always end up at the root of the bucket, plus the `pathPrefix` and then `objectPrefix`).
+- `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
 
 **NamePrefix** <br/>
 This is blank by default. Any value you put here will be added before the filename when it's uploaded to S3.
 Using something like `weekly-` will add that string to any file you're uploading, like `weekly-log.log` or `weekly-2021-01-01.log`.
 
-**RootPrefix** <br/>
+**PathPrefix** <br/>
 This is blank by default. Any value put here will be added before the file path when it's uploaded to S3.
 If you use something like `/backups/monthly`, the file will be uploaded to `/backups/monthly/your-file.txt`.
-
-**Naming** <br/>
-The default is `relative`.
-- `relative`: The key will be prepended with the relative path of the file on the local filesystem (individual files specified in the profile will always end up at the root of the bucket, plus the `pathPrefix` and then `objectPrefix`).
-- `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
 
 ---
 
 ```yaml
 Options:
-  MaxUploads: 100
-  Overwrite: "never"
+  OverwriteObjects: "never"
 ```
+
+**MaxParts** <br/>
+The default depends on the provider. The AWS default is `100`. MaxParts specifies the number of pieces a large file will
+be broken up into before uploading and reassembling.
 
 **MaxUploads** <br/>
 The default is `5`. This is the maximum number of files that will be uploaded at the same time. Concurrency is at the
 directory level, so the biggest speed gains are seen when uploading a directory with many files.
 
-**Overwrite**  <br/>
-This is `never` by default. If you set it to `always`, s3packer will Overwrite any files in the bucket that
+**OverwriteObjects**  <br/>
+This is `never` by default. If you set it to `always`, s3packer will overwrite any files in the bucket that
 have the same name as what you're uploading. Useful if you're uploading a file that is updated over and over again.
 
 ---
@@ -134,25 +155,25 @@ And if you like keeping track of things or want a paper trail, you can set up lo
 ```yaml
 Logging:
   Level: 1
-  Console: true
-  File: true
-  Filepath: "/var/log/backup.log"
+  OutputToConsole: true
+  OutputToFile: true
+  Path: "/var/log/backup.log"
  ```
 
 **Level:**<br/>
 This is `2` by default. The setting is by severity, with 0 being least severe and 5 being most severe. 0 will log
 all messages (including debug), and 5 will only log fatal messages which cause the program to exit.
 
-**Console:**<br/>
+**OutputToConsole:**<br/>
 This is `true` by default. Outputs logging messages to standard output. If you set it to `false`, s3packer
 prints minimal output.
 
-**File:**<br/>
-This is `false` by default. If you set it to `true`, s3packer will write structured log (JSON) messages to
-a file. You MUST also specify a `filename`.
+**OutputToFile:**<br/>
+This is `false` by default. If you set it to `true`, s3packer will write structured log (JSON) messages to a file. You
+MUST also specify a `Path`.
 
-**Filepath:** <br/>
-File to write structured log messages to. If you set `toFile` to `true`, you must specify a filename.
+**Path:** <br/>
+Path of the file to write structured log messages to. If you set `OutputToFile` to `true`, you must specify a filename.
 The file will be created if it doesn't exist, and appended to if it does.
 
 ---
@@ -171,9 +192,10 @@ directories with a large number of files can take some time as the checksums are
 
 ---
 
-### Issues
+### Issues & Suggestions
 
-And if you run into any issues or have any suggestions, feel free to open a new issue on [GitHub][issue_repo_url].
+If you run into any problems, errors, or have feature suggestions PLEASE feel free to open a new issue on
+[GitHub][issue_repo_url].
 
 ---
 

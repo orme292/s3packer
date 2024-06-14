@@ -1,48 +1,78 @@
 package conf
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/oracle/oci-go-sdk/v49/objectstorage"
 )
 
-const (
-	OciDefaultProfile = "DEFAULT"
-)
+// ProviderOCI represents the OCI provider configuration.
+type ProviderOCI struct {
+	Profile     string
+	Compartment string
+	Storage     objectstorage.StorageTierEnum
 
-const (
-	ErrorOCICompartmentNotSpecified = "oracle cloud compartment will be tenancy root"
-	ErrorOCIAuthNotSpecified        = "oracle cloud auth not specified"
-	ErrorOCIStorageNotSpecified     = "oracle cloud storage tier is not valid"
-)
+	PutStorage objectstorage.PutObjectStorageTierEnum
+}
 
-const (
-	OracleStorageTierStandard         = "standard"
-	OracleStorageTierInfrequentAccess = "infrequentaccess" // the case is strange because of the
-	OracleStorageTierArchive          = "archive"
-)
+func (oci *ProviderOCI) build(inc *ProfileIncoming) error {
+
+	err := oci.matchStorage(inc.OCI.Storage)
+	if err != nil {
+		return err
+	}
+
+	oci.Profile = inc.Provider.Profile
+	if tidyUpString(oci.Profile) == OciDefaultProfile {
+		oci.Profile = OciDefaultProfile
+	}
+
+	oci.Compartment = inc.OCI.Compartment
+
+	return oci.validate()
+
+}
 
 // ociMatchStorage will match the Storage string to the OCI Storage Tier type.
 // The constant values above are used to match the string.
-func ociMatchStorage(tier string) (ociTier objectstorage.StorageTierEnum, putTier objectstorage.PutObjectStorageTierEnum, err error) {
+func (oci *ProviderOCI) matchStorage(tier string) error {
+
 	tier = strings.ToLower(strings.TrimSpace(tier))
+
 	ociStorageTiersMap := map[string]objectstorage.StorageTierEnum{
 		OracleStorageTierStandard:         objectstorage.StorageTierStandard,
 		OracleStorageTierInfrequentAccess: objectstorage.StorageTierInfrequentAccess,
 		OracleStorageTierArchive:          objectstorage.StorageTierArchive,
 	}
+
 	ociPutStorageTiersMap := map[string]objectstorage.PutObjectStorageTierEnum{
 		OracleStorageTierStandard:         objectstorage.PutObjectStorageTierStandard,
 		OracleStorageTierInfrequentAccess: objectstorage.PutObjectStorageTierInfrequentaccess,
 		OracleStorageTierArchive:          objectstorage.PutObjectStorageTierArchive,
 	}
 
-	ociTier, ok := ociStorageTiersMap[tier]
-	putTier, _ = ociPutStorageTiersMap[tier]
+	storeTier, ok := ociStorageTiersMap[tier]
 	if !ok {
-		return objectstorage.StorageTierStandard, objectstorage.PutObjectStorageTierStandard, errors.New(fmt.Sprintf("%s %q", ErrorOCIStorageNotSpecified, tier))
+		oci.Storage = objectstorage.StorageTierStandard
+		oci.PutStorage = objectstorage.PutObjectStorageTierStandard
+		return fmt.Errorf("%s %q", ErrorOCIStorageNotSpecified, tier)
 	}
-	return ociTier, putTier, nil
+
+	putTier, _ := ociPutStorageTiersMap[tier]
+
+	oci.Storage = storeTier
+	oci.PutStorage = putTier
+
+	return nil
+
+}
+
+func (oci *ProviderOCI) validate() error {
+
+	if oci.Profile == Empty {
+		return fmt.Errorf("bad OCI configuration: %v", ErrorOCIAuthNotSpecified)
+	}
+	return nil
+
 }

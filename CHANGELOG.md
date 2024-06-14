@@ -3,7 +3,23 @@ This is the Changelog. Between each version, major or minor, I'll document all c
 bug fix, feature addition, or minor tweak. 
 
 ---
-### **1.3.4** (2023-02-13)
+
+### **1.4.0** (2024-06-14)
+
+- conf: package rebuilt to be modular and readable.
+- conf: Akamai renamed to Linode because Linode is better.
+- conf: Directories renamed 'Dirs'
+- main: Update --help text
+- main: support new conf package
+- profiles: update for new conf package
+- READMEs: updated with a slightly new format
+- s3packs/objectify: support new conf package
+- s3packs/pack_akamai: fatal error if bucket cannot be created.
+- CHANGELOG: CHANGES LOGGED
+
+---
+
+### **1.3.4** (2024-02-13)
 - conf: Added support for the Akamai provider
 - conf: Renamed provider-specific files like: provider_aws.go
 - conf: Better whitespace trimming from profile fields.
@@ -22,7 +38,8 @@ bug fix, feature addition, or minor tweak.
 - CHANGELOG: CHANGES LOGGED
 
 ---
-### **1.3.3a** (2023-02-12)
+
+### **1.3.3a** (2024-02-12)
 - Use Go 1.22.0
 - Update Github Actions to use Go 1.22.0
 - Update Dependencies: 
@@ -30,7 +47,7 @@ bug fix, feature addition, or minor tweak.
     - aws-sdk-go-v2/service/s3 v1.48.0 -> v1.48.1
     - rs/zerolog v1.31.0 -> v1.32.0
 
-### **1.3.3** (2023-02-12)
+### **1.3.3** (2024-02-12)
 - conf: Added support for the OCI provider
 - conf: Fixed a bug where ChecksumSHA256 was never read from the profile
 - s3packs/pack_oci: full support for OCI Object Storage (Oracle Cloud)
@@ -41,14 +58,14 @@ bug fix, feature addition, or minor tweak.
 - README: updated with OCI information
 - README_OCI: added
 
-### **1.3.2** (2023-01-12)
+### **1.3.2** (2024-01-12)
 - s3packs/objectify: removed DirObjList and DirObj. RootList is now a slice of FileObjLists.
 
-### **1.3.1** (2023-01-10)
+### **1.3.1** (2024-01-10)
 - replaced old example profiles with a new one that's up to date
 - s3packs/objectify: comment update
 
-### **1.3.0** (2023-01-07)
+### **1.3.0** (2024-01-07)
 - s3pack: Removed s3pack
 - s3packs: Added s3packs, which has modular support for multiple providers.
 - s3packs/objectify: added objectify, that has an object-models for directory trees
@@ -63,7 +80,7 @@ bug fix, feature addition, or minor tweak.
 - s3packs/pack_aws: added support for multipart parallel uploads with integrity checks.
 - s3packs/pack_aws: lets aws automatically calculate checksums, except for multipart uploads.
 
-### **1.2.0** (2023-12-29)
+### **1.2.0** (2024-12-29)
 - config: Remove config module
 - conf: Add conf module with new AppConfig model
 - conf: Profiles are not versioned, only version 2 will be supported
@@ -73,20 +90,20 @@ bug fix, feature addition, or minor tweak.
 - s3pack: started using the new conf.AppConfig model, removed old config.Configuration model. Much cleaner.
 - README updated to reflect new config format and `--create` feature
 
-### **1.1.0** (2023-12-21)
+### **1.1.0** (2024-12-21)
 - Upgrade to AWS SDK for Go V2
 - Move to Go 1.21.5
 - s3pack: Checksum matching on successful upload
 - s3pack: Dropped multipart upload support (for now) in favor of checksum matching
 - s3pack: AWS SDK for Go V2 dropped the iterator model, so I wrote my own iterator implementation.
 
-### **1.0.3** (2023-12-17)
+### **1.0.3** (2024-12-17)
 - s3pack: concurrency for checksum calculations, more speed
 - s3pack: concurrency for checking for dupe objects, more speed
 - s3pack: counting uploads and ignored files is done on the fly
 - s3pack: display total uploaded bytes
 
-### **1.0.2** (2023-12-13)
+### **1.0.2** (2024-12-13)
 - config: add new options 'maxConcurrentUploads'
 - s3pack: add upload concurrency (handled at ObjectList level)
 - s3pack: config references changed to 'c'
@@ -94,13 +111,13 @@ bug fix, feature addition, or minor tweak.
 - s3pack: FileObject has new individual Upload option, but it's unused.
 - s3pack: BucketExists checks are done once before processing any files/dirs (See main.go)
 
-### **1.0.1** (2023-12-04)
+### **1.0.1** (2024-12-04)
 - use gocritic suggestions
 - resolve gosec scan issues
 - fix ineffectual assignment
 - correct version number
 
-### **1.0.0** (2023-12-03)
+### **1.0.0** (2024-12-03)
 - config: More config profile validation occurs.
 - config: Added 'level' option to control the logging level (0 debug, 5 Panic)
 - config: console and file logging disabled by default

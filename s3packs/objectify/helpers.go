@@ -135,12 +135,12 @@ func formatFullKey(ac *conf.AppConfig, base, od, rr string) (fName, fPseudo stri
 	if rr != EmptyString {
 		fPseudo = formatPseudoPath(ac, od, rr)
 	}
-	switch ac.Objects.Naming {
+	switch ac.Objects.NamingType {
 	case conf.NamingRelative:
-		fPseudo = s("%s/%s", ac.Objects.RootPrefix, fPseudo)
+		fPseudo = s("%s/%s", ac.Objects.PathPrefix, fPseudo)
 		fPseudo = stripSafePath(fPseudo)
 	default:
-		fPseudo = s("%s/%s", ac.Objects.RootPrefix, strings.TrimPrefix(od, "/"))
+		fPseudo = s("%s/%s", ac.Objects.PathPrefix, strings.TrimPrefix(od, "/"))
 	}
 	return fName, fPseudo
 }

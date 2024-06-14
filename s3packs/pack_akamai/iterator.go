@@ -17,7 +17,7 @@ func AkamaiIteratorFunc(ac *conf.AppConfig, fol objectify.FileObjList, grp int) 
 func NewIterator(ac *conf.AppConfig, list objectify.FileObjList, grp int) (iter *AkamaiIterator, err error) {
 	return &AkamaiIterator{
 		provider: &conf.Provider{
-			Is: conf.ProviderNameAkamai,
+			Is: conf.ProviderNameLinode,
 		},
 		fol:   list,
 		group: grp,
