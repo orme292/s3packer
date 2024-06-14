@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -139,4 +140,11 @@ func genTempFile(ac *conf.AppConfig, p string) (temp string, err error) {
 
 func destroyTempFile(tf string) (err error) {
 	return os.Remove(tf)
+}
+
+func locationConstraintModifier(region string) string {
+	if strings.ToLower(strings.TrimSpace(region)) == "us-east-1" {
+		return "null"
+	}
+	return region
 }
