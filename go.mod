@@ -4,13 +4,14 @@ go 1.22.0
 
 require (
 	github.com/abusomani/go-palette v1.1.0
-	github.com/aws/aws-sdk-go-v2 v1.27.2
+	github.com/aws/aws-sdk-go-v2 v1.28.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.18
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.18
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.16.24
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.55.1
 	github.com/aws/smithy-go v1.20.2
 	github.com/oracle/oci-go-sdk/v49 v49.2.0
+	github.com/orme292/symwalker v0.1.72
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/pflag v1.0.5
 	gopkg.in/yaml.v3 v3.0.1
@@ -33,7 +34,6 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/orme292/symwalker v0.1.72 // indirect
 	github.com/sony/gobreaker v0.4.2-0.20210216022020-dd874f9dd33b // indirect
 	golang.org/x/sys v0.12.0 // indirect
 )
