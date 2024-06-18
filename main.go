@@ -9,7 +9,6 @@ import (
 	pal "github.com/abusomani/go-palette/palette"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs"
-	"github.com/orme292/s3packer/s3packs/objectify"
 	flag "github.com/spf13/pflag"
 )
 
@@ -98,17 +97,12 @@ func main() {
 		log.Fatalf("Error loading profile: %v", err)
 	}
 
-	stats, errs := s3packs.Do(ac)
-	if len(errs.Each) > 0 {
-		for _, err := range errs.Each {
-			ac.Log.Error(err.Error())
-		}
+	_, err = s3packs.Do(ac)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("s3packer Finished. %d Total Objects, %d Objects and %s Successfully Transferred, %d Failed, %d Ignored.\n", stats.Objects, stats.Uploaded, objectify.FileSizeString(stats.Bytes), stats.Failed, stats.Ignored)
-	if stats.Discrep != 0 {
-		fmt.Printf("%d objects unaccounted for. There's a discrepancy between the number of objects processed and the number of objects uploaded, failed or ignored.", stats.Discrep)
-	}
+	// print stats out
 	os.Exit(0)
 }

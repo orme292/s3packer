@@ -14,8 +14,11 @@ type Handler struct {
 	oper Operator
 	iter Iterator
 
+	jobs []*objJob
+
 	paths map[string]fs.FileMode
 
+	Stats    *Stats
 	supports *Supports
 }
 
@@ -38,6 +41,7 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, iterFn IterGenFunc) (*H
 		oper:     oper,
 		iter:     iter,
 		supports: oper.Support(),
+		Stats:    &Stats{},
 	}
 
 	err = h.verifyBucket()
@@ -133,9 +137,9 @@ func (h *Handler) verifyBucket() error {
 	fmt.Printf("Verifying bucket... ")
 
 	exists, err := h.oper.BucketExists()
-	if err != nil {
+	if err != nil && err.Error() != "bucket not found" {
 		fmt.Printf("could not verify.\n")
-		return fmt.Errorf("unable to check for bucket: %w", err)
+		return fmt.Errorf("error while checking for bucket: %w", err)
 	}
 
 	if !exists {
@@ -146,6 +150,8 @@ func (h *Handler) verifyBucket() error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("bucket created\n")
 
 	} else {
 
@@ -158,5 +164,16 @@ func (h *Handler) verifyBucket() error {
 }
 
 func (h *Handler) Run() error {
+
+	err := h.buildJobs()
+	if err != nil {
+		return err
+	}
+
+	for _, job := range h.jobs {
+		fmt.Printf("File: %s\n\tMode: %s", job.object.Filename, job.object.Mode.String())
+	}
+
 	return nil
+
 }

@@ -71,7 +71,7 @@ Dirs:
   - "/Users/forrest/docs/stocks/apple"
   - "/Users/jenny/docs/song_lyrics"
 Files:
-  - "/Users/forrest/docs/job-application-lawn-mower.pdf"
+  - "/Users/forrest/docs/objJob-application-lawn-mower.pdf"
   - "/Users/forrest/docs/dr-pepper-recipe.txt"
   - "/Users/jenny/letters/from-forrest.docx"
 ```

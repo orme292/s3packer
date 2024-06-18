@@ -98,6 +98,8 @@ github.com/orme292/objectify v0.3.1 h1:GHK1GKufSTt7d0gd9UbkifHsCvvfKrDhFRwr2VU6+
 github.com/orme292/objectify v0.3.1/go.mod h1:3+eIByxdnnMDiJ2cjByPvAttulndjAjzITugTdEo1X4=
 github.com/orme292/objectify v0.3.2 h1:ZB+MmZ9iUqATOrXVfMZuD+psKJzwmYbiD7Gz/N6P128=
 github.com/orme292/objectify v0.3.2/go.mod h1:3+eIByxdnnMDiJ2cjByPvAttulndjAjzITugTdEo1X4=
+github.com/orme292/objectify v0.3.3 h1:pJi1tVVISirH5hfwGg+JbkNwFGz8iKBHbVyJF7xrHWs=
+github.com/orme292/objectify v0.3.3/go.mod h1:3+eIByxdnnMDiJ2cjByPvAttulndjAjzITugTdEo1X4=
 github.com/orme292/symwalker v0.1.7 h1:db0BmiItUcxq9zj/GZArlzsZgB+/HguGq6hp1/26AUg=
 github.com/orme292/symwalker v0.1.7/go.mod h1:VWOAx9WTCecK0Ruf0i3eub53zbB4rg98/CiMZWrbxoU=
 github.com/orme292/symwalker v0.1.61 h1:T8ESz1NtXUj6scvhj3TFUpmkMU5F7Ld0uX7sYRhvHVA=

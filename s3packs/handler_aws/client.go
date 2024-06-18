@@ -12,8 +12,8 @@ import (
 )
 
 type AwsClient struct {
-	details details
-	config  aws.Config
+	details *details
+	config  *aws.Config
 	manager *manager.Uploader
 	s3      *s3.Client
 }
@@ -24,10 +24,6 @@ type details struct {
 	secret  string
 	region  string
 	parts   int
-}
-
-func (client *AwsClient) build() error {
-	return nil
 }
 
 func (client *AwsClient) getClient() error {
@@ -41,7 +37,12 @@ func (client *AwsClient) getClient() error {
 		client.details.parts = int(manager.MaxUploadParts)
 	}
 
-	client.s3 = s3.NewFromConfig(client.config)
+	client.s3 = s3.NewFromConfig(*client.config)
+
+	err = client.getUploadManager()
+	if err != nil {
+		return fmt.Errorf("error configuring aws client: %s", err.Error())
+	}
 
 	return nil
 
@@ -76,7 +77,7 @@ func (client *AwsClient) getClientConfigFromKeys() error {
 		return err
 	}
 
-	client.config = conf
+	client.config = &conf
 
 	return nil
 
@@ -91,7 +92,7 @@ func (client *AwsClient) getClientConfigFromProfile() error {
 		return err
 	}
 
-	client.config = conf
+	client.config = &conf
 
 	return nil
 
