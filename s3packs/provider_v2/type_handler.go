@@ -3,6 +3,7 @@ package provider_v2
 import (
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 
 	"github.com/orme292/s3packer/conf"
@@ -82,6 +83,11 @@ func (h *Handler) combinePaths(dirs []string, files []string) {
 
 		h.paths[file] = info.Mode()
 
+	}
+
+	// TODO: REMOVE
+	for name, mode := range h.paths {
+		log.Printf("Added Path: %s [%v]", name, mode.String())
 	}
 
 }
@@ -171,7 +177,7 @@ func (h *Handler) Run() error {
 	}
 
 	for _, job := range h.jobs {
-		fmt.Printf("File: %s\n\tMode: %s", job.object.Filename, job.object.Mode.String())
+		fmt.Printf("File: %s\n\tMode: %s\n", job.object.Filename, job.object.Mode.String())
 	}
 
 	return nil

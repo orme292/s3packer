@@ -87,6 +87,8 @@ github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9Y
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1/go.mod h1:L3OGu8Wl2/fWfCI6z80xFu9LTZmf1ZRjMHUOPmWr69U=
+github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 h1:iQTw/8FWTuc7uiaSepXwyf3o52HaUYcV+Tu66S3F5GA=
+github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0/go.mod h1:1NbS8ALrpOvjt0rHPNLyCIeMtbizbir8U//inJ+zuB8=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
@@ -108,6 +110,8 @@ github.com/orme292/symwalker v0.1.71 h1:6c5SbmpCjlPARPvQpYQskLVr7/16bBbtcrR/sYYw
 github.com/orme292/symwalker v0.1.71/go.mod h1:VWOAx9WTCecK0Ruf0i3eub53zbB4rg98/CiMZWrbxoU=
 github.com/orme292/symwalker v0.1.72 h1:kQSFqe59eueb+XvcscyeQQyWSh+NBRqyHgyk9gJgnMA=
 github.com/orme292/symwalker v0.1.72/go.mod h1:VWOAx9WTCecK0Ruf0i3eub53zbB4rg98/CiMZWrbxoU=
+github.com/orme292/symwalker v0.2.2 h1:GcU7K8szoNdRep+7RE7im1gQezg1z0IliHx/A6KvYeU=
+github.com/orme292/symwalker v0.2.2/go.mod h1:PWz/1bV3pP5+NRfEyjcswoA2ni52xcTNOKk3YuSV8aY=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

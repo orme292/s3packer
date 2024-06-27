@@ -3,19 +3,21 @@ package provider_v2
 import (
 	"errors"
 	"fmt"
+	"log"
 
-	objf "github.com/orme292/objectify"
+	"github.com/orme292/objectify"
+	sw "github.com/orme292/symwalker"
 )
 
 type objJob struct {
-	object *objf.FileObj
+	object *objectify.FileObj
 	status int
 	err    error
 }
 
 func (h *Handler) buildJobs() error {
 
-	sets := objf.Sets{
+	sets := objectify.Sets{
 		Modes: true,
 	}
 
@@ -23,54 +25,55 @@ func (h *Handler) buildJobs() error {
 
 		if mode.IsDir() {
 
-			files, err := objf.Path(file, sets)
+			log.Printf("Processing Directory: %s", file)
+
+			opts := sw.NewSymConf(file,
+				sw.WithFollowedSymLinks(),
+				sw.WithFileData(),
+				sw.WithLogging())
+
+			results, err := sw.SymWalker(opts)
 			if err != nil {
-				fmt.Printf("Skipping %s, unable to scan.", file)
-				continue
+				return err
 			}
 
-			for i := range files {
+			for i := range results.Files {
 
 				job := &objJob{}
 
-				if files[i].Mode == objf.EntModeRegular {
-					job.object = files[i]
-					job.status = ObjStatusWaiting
-					job.err = nil
-				}
-
-				if files[i].Mode != objf.EntModeRegular &&
-					files[i].Mode != objf.EntModeDir {
-					job.object = files[i]
-					job.status = ObjStatusSkipped
-					job.err = errors.New("Unsupported mode: " + files[i].Mode.String())
-				}
+				job.object = results.Files[i].FileObj
+				job.status = ObjStatusWaiting
+				job.err = nil
 
 				h.jobs = append(h.jobs, job)
 
 			}
 
-			if mode.IsRegular() {
+		}
 
-				job := &objJob{}
+		if mode.IsRegular() {
 
-				f, err := objf.File(file, sets)
-				if err != nil {
-					fmt.Printf("Skipping %s, unable to scan.", file)
-					continue
-				}
+			log.Printf("Processing File: %s", file)
 
-				job.object = f
-				job.err = nil
-				job.status = ObjStatusWaiting
+			job := &objJob{}
 
-				if f.Mode != objf.EntModeRegular &&
-					f.Mode != objf.EntModeDir {
-					job.status = ObjStatusSkipped
-					job.err = errors.New("Unsupported mode: " + f.Mode.String())
-				}
-
+			f, err := objectify.File(file, sets)
+			if err != nil {
+				fmt.Printf("Skipping %s, unable to scan.", file)
+				continue
 			}
+
+			job.object = f
+			job.err = nil
+			job.status = ObjStatusWaiting
+
+			if f.Mode != objectify.EntModeRegular &&
+				f.Mode != objectify.EntModeDir {
+				job.status = ObjStatusSkipped
+				job.err = errors.New("Unsupported mode: " + f.Mode.String())
+			}
+
+			h.jobs = append(h.jobs, job)
 
 		}
 
