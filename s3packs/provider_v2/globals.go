@@ -1,12 +1,13 @@
 package provider_v2
 
 const (
-	EMPTYPATH = ""
+	EmptyPath = ""
 )
 
 const (
-	ObjStatusWaiting = iota
-	ObjStatusSkipped
-	ObjStatusFailed
-	ObjStatusDone
+	JobStatusWaiting = iota
+	JobStatusQueued
+	JobStatusSkipped
+	JobStatusFailed
+	JobStatusDone
 )
