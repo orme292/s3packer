@@ -12,7 +12,6 @@ type Operator interface {
 	ObjectExists(key string) (bool, error)
 	ObjectDelete(key string) error
 	ObjectUpload() error
-	ObjectUploadMultipart() error
 
 	GetObjectTags(key string) (map[string]string, error)
 
