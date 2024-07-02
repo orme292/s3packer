@@ -153,10 +153,6 @@ func (oper *AwsOperator) ObjectUpload() error {
 
 }
 
-func (oper *AwsOperator) ObjectUploadMultipart() error {
-	return nil
-}
-
 func (oper *AwsOperator) GetObjectTags(key string) (map[string]string, error) {
 
 	input := &s3.GetObjectTaggingInput{
@@ -177,11 +173,6 @@ func (oper *AwsOperator) GetObjectTags(key string) (map[string]string, error) {
 
 func (oper *AwsOperator) Support() *provider_v2.Supports {
 
-	return &provider_v2.Supports{
-		BucketCreate:          true,
-		BucketDelete:          false,
-		ObjectDelete:          false,
-		ObjectUploadMultipart: false,
-	}
+	return provider_v2.NewSupports(true, false, false)
 
 }
