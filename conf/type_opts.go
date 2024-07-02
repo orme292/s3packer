@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"log"
 )
 
 // Overwrite type is a string enum of the supported overwrite methods. OverwriteChecksum is not implemented.
@@ -27,6 +28,9 @@ type Opts struct {
 
 func (o *Opts) build(inc *ProfileIncoming) error {
 
+	o.MaxParts = inc.Options.MaxParts
+	o.MaxUploads = inc.Options.MaxUploads
+
 	switch tidyString(inc.Options.OverwriteObjects) {
 
 	case OverwriteAlways.String(), "yes", "true":
@@ -44,19 +48,22 @@ func (o *Opts) build(inc *ProfileIncoming) error {
 
 	}
 
-	return nil
+	return o.validate()
 
 }
 
 func (o *Opts) validate() error {
+
 	if o.MaxParts <= 0 {
 		return fmt.Errorf("MaxParts must be at least 1")
 	}
 	if o.MaxUploads <= 0 {
+		log.Printf("here")
 		return fmt.Errorf("MaxUploads must be at least 1")
 	}
 	if o.Overwrite != OverwriteChecksum && o.Overwrite != OverwriteNever && o.Overwrite != OverwriteAlways {
 		return fmt.Errorf("OverwriteObjects value should be \"never\" or \"always\": %q", o.Overwrite)
 	}
 	return nil
+
 }
