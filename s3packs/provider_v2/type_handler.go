@@ -2,9 +2,6 @@ package provider_v2
 
 import (
 	"fmt"
-	"io/fs"
-	"log"
-	"os"
 
 	"github.com/orme292/s3packer/conf"
 )
@@ -15,9 +12,7 @@ type Handler struct {
 	oper Operator
 	iter Iterator
 
-	jobs []*objJob
-
-	paths map[string]fs.FileMode
+	queue *queue
 
 	Stats    *Stats
 	supports *Supports
@@ -41,8 +36,8 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, iterFn IterGenFunc) (*H
 		app:      app,
 		oper:     oper,
 		iter:     iter,
-		supports: oper.Support(),
 		Stats:    &Stats{},
+		supports: oper.Support(),
 	}
 
 	err = h.verifyBucket()
@@ -50,45 +45,18 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, iterFn IterGenFunc) (*H
 		return nil, err
 	}
 
-	h.combinePaths(app.Dirs, app.Files)
+	paths := combinePaths(app.Dirs, app.Files)
+	h.queue, err = newQueue(paths)
+	if err != nil {
+		return nil, fmt.Errorf("error building queue: %w", err)
+	}
 
-	h.dropBrokenPaths()
+	// TODO: Remove Logging
+	for i := range h.queue.jobs {
+		fmt.Printf("Job Path: %s (%s)\n", h.queue.jobs[i].details.FullPath(), h.queue.jobs[i].root)
+	}
 
 	return h, nil
-}
-
-func (h *Handler) combinePaths(dirs []string, files []string) {
-
-	h.paths = make(map[string]os.FileMode)
-
-	for _, dir := range dirs {
-
-		info, err := os.Stat(dir)
-		if err != nil {
-			h.paths[dir] = fs.ModeIrregular
-			continue
-		}
-
-		h.paths[dir] = info.Mode()
-
-	}
-
-	for _, file := range files {
-
-		info, err := os.Stat(file)
-		if err != nil {
-			h.paths[file] = fs.ModeIrregular
-			continue
-		}
-
-		h.paths[file] = info.Mode()
-
-	}
-
-	// TODO: REMOVE
-	for name, mode := range h.paths {
-		log.Printf("Added Path: %s [%v]", name, mode.String())
-	}
 
 }
 
@@ -121,19 +89,6 @@ func (h *Handler) createBucket() error {
 	}
 
 	return nil
-
-}
-
-func (h *Handler) dropBrokenPaths() {
-
-	for path, mode := range h.paths {
-
-		if !mode.IsDir() && !mode.IsRegular() {
-			fmt.Printf("Skipping inaccessible path: %s\n", path)
-			delete(h.paths, path)
-		}
-
-	}
 
 }
 
@@ -170,15 +125,6 @@ func (h *Handler) verifyBucket() error {
 }
 
 func (h *Handler) Run() error {
-
-	err := h.buildJobs()
-	if err != nil {
-		return err
-	}
-
-	for _, job := range h.jobs {
-		fmt.Printf("File: %s\n\tMode: %s\n", job.object.Filename, job.object.Mode.String())
-	}
 
 	return nil
 
