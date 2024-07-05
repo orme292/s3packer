@@ -17,7 +17,7 @@ type AwsOperator struct {
 	AWS *AwsClient
 }
 
-func NewAwsOperator(app *conf.AppConfig) (provider_v2.Operator, error) {
+func NewAwsOperator(app *conf.AppConfig) (oper provider_v2.Operator, err error) {
 
 	client := AwsClient{
 		details: &details{
@@ -29,7 +29,7 @@ func NewAwsOperator(app *conf.AppConfig) (provider_v2.Operator, error) {
 		},
 	}
 
-	err := client.getClient()
+	err = client.getClient()
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func NewAwsOperator(app *conf.AppConfig) (provider_v2.Operator, error) {
 		return nil, errors.New("could not initialize AWS client. check your credentials")
 	}
 
-	oper := &AwsOperator{
+	oper = &AwsOperator{
 		App: app,
 		AWS: &client,
 	}
@@ -96,37 +96,15 @@ func (oper *AwsOperator) BucketDelete() error {
 		Bucket: aws.String(oper.App.Bucket.Name),
 	}
 
-	output, err := oper.AWS.s3.DeleteBucket(context.Background(), input)
+	_, err := oper.AWS.s3.DeleteBucket(context.Background(), input)
 	if err != nil {
 		return fmt.Errorf("error deleting bucket: %s", err.Error())
 	}
 
-	fmt.Printf("oper.BucketDelete: RESULT METADATA: %+v\n", output)
+	// TODO: Remove Comment
+	// fmt.Printf("oper.BucketDelete: RESULT METADATA: %+v\n", output)
 
 	return nil
-
-}
-
-func (oper *AwsOperator) ObjectExists(key string) (bool, error) {
-
-	input := &s3.HeadObjectInput{
-		Bucket: aws.String(oper.App.Bucket.Name),
-		Key:    aws.String(key),
-	}
-
-	output, err := oper.AWS.s3.HeadObject(context.Background(), input)
-	if err != nil {
-		if errors.As(err, &s3Error) {
-			if errors.As(s3Error, &s3NoSuchKey) || errors.As(s3Error, &s3NotFound) {
-				return false, fmt.Errorf("object not found")
-			}
-		}
-		return false, fmt.Errorf("error trying to find object: %s", err.Error())
-	}
-
-	fmt.Printf("oper.ObjectExists(%s): RESULT METADATA: %+v\n", key, output)
-
-	return true, nil
 
 }
 
@@ -136,18 +114,73 @@ func (oper *AwsOperator) ObjectDelete(key string) error {
 		Bucket: aws.String(oper.App.Bucket.Name),
 		Key:    aws.String(key),
 	}
-	output, err := oper.AWS.s3.DeleteObject(context.Background(), input)
+	_, err := oper.AWS.s3.DeleteObject(context.Background(), input)
 	if err != nil {
 		return fmt.Errorf("error deleting object: %s", err.Error())
 	}
 
-	fmt.Printf("oper.ObjectDelete(%s): RESULT METADATA: %+v\n", key, output)
+	// TODO: Remove Comment
+	// fmt.Printf("oper.ObjectDelete(%s): RESULT METADATA: %+v\n", key, output)
 
 	return nil
 
 }
 
-func (oper *AwsOperator) ObjectUpload() error {
+func (oper *AwsOperator) ObjectExists(obj provider_v2.Object) (bool, error) {
+
+	awsObj, ok := obj.(*AwsObject)
+	if !ok {
+		return true, fmt.Errorf("trouble building object to check")
+	}
+
+	input := &s3.HeadObjectInput{
+		Bucket: awsObj.bucket,
+		Key:    awsObj.key,
+	}
+
+	_, err := oper.AWS.s3.HeadObject(context.Background(), input)
+	if err != nil {
+		if errors.As(err, &s3Error) {
+			if errors.As(s3Error, &s3NoSuchKey) || errors.As(s3Error, &s3NotFound) {
+				return false, fmt.Errorf("object not found")
+			}
+		}
+		return true, fmt.Errorf("error trying to find object: %s", err.Error())
+	}
+
+	// TODO: Remove Comment
+	// fmt.Printf("oper.ObjectExists(%s): RESULT METADATA: %+v\n", *awsObj.key, output)
+
+	return true, nil
+
+}
+
+func (oper *AwsOperator) ObjectUpload(obj provider_v2.Object) error {
+
+	awsObj, ok := obj.(*AwsObject)
+	if !ok {
+		return fmt.Errorf("trouble building object to upload")
+	}
+
+	// fmt.Printf("OBJECT: %+v\n", awsObj)
+
+	input := &s3.PutObjectInput{
+		ACL:               oper.App.Provider.AWS.ACL,
+		Body:              awsObj.f,
+		Bucket:            awsObj.bucket,
+		Key:               awsObj.key,
+		ChecksumAlgorithm: types.ChecksumAlgorithmSha256,
+		StorageClass:      oper.App.Provider.AWS.Storage,
+		Tagging:           awsObj.tags,
+	}
+
+	_, err := oper.AWS.manager.Upload(context.Background(), input)
+	if err != nil {
+		return fmt.Errorf("error uploading object: %s", err.Error())
+	}
+
+	// TODO: Remove Comment
+	// fmt.Printf("oper.ObjectUpload(): RESULT METADATA: %+v\n", output)
 
 	return nil
 
@@ -160,12 +193,13 @@ func (oper *AwsOperator) GetObjectTags(key string) (map[string]string, error) {
 		Key:    &key,
 	}
 
-	output, err := oper.AWS.s3.GetObjectTagging(context.Background(), input)
+	_, err := oper.AWS.s3.GetObjectTagging(context.Background(), input)
 	if err != nil {
 		return make(map[string]string), fmt.Errorf("error getting object tags: %s", err.Error())
 	}
 
-	fmt.Printf("oper.ObjectDelete(%s): RESULT METADATA: %+v\n", key, output)
+	// TODO: Remove Comment
+	// fmt.Printf("oper.ObjectDelete(%s): RESULT METADATA: %+v\n", key, output)
 
 	return make(map[string]string), nil
 
@@ -173,6 +207,6 @@ func (oper *AwsOperator) GetObjectTags(key string) (map[string]string, error) {
 
 func (oper *AwsOperator) Support() *provider_v2.Supports {
 
-	return provider_v2.NewSupports(true, false, false)
+	return provider_v2.NewSupports(true, true, true, true)
 
 }

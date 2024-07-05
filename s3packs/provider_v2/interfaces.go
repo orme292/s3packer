@@ -9,22 +9,18 @@ type Operator interface {
 	BucketExists() (bool, error)
 	BucketDelete() error
 
-	ObjectExists(key string) (bool, error)
 	ObjectDelete(key string) error
-	ObjectUpload() error
-
+	ObjectExists(obj Object) (bool, error)
+	ObjectUpload(obj Object) error
 	GetObjectTags(key string) (map[string]string, error)
 
 	Support() *Supports
 }
 
+type ObjectGenFunc func(job *QueueJob) Object
 type OperGenFunc func(app *conf.AppConfig) (oper Operator, err error)
 
-type Iterator interface {
-	Pre() error
-	Next() bool
-	Prepare() error
-	Post() error
+type Object interface {
+	Destroy() error
+	Generate(job *QueueJob) error
 }
-
-type IterGenFunc func(app *conf.AppConfig) (iter Iterator, err error)

@@ -2,32 +2,51 @@ package provider_v2
 
 import (
 	"os"
+	"sync"
 
 	"github.com/orme292/objectify"
 	"github.com/orme292/s3packer/conf"
 )
 
-type queueJob struct {
-	f       *os.File
-	app     *conf.AppConfig
-	details *objectify.FileObj
-	root    string
-	status  int
-	err     error
+type QueueJob struct {
+	F       *os.File
+	Obj     Object
+	Details *objectify.FileObj
+
+	Key        string
+	SearchRoot string
+
+	App *conf.AppConfig
+
+	status int
+	err    error
+
+	mu *sync.RWMutex
 }
 
-func newJob(object *objectify.FileObj, root string, status int, err error) *queueJob {
-	return &queueJob{
-		details: object,
-		root:    root,
-		status:  status,
-		err:     err,
+func newJob(object *objectify.FileObj, app *conf.AppConfig, searchRoot string, status int, err error) *QueueJob {
+
+	j := &QueueJob{
+		Details:    object,
+		SearchRoot: searchRoot,
+		App:        app,
+		status:     status,
+		err:        err,
+		mu:         &sync.RWMutex{},
 	}
+
+	j.setKey()
+
+	return j
+
 }
 
-func (j *queueJob) closeFile() error {
+func (j *QueueJob) CloseFile() error {
 
-	err := j.f.Close()
+	j.mu.Lock()
+	defer j.mu.Unlock()
+
+	err := j.F.Close()
 	if err != nil {
 		return err
 	}
@@ -36,23 +55,52 @@ func (j *queueJob) closeFile() error {
 
 }
 
-func (j *queueJob) openFile() error {
+func (j *QueueJob) OpenFile() error {
 
-	f, err := os.Open(j.details.FullPath())
+	j.mu.Lock()
+	defer j.mu.Unlock()
+
+	f, err := os.Open(j.Details.FullPath())
 	if err != nil {
 		return err
 	}
 
-	j.f = f
+	j.F = f
 
 	return nil
 }
 
-func (j *queueJob) updateDetails() {
-	j.details.Update()
+func (j *QueueJob) setKey() {
+
+	key := ObjectKey{
+		base: j.Details.Filename,
+		dir:  j.Details.Root,
+
+		searchRoot: j.SearchRoot,
+
+		namePrefix: j.App.Objects.NamePrefix,
+		pathPrefix: j.App.Objects.PathPrefix,
+	}
+
+	j.Key = key.String(j.App.Objects.NamingType, j.App.Objects.OmitRootDir)
+
 }
 
-func (j *queueJob) updateStatus(status int, err error) {
+func (j *QueueJob) updateDetails() {
+
+	j.mu.Lock()
+	defer j.mu.Unlock()
+
+	j.Details.Update()
+
+}
+
+func (j *QueueJob) updateStatus(status int, err error) {
+
+	j.mu.Lock()
+	defer j.mu.Unlock()
+
 	j.status = status
 	j.err = err
+
 }

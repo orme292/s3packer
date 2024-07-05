@@ -11,7 +11,7 @@ import (
 
 func Do(app *conf.AppConfig) (*provider_v2.Stats, error) {
 
-	h, err := provider_v2.NewHandler(app, handler_aws.NewAwsOperator, handler_aws.NewAwsIterator)
+	h, err := provider_v2.NewHandler(app, handler_aws.NewAwsOperator, handler_aws.NewAwsObject)
 	if err != nil {
 		fmt.Printf("Error creating AWS handler: %s\n", err)
 		os.Exit(1)

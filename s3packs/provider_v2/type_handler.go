@@ -9,16 +9,16 @@ import (
 type Handler struct {
 	app *conf.AppConfig
 
-	oper Operator
-	iter Iterator
+	objFn ObjectGenFunc
 
+	oper  Operator
 	queue *queue
 
 	Stats    *Stats
 	supports *Supports
 }
 
-func NewHandler(app *conf.AppConfig, operFn OperGenFunc, iterFn IterGenFunc) (*Handler, error) {
+func NewHandler(app *conf.AppConfig, operFn OperGenFunc, objFn ObjectGenFunc) (*Handler, error) {
 
 	fmt.Printf("Starting s3packer...\n\n")
 
@@ -27,15 +27,9 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, iterFn IterGenFunc) (*H
 		return nil, fmt.Errorf("error during oper gen: %w", err)
 	}
 
-	iter, err := iterFn(app)
-	if err != nil {
-		return nil, fmt.Errorf("error during iter gen: %w", err)
-	}
-
 	h := &Handler{
 		app:      app,
 		oper:     oper,
-		iter:     iter,
 		Stats:    &Stats{},
 		supports: oper.Support(),
 	}
@@ -46,14 +40,14 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, iterFn IterGenFunc) (*H
 	}
 
 	paths := combinePaths(app.Dirs, app.Files)
-	h.queue, err = newQueue(paths)
+	h.queue, err = newQueue(paths, app, oper, objFn)
 	if err != nil {
 		return nil, fmt.Errorf("error building queue: %w", err)
 	}
 
 	// TODO: Remove Logging
 	for i := range h.queue.jobs {
-		fmt.Printf("Job Path: %s (%s)\n", h.queue.jobs[i].details.FullPath(), h.queue.jobs[i].root)
+		fmt.Printf("Job Path: %s (%s)\n", h.queue.jobs[i].Details.FullPath(), h.queue.jobs[i].SearchRoot)
 	}
 
 	return h, nil
@@ -126,6 +120,6 @@ func (h *Handler) verifyBucket() error {
 
 func (h *Handler) Run() error {
 
-	return nil
+	return h.queue.start()
 
 }

@@ -3,6 +3,7 @@ package provider_v2
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/orme292/objectify"
 	"github.com/orme292/s3packer/conf"
@@ -10,13 +11,24 @@ import (
 )
 
 type queue struct {
-	app  *conf.AppConfig
-	jobs []*queueJob
+	app   *conf.AppConfig
+	oper  Operator
+	stats *Stats
+
+	objGenFn ObjectGenFunc
+
+	jobs []*QueueJob
 }
 
-func newQueue(paths pathModeMap) (*queue, error) {
+func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn ObjectGenFunc) (*queue, error) {
 
-	q := &queue{}
+	q := &queue{
+		app:   app,
+		oper:  oper,
+		stats: &Stats{},
+
+		objGenFn: objFn,
+	}
 
 	sets := objectify.Sets{
 		Modes: true,
@@ -41,13 +53,13 @@ func newQueue(paths pathModeMap) (*queue, error) {
 
 			for i := range results.Files {
 
-				job := &queueJob{}
+				job := &QueueJob{}
 
 				switch results.Files[i].FileObj.Mode {
 				case objectify.EntModeRegular:
-					job = newJob(results.Files[i].FileObj, file, JobStatusWaiting, nil)
+					job = newJob(results.Files[i].FileObj, app, file, JobStatusWaiting, nil)
 				default:
-					job = newJob(results.Files[i].FileObj, file, JobStatusSkipped,
+					job = newJob(results.Files[i].FileObj, app, file, JobStatusSkipped,
 						fmt.Errorf("unsupported mode: %s", results.Files[i].FileObj.Mode.String()),
 					)
 				}
@@ -70,13 +82,13 @@ func newQueue(paths pathModeMap) (*queue, error) {
 				continue
 			}
 
-			job := &queueJob{}
+			job := &QueueJob{}
 
 			switch f.Mode {
 			case objectify.EntModeRegular:
-				job = newJob(f, EmptyPath, JobStatusWaiting, nil)
+				job = newJob(f, app, EmptyPath, JobStatusWaiting, nil)
 			default:
-				job = newJob(f, EmptyPath, JobStatusSkipped,
+				job = newJob(f, app, EmptyPath, JobStatusSkipped,
 					fmt.Errorf("unsupported mode: %s", f.Mode.String()),
 				)
 			}
@@ -96,7 +108,7 @@ func newQueue(paths pathModeMap) (*queue, error) {
 				continue
 			}
 
-			job := newJob(f, EmptyPath, JobStatusFailed,
+			job := newJob(f, app, EmptyPath, JobStatusFailed,
 				fmt.Errorf("unsupported mode: %s", f.Mode.String()),
 			)
 			q.addJob(job)
@@ -113,24 +125,103 @@ func newQueue(paths pathModeMap) (*queue, error) {
 
 }
 
-func (q *queue) addJob(job *queueJob) { q.jobs = append(q.jobs, job) }
+func (q *queue) addJob(job *QueueJob) { q.jobs = append(q.jobs, job) }
+
+func (q *queue) hasPending() bool {
+
+	for _, job := range q.jobs {
+		if job.status == JobStatusWaiting {
+			return true
+		}
+	}
+
+	return false
+
+}
 
 func (q *queue) start() error {
 
-	// var wg sync.WaitGroup
-	//
-	// for {
-	//
-	// }
+	var wg sync.WaitGroup
+
+	for i := q.app.Opts.MaxUploads; i > 0; i-- {
+
+		log.Printf("spawning Worker %d", i)
+
+		wg.Add(1)
+		go q.spawnWorker(&wg, q.app)
+
+	}
+
+	wg.Wait()
 
 	return nil
+
 }
 
-func (q *queue) worker() error {
+func (q *queue) spawnWorker(wg *sync.WaitGroup, app *conf.AppConfig) {
 
-	// for _, job := range q.jobs {
-	//
-	// }
+	defer wg.Done()
 
-	return nil
+	for {
+
+		for i := range q.jobs {
+
+			if q.jobs[i].status == JobStatusWaiting {
+
+				q.jobs[i].mu.Lock()
+				if q.jobs[i].status == JobStatusWaiting {
+					q.jobs[i].mu.Unlock()
+					q.jobs[i].updateStatus(JobStatusQueued, nil)
+				} else {
+					q.jobs[i].mu.Unlock()
+					continue
+				}
+
+				object := q.objGenFn(q.jobs[i])
+				if object == nil {
+					err := fmt.Errorf("could not generate provider object")
+					q.jobs[i].updateStatus(JobStatusFailed, err)
+					fmt.Printf("Start Upload Failed: %s\n", err)
+					continue
+				}
+
+				ex, err := q.oper.ObjectExists(object)
+				if ex && err != nil {
+					_ = object.Destroy()
+					q.jobs[i].updateStatus(JobStatusFailed, err)
+					fmt.Printf("Duplicate Object Check Failed: %s\n", err)
+					continue
+				}
+
+				if ex {
+					_ = object.Destroy()
+					q.jobs[i].updateStatus(JobStatusSkipped, err)
+					fmt.Printf("Object %q Exists\n", q.jobs[i].Key)
+					continue
+				}
+
+				fmt.Printf("Uploading %s... \n", q.jobs[i].Key)
+
+				err = q.oper.ObjectUpload(object)
+				if err != nil {
+					_ = object.Destroy()
+					q.jobs[i].updateStatus(JobStatusFailed, err)
+					fmt.Printf("Upload Failed: %s\n", err)
+					continue
+				}
+
+				_ = object.Destroy()
+				q.jobs[i].updateStatus(JobStatusDone, nil)
+			}
+
+		}
+
+		if !q.hasPending() {
+			break
+		}
+
+	}
+
+	log.Printf("A worker finished.")
+
 }
