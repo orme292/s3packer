@@ -21,9 +21,11 @@ func (o Overwrite) String() string {
 
 // Opts contains application level configuration options.
 type Opts struct {
-	MaxParts   int
-	MaxUploads int
-	Overwrite  Overwrite
+	MaxParts       int
+	MaxUploads     int
+	FollowSymlinks bool
+	WalkDirs       bool
+	Overwrite      Overwrite
 }
 
 func (o *Opts) build(inc *ProfileIncoming) error {

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
+	"time"
 
-	pal "github.com/abusomani/go-palette/palette"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs"
 	flag "github.com/spf13/pflag"
@@ -67,11 +68,6 @@ main is the entry point of the program. It does the following:
 */
 func main() {
 
-	p := pal.New(pal.WithBackground(pal.Color(21)), pal.WithForeground(pal.BrightWhite), pal.WithSpecialEffects([]pal.Special{pal.Bold}))
-	_, _ = p.Println("s3packer ", s3packs.Version)
-	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
-	_, _ = p.Println("https://github.com/orme292/s3packer\n")
-
 	profile, create, err := getFlags()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -97,11 +93,27 @@ func main() {
 		log.Fatalf("Error loading profile: %v", err)
 	}
 
-	_, err = s3packs.Do(ac)
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func(wg *sync.WaitGroup) {
+		time.Sleep(time.Second * 5)
+		_, err = s3packs.Do(ac)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+		wg.Done()
+
+	}(&wg)
+
+	_, err = ac.Screen.Run()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Println("Couldn't start TUI.")
 		os.Exit(1)
 	}
+
+	wg.Wait()
 
 	// print stats out
 	os.Exit(0)

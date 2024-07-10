@@ -39,8 +39,10 @@ type ProfileIncoming struct {
 	} `yaml:"Bucket"`
 
 	Options struct {
-		MaxParts         int    `yaml:"MaxParts"`
+		MaxParts         int    `yaml:"MaxParts"` // TODO: Remove support
 		MaxUploads       int    `yaml:"MaxUploads"`
+		FollowSymlinks   bool   `yaml:"FollowSymlinks"` // TODO: Add Support
+		WalkDirs         bool   `yaml:"WalkDirs"`
 		OverwriteObjects string `yaml:"OverwriteObjects"`
 	} `yaml:"Options"`
 
@@ -67,6 +69,7 @@ type ProfileIncoming struct {
 
 	Files []string `yaml:"Files"`
 	Dirs  []string `yaml:"Dirs"`
+	Skip  []string `yaml:"Skip"` // TODO: Add Support
 }
 
 func NewProfile() *ProfileIncoming {

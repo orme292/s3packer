@@ -17,10 +17,12 @@ type Operator interface {
 	Support() *Supports
 }
 
-type ObjectGenFunc func(job *QueueJob) Object
+type ObjectGenFunc func(job *Job) Object
 type OperGenFunc func(app *conf.AppConfig) (oper Operator, err error)
 
 type Object interface {
 	Destroy() error
-	Generate(job *QueueJob) error
+	Generate() error
+	Post() error
+	Pre() error
 }

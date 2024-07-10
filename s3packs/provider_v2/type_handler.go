@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/orme292/s3packer/conf"
+	"github.com/orme292/s3packer/tuipack"
 )
 
 type Handler struct {
@@ -42,12 +43,7 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, objFn ObjectGenFunc) (*
 	paths := combinePaths(app.Dirs, app.Files)
 	h.queue, err = newQueue(paths, app, oper, objFn)
 	if err != nil {
-		return nil, fmt.Errorf("error building queue: %w", err)
-	}
-
-	// TODO: Remove Logging
-	for i := range h.queue.jobs {
-		fmt.Printf("Job Path: %s (%s)\n", h.queue.jobs[i].Details.FullPath(), h.queue.jobs[i].SearchRoot)
+		return nil, fmt.Errorf("error building queue2: %w", err)
 	}
 
 	return h, nil
@@ -89,11 +85,17 @@ func (h *Handler) createBucket() error {
 func (h *Handler) verifyBucket() error {
 
 	// Check if bucket exists. If it does not, create it.
-	fmt.Printf("Verifying bucket... ")
+	h.app.Screen.Send(tuipack.TuiResultMsg{
+		IsSuccessful: false,
+		Msg:          "Checking for bucket...",
+	})
 
 	exists, err := h.oper.BucketExists()
 	if err != nil && err.Error() != "bucket not found" {
-		fmt.Printf("could not verify.\n")
+		h.app.Screen.Send(tuipack.TuiResultMsg{
+			IsSuccessful: false,
+			Msg:          "Couldn't find bucket.",
+		})
 		return fmt.Errorf("error while checking for bucket: %w", err)
 	}
 
@@ -120,6 +122,7 @@ func (h *Handler) verifyBucket() error {
 
 func (h *Handler) Run() error {
 
-	return h.queue.start()
+	h.queue.start()
+	return nil
 
 }

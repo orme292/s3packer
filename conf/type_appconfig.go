@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/orme292/s3packer/logbot"
+	"github.com/orme292/s3packer/tuipack"
 	"github.com/rs/zerolog"
 )
 
@@ -19,8 +21,10 @@ type AppConfig struct {
 	Paths    []string
 	Files    []string
 	Dirs     []string
+	Skip     []string
 
-	Log *logbot.LogBot
+	Screen *tea.Program
+	Log    *logbot.LogBot
 }
 
 // NewAppConfig returns a new AppConfig object with preconfigured defaults.
@@ -34,15 +38,17 @@ func NewAppConfig() *AppConfig {
 			Linode: &ProviderLinode{},
 		},
 		Opts: &Opts{
-			MaxParts:   10,
-			MaxUploads: 5,
-			Overwrite:  OverwriteNever,
+			MaxUploads:     50,
+			FollowSymlinks: false,
+			WalkDirs:       true,
+			Overwrite:      OverwriteNever,
 		},
 		Bucket: &Bucket{
 			Create: false,
 		},
 		Objects: &Objects{
-			NamingType: NamingNone,
+			NamingType:  NamingNone,
+			OmitRootDir: true,
 		},
 		Tags: make(Tags),
 		TagOpts: &TagOpts{
@@ -57,6 +63,7 @@ func NewAppConfig() *AppConfig {
 			File:     false,
 			Filepath: "/var/log/s3packer.log",
 		},
+		Screen: tea.NewProgram(tuipack.NewTuiModel()),
 		Log: &logbot.LogBot{
 			Level:       zerolog.ErrorLevel,
 			FlagConsole: true,
@@ -117,6 +124,7 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 
 	ac.Files = inc.Files
 	ac.Dirs = inc.Dirs
+	ac.Skip = inc.Skip
 
 	return nil
 

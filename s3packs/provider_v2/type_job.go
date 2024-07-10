@@ -1,38 +1,30 @@
 package provider_v2
 
 import (
-	"os"
-	"sync"
-
 	"github.com/orme292/objectify"
 	"github.com/orme292/s3packer/conf"
 )
 
-type QueueJob struct {
-	F       *os.File
-	Obj     Object
-	Details *objectify.FileObj
+type Job struct {
+	App *conf.AppConfig
 
+	Object     Object
+	Metadata   *objectify.FileObj
 	Key        string
 	SearchRoot string
 
-	App *conf.AppConfig
-
 	status int
-	err    error
 
-	mu *sync.RWMutex
+	err error
 }
 
-func newJob(object *objectify.FileObj, app *conf.AppConfig, searchRoot string, status int, err error) *QueueJob {
+func newJob(app *conf.AppConfig, metadata *objectify.FileObj, searchRoot string) *Job {
 
-	j := &QueueJob{
-		Details:    object,
-		SearchRoot: searchRoot,
+	j := &Job{
 		App:        app,
-		status:     status,
-		err:        err,
-		mu:         &sync.RWMutex{},
+		Metadata:   metadata,
+		SearchRoot: searchRoot,
+		err:        nil,
 	}
 
 	j.setKey()
@@ -41,40 +33,11 @@ func newJob(object *objectify.FileObj, app *conf.AppConfig, searchRoot string, s
 
 }
 
-func (j *QueueJob) CloseFile() error {
-
-	j.mu.Lock()
-	defer j.mu.Unlock()
-
-	err := j.F.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
-
-}
-
-func (j *QueueJob) OpenFile() error {
-
-	j.mu.Lock()
-	defer j.mu.Unlock()
-
-	f, err := os.Open(j.Details.FullPath())
-	if err != nil {
-		return err
-	}
-
-	j.F = f
-
-	return nil
-}
-
-func (j *QueueJob) setKey() {
+func (j *Job) setKey() {
 
 	key := ObjectKey{
-		base: j.Details.Filename,
-		dir:  j.Details.Root,
+		base: j.Metadata.Filename,
+		dir:  j.Metadata.Root,
 
 		searchRoot: j.SearchRoot,
 
@@ -86,21 +49,7 @@ func (j *QueueJob) setKey() {
 
 }
 
-func (j *QueueJob) updateDetails() {
-
-	j.mu.Lock()
-	defer j.mu.Unlock()
-
-	j.Details.Update()
-
-}
-
-func (j *QueueJob) updateStatus(status int, err error) {
-
-	j.mu.Lock()
-	defer j.mu.Unlock()
-
+func (j *Job) setStatus(status int, err error) {
 	j.status = status
 	j.err = err
-
 }

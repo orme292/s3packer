@@ -101,9 +101,6 @@ func (oper *AwsOperator) BucketDelete() error {
 		return fmt.Errorf("error deleting bucket: %s", err.Error())
 	}
 
-	// TODO: Remove Comment
-	// fmt.Printf("oper.BucketDelete: RESULT METADATA: %+v\n", output)
-
 	return nil
 
 }
@@ -119,9 +116,6 @@ func (oper *AwsOperator) ObjectDelete(key string) error {
 		return fmt.Errorf("error deleting object: %s", err.Error())
 	}
 
-	// TODO: Remove Comment
-	// fmt.Printf("oper.ObjectDelete(%s): RESULT METADATA: %+v\n", key, output)
-
 	return nil
 
 }
@@ -134,8 +128,8 @@ func (oper *AwsOperator) ObjectExists(obj provider_v2.Object) (bool, error) {
 	}
 
 	input := &s3.HeadObjectInput{
-		Bucket: awsObj.bucket,
-		Key:    awsObj.key,
+		Bucket: &awsObj.bucket,
+		Key:    &awsObj.key,
 	}
 
 	_, err := oper.AWS.s3.HeadObject(context.Background(), input)
@@ -148,9 +142,6 @@ func (oper *AwsOperator) ObjectExists(obj provider_v2.Object) (bool, error) {
 		return true, fmt.Errorf("error trying to find object: %s", err.Error())
 	}
 
-	// TODO: Remove Comment
-	// fmt.Printf("oper.ObjectExists(%s): RESULT METADATA: %+v\n", *awsObj.key, output)
-
 	return true, nil
 
 }
@@ -162,25 +153,20 @@ func (oper *AwsOperator) ObjectUpload(obj provider_v2.Object) error {
 		return fmt.Errorf("trouble building object to upload")
 	}
 
-	// fmt.Printf("OBJECT: %+v\n", awsObj)
-
 	input := &s3.PutObjectInput{
-		ACL:               oper.App.Provider.AWS.ACL,
+		ACL:               awsObj.acl,
 		Body:              awsObj.f,
-		Bucket:            awsObj.bucket,
-		Key:               awsObj.key,
+		Bucket:            &awsObj.bucket,
+		Key:               &awsObj.key,
 		ChecksumAlgorithm: types.ChecksumAlgorithmSha256,
-		StorageClass:      oper.App.Provider.AWS.Storage,
-		Tagging:           awsObj.tags,
+		StorageClass:      awsObj.storage,
+		Tagging:           aws.String(awsObj.tags),
 	}
 
 	_, err := oper.AWS.manager.Upload(context.Background(), input)
 	if err != nil {
 		return fmt.Errorf("error uploading object: %s", err.Error())
 	}
-
-	// TODO: Remove Comment
-	// fmt.Printf("oper.ObjectUpload(): RESULT METADATA: %+v\n", output)
 
 	return nil
 
@@ -198,15 +184,12 @@ func (oper *AwsOperator) GetObjectTags(key string) (map[string]string, error) {
 		return make(map[string]string), fmt.Errorf("error getting object tags: %s", err.Error())
 	}
 
-	// TODO: Remove Comment
-	// fmt.Printf("oper.ObjectDelete(%s): RESULT METADATA: %+v\n", key, output)
-
 	return make(map[string]string), nil
 
 }
 
 func (oper *AwsOperator) Support() *provider_v2.Supports {
 
-	return provider_v2.NewSupports(true, true, true, true)
+	return provider_v2.NewSupports(true, true, true, false)
 
 }
