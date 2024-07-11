@@ -23,7 +23,6 @@ type details struct {
 	key     string
 	secret  string
 	region  string
-	parts   int
 }
 
 func (client *AwsClient) getClient() error {
@@ -31,10 +30,6 @@ func (client *AwsClient) getClient() error {
 	err := client.getClientConfig()
 	if err != nil {
 		return fmt.Errorf("error configuring aws client: %s", err.Error())
-	}
-
-	if client.details.parts == 0 {
-		client.details.parts = int(manager.MaxUploadParts)
 	}
 
 	client.s3 = s3.NewFromConfig(*client.config)
@@ -105,7 +100,6 @@ func (client *AwsClient) getUploadManager() error {
 	}
 
 	client.manager = manager.NewUploader(client.s3, func(u *manager.Uploader) {
-		u.MaxUploadParts = int32(client.details.parts)
 		u.LeavePartsOnError = false
 	})
 

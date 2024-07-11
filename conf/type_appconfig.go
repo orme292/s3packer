@@ -5,7 +5,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/orme292/s3packer/logbot"
 	"github.com/orme292/s3packer/tuipack"
 	"github.com/rs/zerolog"
 )
@@ -23,8 +22,7 @@ type AppConfig struct {
 	Dirs     []string
 	Skip     []string
 
-	Screen *tea.Program
-	Log    *logbot.LogBot
+	Tui *tuipack.LogBot
 }
 
 // NewAppConfig returns a new AppConfig object with preconfigured defaults.
@@ -58,17 +56,17 @@ func NewAppConfig() *AppConfig {
 			OriginPath:           true,
 		},
 		LogOpts: &LogOpts{
-			Level:    zerolog.ErrorLevel,
-			Console:  true,
-			File:     false,
-			Filepath: "/var/log/s3packer.log",
+			Level:   zerolog.WarnLevel,
+			Console: false,
+			File:    false,
+			Screen:  true,
+			Logfile: "/var/log/s3packer.log",
 		},
-		Screen: tea.NewProgram(tuipack.NewTuiModel()),
-		Log: &logbot.LogBot{
-			Level:       zerolog.ErrorLevel,
-			FlagConsole: true,
-			FlagFile:    false,
-			Path:        "/var/log/s3packer.log",
+
+		Tui: &tuipack.LogBot{
+			Level:   zerolog.WarnLevel,
+			Output:  &tuipack.LogOutput{},
+			Logfile: "/var/log/s3packer.log",
 		},
 	}
 
@@ -83,10 +81,15 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 		return err
 	}
 
-	ac.Log.Level = ac.LogOpts.Level
-	ac.Log.FlagConsole = ac.LogOpts.Console
-	ac.Log.FlagFile = ac.LogOpts.File
-	ac.Log.Path = ac.LogOpts.Filepath
+	ac.Tui.Level = ac.LogOpts.Level
+	ac.Tui.Output.Screen = ac.LogOpts.Screen
+	ac.Tui.Output.Console = ac.LogOpts.Console
+	ac.Tui.Output.File = ac.LogOpts.File
+	ac.Tui.Logfile = ac.LogOpts.Logfile
+
+	if ac.Tui.Output.Screen {
+		ac.Tui.Screen = tea.NewProgram(tuipack.NewTuiModel())
+	}
 
 	err = ac.Provider.build(inc)
 	if err != nil {

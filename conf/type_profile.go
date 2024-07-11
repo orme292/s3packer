@@ -39,7 +39,6 @@ type ProfileIncoming struct {
 	} `yaml:"Bucket"`
 
 	Options struct {
-		MaxParts         int    `yaml:"MaxParts"` // TODO: Remove support
 		MaxUploads       int    `yaml:"MaxUploads"`
 		FollowSymlinks   bool   `yaml:"FollowSymlinks"` // TODO: Add Support
 		WalkDirs         bool   `yaml:"WalkDirs"`
@@ -61,10 +60,11 @@ type ProfileIncoming struct {
 	} `yaml:"Objects"`
 
 	Logging struct {
-		Level           int    `yaml:"Level"`
-		OutputToConsole bool   `yaml:"OutputToConsole"`
-		OutputToFile    bool   `yaml:"OutputToFile"`
-		Path            string `yaml:"Path"`
+		Level   int    `yaml:"Level"`
+		Screen  bool   `yaml:"Screen"`
+		Console bool   `yaml:"Console"`
+		File    bool   `yaml:"File"`
+		Logfile string `yaml:"Logfile"`
 	} `yaml:"Logging"`
 
 	Files []string `yaml:"Files"`
@@ -77,6 +77,7 @@ func NewProfile() *ProfileIncoming {
 }
 
 func (p *ProfileIncoming) LoadFromYaml(filename string) error {
+
 	filename, err := filepath.Abs(filename)
 	if err != nil {
 		return fmt.Errorf("%s: %v", ErrorProfilePath, err)
@@ -93,6 +94,7 @@ func (p *ProfileIncoming) LoadFromYaml(filename string) error {
 	}
 
 	return nil
+
 }
 
 func (p *ProfileIncoming) loadSampleData() {
@@ -114,8 +116,9 @@ func (p *ProfileIncoming) loadSampleData() {
 	p.Bucket.Region = "us-lax-1"
 	p.Bucket.Name = "MyBackupBucket"
 
-	p.Options.MaxParts = 10
-	p.Options.MaxUploads = 5
+	p.Options.MaxUploads = 50
+	p.Options.FollowSymlinks = false
+	p.Options.WalkDirs = true
 	p.Options.OverwriteObjects = "never"
 
 	p.TagOptions.OriginPath = true
@@ -132,9 +135,10 @@ func (p *ProfileIncoming) loadSampleData() {
 	p.Objects.OmitRootDir = true
 
 	p.Logging.Level = 4
-	p.Logging.OutputToFile = true
-	p.Logging.OutputToConsole = true
-	p.Logging.Path = "/var/log/s3packer.log"
+	p.Logging.Screen = true
+	p.Logging.Console = false
+	p.Logging.File = true
+	p.Logging.Logfile = "/var/log/s3packer.log"
 
 	p.Files = []string{
 		"/documents/to_jenny/letter_1.doc",
@@ -144,6 +148,9 @@ func (p *ProfileIncoming) loadSampleData() {
 	p.Dirs = []string{
 		"/documents/from_jenny",
 		"/documents/stock_certificates",
+	}
+	p.Skip = []string{
+		"/documents/to_jenny/unsent",
 	}
 
 }

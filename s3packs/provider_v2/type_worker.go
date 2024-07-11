@@ -2,11 +2,11 @@ package provider_v2
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/orme292/objectify"
 	"github.com/orme292/s3packer/conf"
+	"github.com/orme292/s3packer/tuipack"
 )
 
 type worker struct {
@@ -58,11 +58,14 @@ func (w *worker) scan() {
 
 	if w.isDir {
 
-		log.Printf("Reading directory %s", w.path)
+		msg := fmt.Sprintf("Reading directory %s...", w.path)
+		w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.INFO, true, true)
 
 		files, err := objectify.Path(w.path, objectify.SetsAllNoChecksums())
 		if err != nil {
-			log.Printf("Error reading directory %s: %s", w.path, err)
+			errMsg := fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
+			w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: errMsg, Mark: false},
+				errMsg, tuipack.ERROR, true, true)
 			return
 		}
 
@@ -73,6 +76,9 @@ func (w *worker) scan() {
 			jobs = append(jobs, job)
 
 		}
+
+		msg = fmt.Sprintf("Uploading directory %s...", w.path)
+		w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.INFO, true, true)
 
 		for {
 
@@ -96,8 +102,6 @@ func (w *worker) scan() {
 						continue
 					}
 
-					log.Printf("[%s] Checking if object exists: %s", w.uuid, jobs[i].Key)
-
 					if w.app.Opts.Overwrite == conf.OverwriteNever {
 						ex, err := w.oper.ObjectExists(jobs[i].Object)
 						if ex && err != nil {
@@ -106,14 +110,12 @@ func (w *worker) scan() {
 							continue
 						}
 						if ex {
-							fmt.Println("Object already exists")
+							// w.app.ScreenSend("Object Exists", "", true)
 							_ = jobs[i].Object.Destroy()
 							jobs[i].setStatus(JobStatusSkipped, fmt.Errorf("Object already exists"))
 							continue
 						}
 					}
-
-					log.Printf("[%s] starting upload: %s", w.uuid, jobs[i].Key)
 
 					err = jobs[i].Object.Pre()
 					if err != nil {
@@ -125,7 +127,8 @@ func (w *worker) scan() {
 					err = w.oper.ObjectUpload(jobs[i].Object)
 					if err != nil {
 						_ = jobs[i].Object.Destroy()
-						log.Printf("ERROR: %s\n", err)
+						msg = fmt.Sprintf("Upload Failed: %v", err)
+						w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.ERROR, true, true)
 						jobs[i].setStatus(JobStatusFailed, fmt.Errorf("could not upload object: %s\n", err))
 						continue
 					}
@@ -148,7 +151,6 @@ func (w *worker) scan() {
 			breakout := true
 			for i := range jobs {
 				if jobs[i].status == JobStatusQueued || jobs[i].status == JobStatusWaiting {
-					fmt.Println("Waiting on job")
 					breakout = false
 				}
 			}
@@ -178,7 +180,7 @@ func (w *worker) scan() {
 	}
 
 	if w.isFile {
-		fmt.Println("SKIPPING FILE")
+		w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: "File Skipped", Mark: true}, "File Skipped", tuipack.WARN, true, true)
 	}
 
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/orme292/s3packer/conf"
@@ -88,34 +87,44 @@ func main() {
 	}
 
 	builder := conf.NewBuilder(profile)
-	ac, err := builder.FromYaml()
+	app, err := builder.FromYaml()
 	if err != nil {
 		log.Fatalf("Error loading profile: %v", err)
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	if app.Tui.Output.Screen {
+		startWithScreen(app)
+	} else {
+		startWithoutScreen(app)
+	}
 
-	go func(wg *sync.WaitGroup) {
+	os.Exit(0)
+
+}
+
+func startPacker(app *conf.AppConfig) {
+	_, err := s3packs.Do(app)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func startWithoutScreen(app *conf.AppConfig) {
+	startPacker(app)
+}
+
+func startWithScreen(app *conf.AppConfig) {
+
+	go func() {
 		time.Sleep(time.Second * 5)
-		_, err = s3packs.Do(ac)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			os.Exit(1)
-		}
-		wg.Done()
+		startPacker(app)
+	}()
 
-	}(&wg)
-
-	_, err = ac.Screen.Run()
+	_, err := app.Tui.Screen.Run()
 	if err != nil {
 		fmt.Println("Couldn't start TUI.")
 		os.Exit(1)
 	}
-
-	wg.Wait()
-
-	// print stats out
-	os.Exit(0)
 
 }

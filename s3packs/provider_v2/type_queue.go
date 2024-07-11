@@ -1,10 +1,11 @@
 package provider_v2
 
 import (
-	"log"
+	"fmt"
 	"sync"
 
 	"github.com/orme292/s3packer/conf"
+	"github.com/orme292/s3packer/tuipack"
 	sw "github.com/orme292/symwalker"
 )
 
@@ -27,13 +28,14 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		objGenFn: objFn,
 	}
 
-	log.Printf("Scanning paths (this might take awhile)...\n")
+	app.Tui.ToScreenHeader("Scanning files...")
 
 	for file, mode := range paths {
 
 		if mode.IsDir() {
 
-			log.Printf("[D] %s\n", file)
+			msg := fmt.Sprintf("Walking %s", file)
+			app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.INFO, true, true)
 
 			opts := sw.NewSymConf(file,
 				sw.WithoutFiles(),
@@ -42,7 +44,8 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 
 			results, err := sw.SymWalker(opts)
 			if err != nil {
-				log.Printf("Error: %s\n", err.Error())
+				msg = fmt.Sprintf("Error walking %s: %v", file, err)
+				app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.ERROR, true, true)
 				continue
 			}
 
@@ -55,7 +58,8 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 
 		} else {
 
-			log.Printf("[F] %s\n", file)
+			msg := fmt.Sprintf("Reading %s", file)
+			app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.INFO, true, true)
 
 			j := newWorker(app, file, EmptyPath, false, true, JobStatusQueued, oper, objFn)
 			q.workers = append(q.workers, j)
@@ -63,6 +67,8 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		}
 
 	}
+
+	app.Tui.ResetHeader()
 
 	return q, nil
 
@@ -73,6 +79,8 @@ func (q *queue) start() {
 	sem := make(chan struct{}, q.app.Opts.MaxUploads)
 	var wg sync.WaitGroup
 	wg.Add(len(q.workers))
+
+	q.app.Tui.ResetHeader()
 
 	for i := range q.workers {
 

@@ -84,9 +84,8 @@ func (m TuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case TuiResultMsg:
 		if msg.HeaderMsg != "" {
 			m.Header = msg.HeaderMsg
-		} else {
-			m.results = append(m.results[1:], msg)
 		}
+		m.results = append(m.results[1:], msg)
 		return m, nil
 
 	case spinner.TickMsg:
@@ -109,6 +108,9 @@ func (m TuiModel) View() string {
 	s += "\n\n"
 
 	for _, res := range m.results {
+		if res.Msg == "" {
+			s += ""
+		}
 		s += res.String() + "\n"
 	}
 
@@ -117,7 +119,7 @@ func (m TuiModel) View() string {
 	if !m.isQuitting {
 		s += m.spinner.View() + "  " + m.Header
 	} else {
-		s += "\n"
+		s += ""
 	}
 
 	s += "\n\n"

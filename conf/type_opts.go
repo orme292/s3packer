@@ -21,7 +21,6 @@ func (o Overwrite) String() string {
 
 // Opts contains application level configuration options.
 type Opts struct {
-	MaxParts       int
 	MaxUploads     int
 	FollowSymlinks bool
 	WalkDirs       bool
@@ -30,7 +29,6 @@ type Opts struct {
 
 func (o *Opts) build(inc *ProfileIncoming) error {
 
-	o.MaxParts = inc.Options.MaxParts
 	o.MaxUploads = inc.Options.MaxUploads
 
 	switch tidyString(inc.Options.OverwriteObjects) {
@@ -56,9 +54,6 @@ func (o *Opts) build(inc *ProfileIncoming) error {
 
 func (o *Opts) validate() error {
 
-	if o.MaxParts <= 0 {
-		return fmt.Errorf("MaxParts must be at least 1")
-	}
 	if o.MaxUploads <= 0 {
 		log.Printf("here")
 		return fmt.Errorf("MaxUploads must be at least 1")

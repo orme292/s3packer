@@ -25,7 +25,6 @@ func NewAwsOperator(app *conf.AppConfig) (oper provider_v2.Operator, err error) 
 			key:     app.Provider.AWS.Key,
 			secret:  app.Provider.AWS.Secret,
 			region:  app.Bucket.Region,
-			parts:   app.Opts.MaxParts,
 		},
 	}
 

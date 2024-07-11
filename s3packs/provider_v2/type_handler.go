@@ -21,8 +21,6 @@ type Handler struct {
 
 func NewHandler(app *conf.AppConfig, operFn OperGenFunc, objFn ObjectGenFunc) (*Handler, error) {
 
-	fmt.Printf("Starting s3packer...\n\n")
-
 	oper, err := operFn(app)
 	if err != nil {
 		return nil, fmt.Errorf("error during oper gen: %w", err)
@@ -40,6 +38,8 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, objFn ObjectGenFunc) (*
 		return nil, err
 	}
 
+	app.Tui.ToScreenHeader("Running...")
+
 	paths := combinePaths(app.Dirs, app.Files)
 	h.queue, err = newQueue(paths, app, oper, objFn)
 	if err != nil {
@@ -56,27 +56,32 @@ func (h *Handler) createBucket() error {
 		return fmt.Errorf("bucket creation not supported")
 	}
 
+	h.app.Tui.ToScreenHeader("Creating bucket...")
+
 	if h.supports.BucketCreate && h.app.Bucket.Create {
 
-		fmt.Printf("Creating bucket... ")
+		h.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: "Creating bucket...", Mark: false},
+			"Creating bucket", tuipack.INFO, true, true)
 
 		err := h.oper.BucketCreate()
 		if err != nil {
-			fmt.Printf("failed.\n")
 			return fmt.Errorf("unable to create bucket: %w", err)
 		}
 
 		exists, err := h.oper.BucketExists()
 		if err != nil {
-			fmt.Printf("failed.\n")
 			return fmt.Errorf("unable to check for bucket: %w", err)
 		}
 		if !exists {
-			fmt.Printf("failed.\n")
 			return fmt.Errorf("created bucket but couldn't verify it exists")
 		}
 
+		h.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: "Bucket Created.", Mark: true},
+			"Bucket Created", tuipack.INFO, true, true)
+
 	}
+
+	h.app.Tui.ResetHeader()
 
 	return nil
 
@@ -85,34 +90,23 @@ func (h *Handler) createBucket() error {
 func (h *Handler) verifyBucket() error {
 
 	// Check if bucket exists. If it does not, create it.
-	h.app.Screen.Send(tuipack.TuiResultMsg{
-		IsSuccessful: false,
-		Msg:          "Checking for bucket...",
-	})
+	h.app.Tui.ToScreen("Looking for bucket...", false)
 
 	exists, err := h.oper.BucketExists()
 	if err != nil && err.Error() != "bucket not found" {
-		h.app.Screen.Send(tuipack.TuiResultMsg{
-			IsSuccessful: false,
-			Msg:          "Couldn't find bucket.",
-		})
+		h.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: "Bucket not found.", Mark: false},
+			"Bucket not found", tuipack.INFO, true, true)
 		return fmt.Errorf("error while checking for bucket: %w", err)
 	}
 
 	if !exists {
-
-		fmt.Printf("not found.\n")
 
 		err = h.createBucket()
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("bucket created\n")
-
 	} else {
-
-		fmt.Printf("OK\n")
 
 	}
 

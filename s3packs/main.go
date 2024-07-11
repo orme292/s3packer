@@ -13,17 +13,21 @@ func Do(app *conf.AppConfig) (*provider_v2.Stats, error) {
 
 	h, err := provider_v2.NewHandler(app, handler_aws.NewAwsOperator, handler_aws.NewAwsObject)
 	if err != nil {
-		app.Screen.Quit()
+		app.Tui.ScreenQuit()
 		fmt.Printf("Error creating AWS handler: %s\n", err)
 		os.Exit(1)
 	}
 
 	err = h.Run()
 	if err != nil {
-		app.Screen.Quit()
-		fmt.Printf("Error running AWS handler: %s\n", err)
+		app.Tui.ScreenQuit()
 		os.Exit(1)
 	}
+
+	app.Tui.ToScreen("Finished.", true)
+	app.Tui.ToScreenHeader("s3packer is finished!")
+
+	app.Tui.ScreenQuit()
 
 	return h.Stats, nil
 

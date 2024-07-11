@@ -2,7 +2,6 @@ package provider_v2
 
 import (
 	"io/fs"
-	"log"
 	"os"
 )
 
@@ -26,11 +25,6 @@ func combinePaths(v ...[]string) pathModeMap {
 
 		}
 
-	}
-
-	// TODO: Remove this output
-	for name, mode := range paths {
-		log.Printf("Added Path: %s [%v]", name, mode.String())
 	}
 
 	return paths
