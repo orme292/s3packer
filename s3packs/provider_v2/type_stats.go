@@ -1,24 +1,40 @@
 package provider_v2
 
-type Stats struct {
-	Objects int
-	Failed  int
-	Skipped int
+import (
+	"fmt"
+)
 
-	Bytes int64
+type Stats struct {
+	Objects      int
+	ObjectsBytes int64
+	Failed       int
+	Skipped      int
+	SkippedBytes int64
 }
 
 func (s *Stats) IncObjects(n int, b int64) {
 	s.Objects += n
-	s.Bytes += b
+	s.ObjectsBytes += b
 }
 
 func (s *Stats) IncFailed(n int, b int64) {
 	s.Failed += n
-	s.Bytes += b
 }
 
 func (s *Stats) IncSkipped(n int, b int64) {
 	s.Skipped += n
-	s.Bytes += b
+	s.SkippedBytes += b
+}
+
+func (s *Stats) String() string {
+	return fmt.Sprintf("Total %d objects [%d Bytes], %d skipped objects, %d failed objects.",
+		s.Objects, s.ObjectsBytes, s.Skipped, s.Failed)
+}
+
+func (s *Stats) Merge(other *Stats) {
+	s.Objects += other.Objects
+	s.ObjectsBytes += other.ObjectsBytes
+	s.Failed += other.Failed
+	s.Skipped += other.Skipped
+	s.SkippedBytes += other.SkippedBytes
 }

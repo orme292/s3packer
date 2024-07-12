@@ -57,6 +57,85 @@ func (w *worker) scan() {
 
 	var jobs []*Job
 
+	uploadHandler := func(job *Job) (*Job, error) {
+
+		if job.status == JobStatusQueued {
+
+			job.setStatus(JobStatusWaiting, nil)
+			job.Object = w.objFn(job)
+
+			if job.Metadata.Mode != objectify.EntModeRegular {
+				msg := fmt.Sprintf("Skipping %s [invalid file format %q]", job.Metadata.FullPath(), job.Metadata.Mode.String())
+				w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfSkip,
+					tuipack.WARN, msg))
+				job.setStatus(JobStatusSkipped, fmt.Errorf("not a valid file: %s", job.Metadata.Mode.String()))
+				return job, nil
+			}
+
+			err := job.Object.Generate()
+			if err != nil {
+				_ = job.Object.Destroy()
+				msg := fmt.Sprintf("Failed on %s [could not build object]", job.Metadata.FullPath())
+				w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfFailed, tuipack.WARN, msg))
+				job.setStatus(JobStatusFailed, fmt.Errorf("unable to build data object: %s", err))
+				return job, nil
+			}
+
+			if w.app.Opts.Overwrite == conf.OverwriteNever {
+				ex, err := w.oper.ObjectExists(job.Object)
+				if ex && err != nil {
+					_ = job.Object.Destroy()
+					msg := fmt.Sprintf("Existing object check failed for %s", job.Metadata.FullPath())
+					w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfOperFailed, tuipack.WARN, msg))
+					job.setStatus(JobStatusFailed, fmt.Errorf("unable to check if object exists: %s\n", err))
+					return job, nil
+				}
+				if ex {
+					_ = job.Object.Destroy()
+					msg := fmt.Sprintf("Skipping %s [object already exists]", job.Metadata.FullPath())
+					w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfSkip,
+						tuipack.WARN, msg))
+					job.setStatus(JobStatusSkipped, fmt.Errorf("object already exists"))
+					return job, nil
+				}
+			}
+
+			err = job.Object.Pre()
+			if err != nil {
+				_ = job.Object.Destroy()
+				msg := fmt.Sprintf("Object prepare failed for %s", job.Metadata.FullPath())
+				w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfFailed, tuipack.WARN, msg))
+				job.setStatus(JobStatusFailed, fmt.Errorf("could not initialize object: %s\n", err))
+				return job, nil
+			}
+
+			err = w.oper.ObjectUpload(job.Object)
+			if err != nil {
+				_ = job.Object.Destroy()
+				msg := fmt.Sprintf("Upload Failed: %v", err)
+				w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfUploadFailed,
+					tuipack.ERROR, msg))
+				job.setStatus(JobStatusFailed, fmt.Errorf("could not upload object: %s\n", err))
+				return job, nil
+			}
+
+			job.setStatus(JobStatusDone, nil)
+
+			err = job.Object.Post()
+			if err != nil {
+				_ = job.Object.Destroy()
+				job.setStatus(job.status, fmt.Errorf("post failed: %s\n", err))
+				return job, nil
+			}
+
+			_ = job.Object.Destroy()
+
+		}
+
+		return job, nil
+
+	}
+
 	if w.isDir {
 
 		msg := fmt.Sprintf("Reading directory %s...", w.path)
@@ -65,7 +144,7 @@ func (w *worker) scan() {
 
 		files, err := objectify.Path(w.path, objectify.SetsAllNoChecksums())
 		if err != nil {
-			if strings.Contains(err.Error(), "StartingPath has no non-directory entries:") {
+			if strings.Contains(err.Error(), "StartingPath has no non-directory entries") {
 				return
 			}
 			msg = fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
@@ -92,64 +171,66 @@ func (w *worker) scan() {
 
 				if jobs[i].status == JobStatusQueued {
 
-					jobs[i].setStatus(JobStatusWaiting, nil)
+					jobs[i], _ = uploadHandler(jobs[i])
 
-					jobs[i].Object = w.objFn(jobs[i])
-
-					if jobs[i].Metadata.Mode != objectify.EntModeRegular {
-						jobs[i].setStatus(JobStatusSkipped, fmt.Errorf("unsupported file mode: %s", files[i].Mode.String()))
-						continue
-					}
-
-					err = jobs[i].Object.Generate()
-					if err != nil {
-						_ = jobs[i].Object.Destroy()
-						jobs[i].setStatus(JobStatusFailed, fmt.Errorf("unable to build data object: %s", err))
-						continue
-					}
-
-					if w.app.Opts.Overwrite == conf.OverwriteNever {
-						ex, err := w.oper.ObjectExists(jobs[i].Object)
-						if ex && err != nil {
-							_ = jobs[i].Object.Destroy()
-							jobs[i].setStatus(JobStatusFailed, fmt.Errorf("Duplicate Object Check Failed: %s\n", err))
-							continue
-						}
-						if ex {
-							// w.app.ScreenSend("Object Exists", "", true)
-							_ = jobs[i].Object.Destroy()
-							jobs[i].setStatus(JobStatusSkipped, fmt.Errorf("Object already exists"))
-							continue
-						}
-					}
-
-					err = jobs[i].Object.Pre()
-					if err != nil {
-						_ = jobs[i].Object.Destroy()
-						jobs[i].setStatus(JobStatusFailed, fmt.Errorf("could not initialize object: %s\n", err))
-						continue
-					}
-
-					err = w.oper.ObjectUpload(jobs[i].Object)
-					if err != nil {
-						_ = jobs[i].Object.Destroy()
-						msg = fmt.Sprintf("Upload Failed: %v", err)
-						w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
-							tuipack.ERROR, msg))
-						jobs[i].setStatus(JobStatusFailed, fmt.Errorf("could not upload object: %s\n", err))
-						continue
-					}
-
-					jobs[i].setStatus(JobStatusDone, nil)
-
-					err = jobs[i].Object.Post()
-					if err != nil {
-						_ = jobs[i].Object.Destroy()
-						jobs[i].setStatus(jobs[i].status, fmt.Errorf("post failed: %s\n", err))
-						continue
-					}
-
-					_ = jobs[i].Object.Destroy()
+					// jobs[i].setStatus(JobStatusWaiting, nil)
+					//
+					// jobs[i].Object = w.objFn(jobs[i])
+					//
+					// if jobs[i].Metadata.Mode != objectify.EntModeRegular {
+					// 	jobs[i].setStatus(JobStatusSkipped, fmt.Errorf("unsupported file mode: %s", files[i].Mode.String()))
+					// 	continue
+					// }
+					//
+					// err = jobs[i].Object.Generate()
+					// if err != nil {
+					// 	_ = jobs[i].Object.Destroy()
+					// 	jobs[i].setStatus(JobStatusFailed, fmt.Errorf("unable to build data object: %s", err))
+					// 	continue
+					// }
+					//
+					// if w.app.Opts.Overwrite == conf.OverwriteNever {
+					// 	ex, err := w.oper.ObjectExists(jobs[i].Object)
+					// 	if ex && err != nil {
+					// 		_ = jobs[i].Object.Destroy()
+					// 		jobs[i].setStatus(JobStatusFailed, fmt.Errorf("Duplicate Object Check Failed: %s\n", err))
+					// 		continue
+					// 	}
+					// 	if ex {
+					// 		// w.app.ScreenSend("Object Exists", "", true)
+					// 		_ = jobs[i].Object.Destroy()
+					// 		jobs[i].setStatus(JobStatusSkipped, fmt.Errorf("Object already exists"))
+					// 		continue
+					// 	}
+					// }
+					//
+					// err = jobs[i].Object.Pre()
+					// if err != nil {
+					// 	_ = jobs[i].Object.Destroy()
+					// 	jobs[i].setStatus(JobStatusFailed, fmt.Errorf("could not initialize object: %s\n", err))
+					// 	continue
+					// }
+					//
+					// err = w.oper.ObjectUpload(jobs[i].Object)
+					// if err != nil {
+					// 	_ = jobs[i].Object.Destroy()
+					// 	msg = fmt.Sprintf("Upload Failed: %v", err)
+					// 	w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
+					// 		tuipack.ERROR, msg))
+					// 	jobs[i].setStatus(JobStatusFailed, fmt.Errorf("could not upload object: %s\n", err))
+					// 	continue
+					// }
+					//
+					// jobs[i].setStatus(JobStatusDone, nil)
+					//
+					// err = jobs[i].Object.Post()
+					// if err != nil {
+					// 	_ = jobs[i].Object.Destroy()
+					// 	jobs[i].setStatus(jobs[i].status, fmt.Errorf("post failed: %s\n", err))
+					// 	continue
+					// }
+					//
+					// _ = jobs[i].Object.Destroy()
 
 				}
 
@@ -183,15 +264,28 @@ func (w *worker) scan() {
 
 		}
 
-		msg = fmt.Sprintf("Finished %s...", w.path)
-		w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfCheck,
-			tuipack.INFO, msg))
+		w.app.Tui.SendOutput(tuipack.NewLogMsg("", "", tuipack.INFO, fmt.Sprintf("Finished %s...", w.path)))
 
 	}
 
 	if w.isFile {
-		w.app.Tui.SendOutput(tuipack.NewLogMsg("File Skipped", tuipack.ScrnLfFailed,
-			tuipack.WARN, "File Skipped"))
+
+		file, err := objectify.File(w.path, objectify.SetsAllNoChecksums())
+		if err != nil {
+			if strings.Contains(err.Error(), "StartingPath has no non-directory entries") {
+				return
+			}
+			msg := fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
+			w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfFailed,
+				tuipack.ERROR, msg))
+			return
+		}
+
+		job := newJob(w.app, file, w.searchRoot)
+		job.setStatus(JobStatusQueued, nil)
+
+		job, _ = uploadHandler(job)
+
 	}
 
 }

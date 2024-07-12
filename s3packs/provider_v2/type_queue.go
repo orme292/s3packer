@@ -85,6 +85,9 @@ func (q *queue) start() {
 
 	q.app.Tui.ResetHeader()
 
+	stats := &Stats{}
+	var agg []*Stats
+
 	for i := range q.workers {
 
 		go func(worker *worker, app *conf.AppConfig) {
@@ -93,6 +96,7 @@ func (q *queue) start() {
 			defer func() { <-sem }()
 
 			worker.scan()
+			agg = append(agg, worker.stats)
 
 			wg.Done()
 
@@ -101,5 +105,13 @@ func (q *queue) start() {
 	}
 
 	wg.Wait()
+
+	for _, stat := range agg {
+		if stat != nil {
+			stats.Merge(stat)
+		}
+	}
+
+	q.app.Tui.SendOutput(tuipack.NewLogMsg(stats.String(), tuipack.ScrnLfDefault, tuipack.INFO, stats.String()))
 
 }

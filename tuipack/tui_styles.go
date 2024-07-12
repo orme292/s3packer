@@ -20,28 +20,39 @@ var (
 	StyleAppHeaderNoLink = gloss.NewStyle().
 				Background(gloss.Color("7")).
 				Foreground(gloss.Color("27"))
-	StyleFgGreen = gloss.NewStyle().
-			Foreground(gloss.Color("10"))
-	StyleFgRed = gloss.NewStyle().
-			Foreground(gloss.Color("160"))
+	StyleBgGrnFgBlk = gloss.NewStyle().
+			Background(gloss.Color("10")).
+			Foreground(gloss.Color("0"))
 	StyleDefault = gloss.NewStyle().
 			Foreground(gloss.Color("243"))
+	StyleFgGreen = gloss.NewStyle().
+			Foreground(gloss.Color("10"))
+	StyleFgDrkRed = gloss.NewStyle().
+			Foreground(gloss.Color("52"))
+	StyleFgDrkYellow = gloss.NewStyle().
+				Foreground(gloss.Color("184"))
+	StyleFgRed = gloss.NewStyle().
+			Foreground(gloss.Color("160"))
+	StyleFgYellow = gloss.NewStyle().
+			Foreground(gloss.Color("11"))
+
 	StyleHelpMessage = gloss.NewStyle().
 				Foreground(gloss.Color("241"))
 	StyleSpinner = gloss.NewStyle().
 			Foreground(gloss.Color("63"))
-	StyleUpload = gloss.NewStyle().
-			Foreground(gloss.Color("11")).
-			Background(gloss.Color("0"))
 )
 
 // Characters with Styles
 var (
-	ScrnNone        = EMPTY
-	ScrnAppHeader   = StyleAppHeader.Render(" s3packer ")
-	ScrnHelpMessage = StyleHelpMessage.Render("Press CTRL+C or Q to exit early")
-	ScrnLfCheck     = StyleFgGreen.Render("✓")
-	ScrnLfDefault   = StyleDefault.Render(":")
-	ScrnLfFailed    = StyleFgRed.Render("x")
-	ScrnLfUpload    = StyleUpload.Render("▲")
+	ScrnNone           = EMPTY
+	ScrnAppHeader      = StyleAppHeader.Render(" s3packer ")
+	ScrnHelpMessage    = StyleHelpMessage.Render("Press CTRL+C or Q to exit early")
+	ScrnLfCheck        = StyleFgGreen.Render("✓")
+	ScrnLfDefault      = StyleDefault.Render(":")
+	ScrnLfFailed       = StyleFgRed.Render("x")
+	ScrnLfSkip         = StyleFgDrkYellow.Render("*")
+	ScrnLfOperOK       = StyleFgYellow.Render("⇅")
+	ScrnLfOperFailed   = StyleFgDrkRed.Render("*")
+	ScrnLfUpload       = StyleBgGrnFgBlk.Render("✓")
+	ScrnLfUploadFailed = StyleFgDrkRed.Render("⇋")
 )
