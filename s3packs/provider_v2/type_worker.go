@@ -2,6 +2,7 @@ package provider_v2
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/orme292/objectify"
@@ -59,13 +60,17 @@ func (w *worker) scan() {
 	if w.isDir {
 
 		msg := fmt.Sprintf("Reading directory %s...", w.path)
-		w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.INFO, true, true)
+		w.app.Tui.SendOutput(tuipack.NewLogMsg(tuipack.EMPTY, tuipack.ScrnNone,
+			tuipack.ERROR, msg))
 
 		files, err := objectify.Path(w.path, objectify.SetsAllNoChecksums())
 		if err != nil {
-			errMsg := fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
-			w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: errMsg, Mark: false},
-				errMsg, tuipack.ERROR, true, true)
+			if strings.Contains(err.Error(), "StartingPath has no non-directory entries:") {
+				return
+			}
+			msg = fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
+			w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfFailed,
+				tuipack.ERROR, msg))
 			return
 		}
 
@@ -78,7 +83,8 @@ func (w *worker) scan() {
 		}
 
 		msg = fmt.Sprintf("Uploading directory %s...", w.path)
-		w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.INFO, true, true)
+		w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
+			tuipack.INFO, msg))
 
 		for {
 
@@ -128,7 +134,8 @@ func (w *worker) scan() {
 					if err != nil {
 						_ = jobs[i].Object.Destroy()
 						msg = fmt.Sprintf("Upload Failed: %v", err)
-						w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.ERROR, true, true)
+						w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
+							tuipack.ERROR, msg))
 						jobs[i].setStatus(JobStatusFailed, fmt.Errorf("could not upload object: %s\n", err))
 						continue
 					}
@@ -171,16 +178,20 @@ func (w *worker) scan() {
 					}
 				}
 
-				return
-
+				break
 			}
 
 		}
 
+		msg = fmt.Sprintf("Finished %s...", w.path)
+		w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfCheck,
+			tuipack.INFO, msg))
+
 	}
 
 	if w.isFile {
-		w.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: "File Skipped", Mark: true}, "File Skipped", tuipack.WARN, true, true)
+		w.app.Tui.SendOutput(tuipack.NewLogMsg("File Skipped", tuipack.ScrnLfFailed,
+			tuipack.WARN, "File Skipped"))
 	}
 
 }

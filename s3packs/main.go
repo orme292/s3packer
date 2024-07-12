@@ -7,6 +7,7 @@ import (
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/handler_aws"
 	"github.com/orme292/s3packer/s3packs/provider_v2"
+	"github.com/orme292/s3packer/tuipack"
 )
 
 func Do(app *conf.AppConfig) (*provider_v2.Stats, error) {
@@ -24,7 +25,8 @@ func Do(app *conf.AppConfig) (*provider_v2.Stats, error) {
 		os.Exit(1)
 	}
 
-	app.Tui.ToScreen("Finished.", true)
+	app.Tui.SendOutput(tuipack.NewLogMsg("Finished.", tuipack.ScrnLfCheck,
+		tuipack.INFO, "Finished"))
 	app.Tui.ToScreenHeader("s3packer is finished!")
 
 	app.Tui.ScreenQuit()

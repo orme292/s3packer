@@ -35,7 +35,8 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		if mode.IsDir() {
 
 			msg := fmt.Sprintf("Walking %s", file)
-			app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.INFO, true, true)
+			app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
+				tuipack.INFO, msg))
 
 			opts := sw.NewSymConf(file,
 				sw.WithoutFiles(),
@@ -45,7 +46,8 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 			results, err := sw.SymWalker(opts)
 			if err != nil {
 				msg = fmt.Sprintf("Error walking %s: %v", file, err)
-				app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.ERROR, true, true)
+				app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfFailed,
+					tuipack.ERROR, msg))
 				continue
 			}
 
@@ -59,7 +61,8 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		} else {
 
 			msg := fmt.Sprintf("Reading %s", file)
-			app.Tui.SendOutput(tuipack.ScreenMsg{Msg: msg, Mark: false}, msg, tuipack.INFO, true, true)
+			app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
+				tuipack.INFO, msg))
 
 			j := newWorker(app, file, EmptyPath, false, true, JobStatusQueued, oper, objFn)
 			q.workers = append(q.workers, j)

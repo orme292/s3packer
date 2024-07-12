@@ -23,11 +23,6 @@ type LogBot struct {
 	Screen  *tea.Program
 }
 
-type ScreenMsg struct {
-	Msg  string
-	Mark bool
-}
-
 func (lb *LogBot) SetLogLevel(lvl zerolog.Level) {
 	zerolog.SetGlobalLevel(lvl)
 	lb.Level = lvl
@@ -68,7 +63,7 @@ func (lb *LogBot) BuildLogger(lvl zerolog.Level) zerolog.Logger {
 
 }
 
-func (lb *LogBot) route(lvl zerolog.Level, msg string) {
+func (lb *LogBot) RouteLogMsg(lvl zerolog.Level, msg string) {
 
 	if lb.Output.Screen && lb.Output.Console {
 		lb.Output.Console = false
@@ -82,66 +77,67 @@ func (lb *LogBot) route(lvl zerolog.Level, msg string) {
 }
 
 /*
-Blast takes a string and passes it to LogBot.route with zerolog.NoLevel.
+Blast takes a string and passes it to LogBot.RouteLogMsg with zerolog.NoLevel.
 This ensures the message is logged regardless of the global log level.
 */
 func (lb *LogBot) Blast(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
-	lb.route(BLAST, msg)
+	lb.RouteLogMsg(BLAST, msg)
 }
 
 func (lb *LogBot) Panic(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
-	lb.route(PANIC, msg)
+	lb.RouteLogMsg(PANIC, msg)
 }
 
 /*
-Fatal takes a string and passes it to LogBot.route with zerolog.FatalLevel.
+Fatal takes a string and passes it to LogBot.RouteLogMsg with zerolog.FatalLevel.
 */
 func (lb *LogBot) Fatal(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
-	lb.route(FATAL, msg)
+	lb.RouteLogMsg(FATAL, msg)
 }
 
 /*
-Error takes a string and passes it to LogBot.route with zerolog.ErrorLevel.
+Error takes a string and passes it to LogBot.RouteLogMsg with zerolog.ErrorLevel.
 */
 func (lb *LogBot) Error(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
-	lb.route(ERROR, msg)
+	lb.RouteLogMsg(ERROR, msg)
 }
 
 /*
-Warn takes a string and passes it to LogBot.route with zerolog.WarnLevel.
+Warn takes a string and passes it to LogBot.RouteLogMsg with zerolog.WarnLevel.
 */
 func (lb *LogBot) Warn(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
-	lb.route(WARN, msg)
+	lb.RouteLogMsg(WARN, msg)
 }
 
 /*
-Info takes a string and passes it to LogBot.route with zerolog.InfoLevel.
+Info takes a string and passes it to LogBot.RouteLogMsg with zerolog.InfoLevel.
 */
 func (lb *LogBot) Info(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
-	lb.route(INFO, msg)
+	lb.RouteLogMsg(INFO, msg)
 }
 
 /*
-Debug takes a string and passes it to LogBot.route with zerolog.DebugLevel.
+Debug takes a string and passes it to LogBot.RouteLogMsg with zerolog.DebugLevel.
 */
 func (lb *LogBot) Debug(format string, a ...any) {
 	msg := fmt.Sprintf(format, a...)
-	lb.route(DEBUG, msg)
+	lb.RouteLogMsg(DEBUG, msg)
 }
 
-func (lb *LogBot) SendOutput(screen ScreenMsg, log string, lvl zerolog.Level, toLogger bool, toScreen bool) {
+func (lb *LogBot) SendOutput(msg *LogMsg) {
 
-	if toScreen && lb.Screen != nil && lb.Output.Screen {
-		lb.ToScreen(screen.Msg, screen.Mark)
+	if msg.ScrMsg != EMPTY {
+		lb.ToScreen(msg.ScrMsg, msg.ScrIcon)
 	}
-	if (lb.Output.File || lb.Output.Console) && toLogger {
-		lb.route(lvl, log)
+
+	if msg.LogMsg != EMPTY {
+		lb.RouteLogMsg(msg.Level, msg.LogMsg)
 	}
 
 }
@@ -155,26 +151,18 @@ func (lb *LogBot) ScreenQuit() {
 
 }
 
-func (lb *LogBot) ToScreen(msg string, success bool) {
+func (lb *LogBot) ToScreen(msg, icon string) {
 
 	if lb.Output.Screen && lb.Screen != nil {
 		lb.Screen.Send(TuiResultMsg{
-			IsSuccessful: success,
-			Msg:          msg,
+			Icon: icon,
+			Msg:  msg,
 		})
 	}
 
 }
 
-func (lb *LogBot) ResetHeader() {
-
-	if lb.Output.Screen && lb.Screen != nil {
-		lb.Screen.Send(TuiResultMsg{
-			HeaderMsg: "Running...",
-		})
-	}
-
-}
+func (lb *LogBot) ResetHeader() { lb.ToScreenHeader("Running...") }
 
 func (lb *LogBot) ToScreenHeader(header string) {
 

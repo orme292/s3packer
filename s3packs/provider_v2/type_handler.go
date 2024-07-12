@@ -60,8 +60,10 @@ func (h *Handler) createBucket() error {
 
 	if h.supports.BucketCreate && h.app.Bucket.Create {
 
-		h.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: "Creating bucket...", Mark: false},
-			"Creating bucket", tuipack.INFO, true, true)
+		h.app.Tui.SendOutput(
+			tuipack.NewLogMsg(
+				"Creating bucket...", tuipack.ScrnLfDefault,
+				tuipack.INFO, "Creating bucket"))
 
 		err := h.oper.BucketCreate()
 		if err != nil {
@@ -76,8 +78,9 @@ func (h *Handler) createBucket() error {
 			return fmt.Errorf("created bucket but couldn't verify it exists")
 		}
 
-		h.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: "Bucket Created.", Mark: true},
-			"Bucket Created", tuipack.INFO, true, true)
+		h.app.Tui.SendOutput(
+			tuipack.NewLogMsg("Bucket Created", tuipack.ScrnLfUpload,
+				tuipack.INFO, "Bucket Created"))
 
 	}
 
@@ -90,12 +93,13 @@ func (h *Handler) createBucket() error {
 func (h *Handler) verifyBucket() error {
 
 	// Check if bucket exists. If it does not, create it.
-	h.app.Tui.ToScreen("Looking for bucket...", false)
+	h.app.Tui.ToScreen("Looking for bucket...", tuipack.ScrnLfDefault)
 
 	exists, err := h.oper.BucketExists()
 	if err != nil && err.Error() != "bucket not found" {
-		h.app.Tui.SendOutput(tuipack.ScreenMsg{Msg: "Bucket not found.", Mark: false},
-			"Bucket not found", tuipack.INFO, true, true)
+		h.app.Tui.SendOutput(
+			tuipack.NewLogMsg("Bucket not found.", tuipack.ScrnLfFailed,
+				tuipack.WARN, "Bucket not found."))
 		return fmt.Errorf("error while checking for bucket: %w", err)
 	}
 
