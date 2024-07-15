@@ -136,13 +136,18 @@ func (w *worker) scan() {
 
 	}
 
+	sets := objectify.SetsAllNoChecksums()
+	if w.app.TagOpts.ChecksumSHA256 {
+		sets.ChecksumSHA256 = true
+	}
+
 	if w.isDir {
 
 		msg := fmt.Sprintf("Reading directory %s...", w.path)
 		w.app.Tui.SendOutput(tuipack.NewLogMsg(tuipack.EMPTY, tuipack.ScrnNone,
-			tuipack.ERROR, msg))
+			tuipack.INFO, msg))
 
-		files, err := objectify.Path(w.path, objectify.SetsAllNoChecksums())
+		files, err := objectify.Path(w.path, sets)
 		if err != nil {
 			if strings.Contains(err.Error(), "StartingPath has no non-directory entries") {
 				return
@@ -173,73 +178,14 @@ func (w *worker) scan() {
 
 					jobs[i], _ = uploadHandler(jobs[i])
 
-					// jobs[i].setStatus(JobStatusWaiting, nil)
-					//
-					// jobs[i].Object = w.objFn(jobs[i])
-					//
-					// if jobs[i].Metadata.Mode != objectify.EntModeRegular {
-					// 	jobs[i].setStatus(JobStatusSkipped, fmt.Errorf("unsupported file mode: %s", files[i].Mode.String()))
-					// 	continue
-					// }
-					//
-					// err = jobs[i].Object.Generate()
-					// if err != nil {
-					// 	_ = jobs[i].Object.Destroy()
-					// 	jobs[i].setStatus(JobStatusFailed, fmt.Errorf("unable to build data object: %s", err))
-					// 	continue
-					// }
-					//
-					// if w.app.Opts.Overwrite == conf.OverwriteNever {
-					// 	ex, err := w.oper.ObjectExists(jobs[i].Object)
-					// 	if ex && err != nil {
-					// 		_ = jobs[i].Object.Destroy()
-					// 		jobs[i].setStatus(JobStatusFailed, fmt.Errorf("Duplicate Object Check Failed: %s\n", err))
-					// 		continue
-					// 	}
-					// 	if ex {
-					// 		// w.app.ScreenSend("Object Exists", "", true)
-					// 		_ = jobs[i].Object.Destroy()
-					// 		jobs[i].setStatus(JobStatusSkipped, fmt.Errorf("Object already exists"))
-					// 		continue
-					// 	}
-					// }
-					//
-					// err = jobs[i].Object.Pre()
-					// if err != nil {
-					// 	_ = jobs[i].Object.Destroy()
-					// 	jobs[i].setStatus(JobStatusFailed, fmt.Errorf("could not initialize object: %s\n", err))
-					// 	continue
-					// }
-					//
-					// err = w.oper.ObjectUpload(jobs[i].Object)
-					// if err != nil {
-					// 	_ = jobs[i].Object.Destroy()
-					// 	msg = fmt.Sprintf("Upload Failed: %v", err)
-					// 	w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
-					// 		tuipack.ERROR, msg))
-					// 	jobs[i].setStatus(JobStatusFailed, fmt.Errorf("could not upload object: %s\n", err))
-					// 	continue
-					// }
-					//
-					// jobs[i].setStatus(JobStatusDone, nil)
-					//
-					// err = jobs[i].Object.Post()
-					// if err != nil {
-					// 	_ = jobs[i].Object.Destroy()
-					// 	jobs[i].setStatus(jobs[i].status, fmt.Errorf("post failed: %s\n", err))
-					// 	continue
-					// }
-					//
-					// _ = jobs[i].Object.Destroy()
-
 				}
 
 			}
 
-			breakout := true
+			var breakout bool
 			for i := range jobs {
-				if jobs[i].status == JobStatusQueued || jobs[i].status == JobStatusWaiting {
-					breakout = false
+				if jobs[i].status != JobStatusQueued && jobs[i].status != JobStatusWaiting {
+					breakout = true
 				}
 			}
 
@@ -264,13 +210,13 @@ func (w *worker) scan() {
 
 		}
 
-		w.app.Tui.SendOutput(tuipack.NewLogMsg("", "", tuipack.INFO, fmt.Sprintf("Finished %s...", w.path)))
+		w.app.Tui.SendOutput(tuipack.NewLogMsg("", "", tuipack.INFO, fmt.Sprintf("Upload Complete [%s]", w.path)))
 
 	}
 
 	if w.isFile {
 
-		file, err := objectify.File(w.path, objectify.SetsAllNoChecksums())
+		file, err := objectify.File(w.path, sets)
 		if err != nil {
 			if strings.Contains(err.Error(), "StartingPath has no non-directory entries") {
 				return

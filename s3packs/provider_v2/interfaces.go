@@ -17,7 +17,6 @@ type Operator interface {
 	Support() *Supports
 }
 
-type ObjectGenFunc func(job *Job) Object
 type OperGenFunc func(app *conf.AppConfig) (oper Operator, err error)
 
 type Object interface {
@@ -26,3 +25,5 @@ type Object interface {
 	Post() error
 	Pre() error
 }
+
+type ObjectGenFunc func(job *Job) Object
