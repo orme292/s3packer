@@ -13,6 +13,8 @@ type Job struct {
 	Key        string
 	SearchRoot string
 
+	AppTags map[string]string
+
 	status int
 
 	err error
@@ -24,12 +26,28 @@ func newJob(app *conf.AppConfig, metadata *objectify.FileObj, searchRoot string)
 		App:        app,
 		Metadata:   metadata,
 		SearchRoot: searchRoot,
+		AppTags:    make(map[string]string),
 		err:        nil,
 	}
 
 	j.setKey()
+	j.setAppTags()
 
 	return j
+
+}
+
+func (j *Job) setAppTags() {
+
+	if j.App.TagOpts.ChecksumSHA256 && j.Metadata != nil {
+		if j.Metadata.ChecksumSHA256 != "" {
+			j.AppTags["ChecksumSHA256"] = j.Metadata.ChecksumSHA256
+		}
+	}
+
+	if j.App.TagOpts.OriginPath && j.Metadata != nil {
+		j.AppTags["Origin"] = j.Metadata.FullPath()
+	}
 
 }
 

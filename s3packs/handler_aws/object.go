@@ -3,6 +3,7 @@ package handler_aws
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/orme292/s3packer/s3packs/provider_v2"
@@ -74,16 +75,35 @@ func (o *AwsObject) setTags(input map[string]string) {
 		o.tags = EmptyString
 		return
 	}
-
-	var tagString string
-	for k, v := range input {
-		if tagString == EmptyString {
-			tagString = fmt.Sprintf("%s=%s", k, v)
-		} else {
-			tagString = fmt.Sprintf("%s&%s=%s", tagString, k, v)
+	cleanString := func(s string) string {
+		reg, err := regexp.Compile("[^a-zA-Z0-9_\\.\\/\\=\\+\\-\\:\\@\\s]+")
+		if err != nil {
+			return ""
 		}
+		return reg.ReplaceAllString(s, "_")
 	}
 
-	o.tags = tagString
+	buildTags := func(slc map[string]string, tags string) string {
+
+		if len(slc) == 0 {
+			return tags
+		}
+
+		for k, v := range slc {
+			k = cleanString(k)
+			v = cleanString(v)
+			if tags == EmptyString {
+				tags = fmt.Sprintf("%s=%s", k, v)
+			} else {
+				tags = fmt.Sprintf("%s&%s=%s", tags, k, v)
+			}
+		}
+
+		return tags
+
+	}
+
+	o.tags = buildTags(o.job.AppTags, "")
+	o.tags = buildTags(input, o.tags)
 
 }
