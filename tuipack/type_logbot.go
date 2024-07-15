@@ -74,6 +74,10 @@ func (lb *LogBot) RouteLogMsg(lvl zerolog.Level, msg string) {
 		z.WithLevel(lvl).Msg(msg)
 	}
 
+	if lvl == zerolog.FatalLevel || lvl == zerolog.PanicLevel {
+		os.Exit(1)
+	}
+
 }
 
 /*
