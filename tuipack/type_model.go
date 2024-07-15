@@ -62,10 +62,14 @@ func (m TuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.HeaderMsg != EMPTY {
 			m.Header = msg.HeaderMsg
 		}
-		if msg.Icon == ScrnLfFailed || msg.Icon == ScrnLfUpload {
+
+		switch msg.Icon {
+		case ScrnLfFailed, ScrnLfUploadFailed, ScrnLfOperFailed:
 			m.errors = append(m.errors[1:], msg)
-		} else {
+
+		default:
 			m.results = append(m.results[1:], msg)
+
 		}
 
 		return m, nil
