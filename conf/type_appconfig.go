@@ -3,7 +3,6 @@ package conf
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/orme292/s3packer/tuipack"
 	"github.com/rs/zerolog"
@@ -50,10 +49,8 @@ func NewAppConfig() *AppConfig {
 		},
 		Tags: make(Tags),
 		TagOpts: &TagOpts{
-			ChecksumSHA256:       true,
-			AwsChecksumAlgorithm: types.ChecksumAlgorithmSha256,
-			AwsChecksumMode:      types.ChecksumModeEnabled,
-			OriginPath:           true,
+			ChecksumSHA256: true,
+			OriginPath:     true,
 		},
 		LogOpts: &LogOpts{
 			Level:   zerolog.WarnLevel,
@@ -62,7 +59,6 @@ func NewAppConfig() *AppConfig {
 			Screen:  true,
 			Logfile: "/var/log/s3packer.log",
 		},
-
 		Tui: &tuipack.LogBot{
 			Level:   zerolog.WarnLevel,
 			Output:  &tuipack.LogOutput{},
@@ -88,7 +84,7 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 	ac.Tui.Logfile = ac.LogOpts.Logfile
 
 	if ac.Tui.Output.Screen {
-		ac.Tui.Screen = tea.NewProgram(tuipack.NewTuiModel())
+		ac.Tui.Screen = tea.NewProgram(tuipack.NewTuiModel(), tea.WithAltScreen())
 	}
 
 	err = ac.Provider.build(inc)

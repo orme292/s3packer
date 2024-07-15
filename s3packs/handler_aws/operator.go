@@ -157,7 +157,7 @@ func (oper *AwsOperator) ObjectUpload(obj provider_v2.Object) error {
 		Body:              awsObj.f,
 		Bucket:            &awsObj.bucket,
 		Key:               &awsObj.key,
-		ChecksumAlgorithm: types.ChecksumAlgorithmSha256,
+		ChecksumAlgorithm: oper.App.Provider.AWS.AwsChecksumAlgorithm,
 		StorageClass:      awsObj.storage,
 		Tagging:           aws.String(awsObj.tags),
 	}

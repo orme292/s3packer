@@ -15,11 +15,13 @@ import (
 // - Key: The AWS access key ID.
 // - Secret: The AWS secret access key.
 type ProviderAWS struct {
-	Profile string
-	Key     string
-	Secret  string
-	ACL     types.ObjectCannedACL
-	Storage types.StorageClass
+	Profile              string
+	Key                  string
+	Secret               string
+	ACL                  types.ObjectCannedACL
+	Storage              types.StorageClass
+	AwsChecksumAlgorithm types.ChecksumAlgorithm
+	AwsChecksumMode      types.ChecksumMode
 }
 
 func (aws *ProviderAWS) build(inc *ProfileIncoming) error {
@@ -37,6 +39,9 @@ func (aws *ProviderAWS) build(inc *ProfileIncoming) error {
 	aws.Key = inc.Provider.Key
 	aws.Secret = inc.Provider.Secret
 	aws.Profile = inc.Provider.Profile
+
+	aws.AwsChecksumAlgorithm = types.ChecksumAlgorithmSha256
+	aws.AwsChecksumMode = types.ChecksumModeEnabled
 
 	return aws.validate()
 
