@@ -163,8 +163,9 @@ func startPacker(app *conf.AppConfig) {
 	}
 
 	hrb := stats.ReadableString()
-	app.Tui.SendOutput(tuipack.NewLogMsg(fmt.Sprintf("%s uploaded, %s skipped", hrb[stats.ObjectsBytes],
-		hrb[stats.SkippedBytes]), tuipack.ScrnLfDefault, tuipack.INFO, ""))
+	msg := fmt.Sprintf("%s uploaded, %s skipped", hrb[stats.ObjectsBytes],
+		hrb[stats.SkippedBytes])
+	app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault, tuipack.INFO, msg))
 	app.Tui.SendOutput(tuipack.NewLogMsg(stats.String(), tuipack.ScrnLfDefault, tuipack.INFO, stats.String()))
 
 }

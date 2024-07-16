@@ -27,8 +27,8 @@ func (s *Stats) IncSkipped(n int, b int64) {
 }
 
 func (s *Stats) String() string {
-	return fmt.Sprintf("Total %d objects [%d Bytes], %d skipped objects, %d failed objects.",
-		s.Objects, s.ObjectsBytes, s.Skipped, s.Failed)
+	return fmt.Sprintf("%d objects uploaded, %d skipped, and %d failed.",
+		s.Objects, s.Skipped, s.Failed)
 }
 
 func (s *Stats) Merge(other *Stats) {
