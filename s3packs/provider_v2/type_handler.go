@@ -23,7 +23,7 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, objFn ObjectGenFunc) (*
 
 	oper, err := operFn(app)
 	if err != nil {
-		return nil, fmt.Errorf("error during oper gen: %w", err)
+		return nil, err
 	}
 
 	h := &Handler{
@@ -43,7 +43,7 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, objFn ObjectGenFunc) (*
 	paths := combinePaths(app.Dirs, app.Files)
 	h.queue, err = newQueue(paths, app, oper, objFn)
 	if err != nil {
-		return nil, fmt.Errorf("error building queue2: %w", err)
+		return nil, err
 	}
 
 	return h, nil
@@ -67,12 +67,12 @@ func (h *Handler) createBucket() error {
 
 		err := h.oper.BucketCreate()
 		if err != nil {
-			return fmt.Errorf("unable to create bucket: %w", err)
+			return fmt.Errorf("create bucket: %w", err)
 		}
 
 		exists, err := h.oper.BucketExists()
 		if err != nil {
-			return fmt.Errorf("unable to check for bucket: %w", err)
+			return fmt.Errorf("check bucket: %w", err)
 		}
 		if !exists {
 			return fmt.Errorf("created bucket but couldn't verify it exists")
