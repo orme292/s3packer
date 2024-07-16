@@ -1,81 +1,53 @@
 package s3packs
 
 import (
+	"errors"
 	"fmt"
-	"os"
 
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/handler_aws"
+	"github.com/orme292/s3packer/s3packs/handler_linode"
 	"github.com/orme292/s3packer/s3packs/provider_v2"
 	"github.com/orme292/s3packer/tuipack"
 )
 
-func Do(app *conf.AppConfig) (*provider_v2.Stats, error) {
+func Init(app *conf.AppConfig) (*provider_v2.Stats, error) {
 
-	h, err := provider_v2.NewHandler(app, handler_aws.NewAwsOperator, handler_aws.NewAwsObject)
+	operFn, objFn, err := getProviderFunctions(app.Provider.Is)
 	if err != nil {
-		app.Tui.ScreenQuit()
-		fmt.Printf("Error creating AWS handler: %s\n", err)
-		os.Exit(1)
+		return nil, errors.New("unable to find the correct provider")
+	}
+
+	h, err := provider_v2.NewHandler(app, operFn, objFn)
+	if err != nil {
+		return &provider_v2.Stats{}, err
 	}
 
 	err = h.Run()
 	if err != nil {
-		app.Tui.ScreenQuit()
-		os.Exit(1)
+		return &provider_v2.Stats{}, err
 	}
 
 	app.Tui.SendOutput(tuipack.NewLogMsg("Finished.", tuipack.ScrnLfCheck,
 		tuipack.INFO, "Finished"))
 	app.Tui.ToScreenHeader("s3packer is finished!")
 
-	app.Tui.ScreenQuit()
-
 	return h.Stats, nil
 
 }
 
-// func Do(ac *conf.AppConfig) (stats *objectify.Stats, errs provider.Errs) {
-// 	ops, fn, err := getProvider(ac)
-// 	if err != nil {
-// 		errs.Add(err)
-// 		return
-// 	}
-// 	p, err := provider.NewProcessor(ac, ops, fn)
-// 	if err != nil {
-// 		errs.Add(err)
-// 		return
-// 	}
-//
-// 	if p != nil {
-// 		errs = p.Run()
-// 	} else {
-// 		ac.Log.Fatal("Processor is empty.")
-// 	}
-// 	return p.Stats, errs
-// }
-//
-// func getProvider(ac *conf.AppConfig) (ops provider.Operator, fn provider.IteratorFunc, err error) {
-// 	switch ac.Provider.Is {
-// 	case conf.ProviderNameAWS:
-// 		ops, err = pack_aws.NewAwsOperator(ac)
-// 		if err != nil {
-// 			return nil, nil, err
-// 		}
-// 		return ops, pack_aws.AwsIteratorFunc, nil
-// 	case conf.ProviderNameOCI:
-// 		ops, err = pack_oci.NewOracleOperator(ac)
-// 		if err != nil {
-// 			return nil, nil, err
-// 		}
-// 		return ops, pack_oci.OracleIteratorFunc, nil
-// 	case conf.ProviderNameLinode:
-// 		ops, err = pack_akamai.NewAkamaiOperator(ac)
-// 		if err != nil {
-// 			return nil, nil, err
-// 		}
-// 		return ops, pack_akamai.AkamaiIteratorFunc, nil
-// 	default:
-// 		return nil, nil, errors.New("unknown provider")
-// 	}
-// }
+func getProviderFunctions(name conf.ProviderName) (provider_v2.OperGenFunc, provider_v2.ObjectGenFunc, error) {
+
+	switch name {
+	case conf.ProviderNameAWS:
+		return handler_aws.NewAwsOperator, handler_aws.NewAwsObject, nil
+
+	case conf.ProviderNameLinode:
+		return handler_linode.NewLinodeOperator, handler_linode.NewLinodeObject, nil
+
+	default:
+		return nil, nil, fmt.Errorf("Unable to determine the provider")
+
+	}
+
+}
