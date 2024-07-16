@@ -19,6 +19,8 @@ type TuiModel struct {
 	isQuitting bool
 }
 
+type TuiQuit struct{}
+
 var (
 	appStyle = lipgloss.NewStyle().Margin(3, 3)
 )
@@ -54,7 +56,7 @@ func (m TuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-	case tea.QuitMsg:
+	case tea.QuitMsg, TuiQuit:
 		m.isQuitting = true
 		return m, tea.Quit
 
