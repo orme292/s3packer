@@ -27,6 +27,7 @@ func newJob(app *conf.AppConfig, metadata *objectify.FileObj, searchRoot string)
 		Metadata:   metadata,
 		SearchRoot: searchRoot,
 		AppTags:    make(map[string]string),
+		status:     JobStatusQueued,
 		err:        nil,
 	}
 
