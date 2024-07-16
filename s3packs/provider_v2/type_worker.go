@@ -213,12 +213,16 @@ func (w *worker) scan() {
 					}
 				}
 
+				if w.stats.Objects != 0 {
+					w.app.Tui.SendOutput(tuipack.NewLogMsg("", "", tuipack.INFO, fmt.Sprintf("Upload Complete [%s]", w.path)))
+				} else {
+					w.app.Tui.SendOutput(tuipack.NewLogMsg("", "", tuipack.WARN, fmt.Sprintf("No uploads [%s]", w.path)))
+				}
+
 				break
 			}
 
 		}
-
-		w.app.Tui.SendOutput(tuipack.NewLogMsg("", "", tuipack.INFO, fmt.Sprintf("Upload Complete [%s]", w.path)))
 
 	}
 
