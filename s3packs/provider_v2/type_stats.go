@@ -32,9 +32,35 @@ func (s *Stats) String() string {
 }
 
 func (s *Stats) Merge(other *Stats) {
-	s.Objects += other.Objects
-	s.ObjectsBytes += other.ObjectsBytes
-	s.Failed += other.Failed
-	s.Skipped += other.Skipped
-	s.SkippedBytes += other.SkippedBytes
+	if other != nil {
+		s.Objects += other.Objects
+		s.ObjectsBytes += other.ObjectsBytes
+		s.Failed += other.Failed
+		s.Skipped += other.Skipped
+		s.SkippedBytes += other.SkippedBytes
+	}
+}
+
+func (s *Stats) ReadableString() map[int64]string {
+	humanStr := make(map[int64]string)
+	humanStr[s.ObjectsBytes] = humanReadableByteCount(s.ObjectsBytes)
+	humanStr[s.SkippedBytes] = humanReadableByteCount(s.SkippedBytes)
+	return humanStr
+}
+
+func humanReadableByteCount(b int64) string {
+
+	unit := int64(1024)
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+
+	return fmt.Sprintf("%.2f %ciB", float64(b)/float64(div), "KMGTPE"[exp])
+
 }

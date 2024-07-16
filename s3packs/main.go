@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/handler_aws"
-	"github.com/orme292/s3packer/s3packs/handler_linode"
+	"github.com/orme292/s3packer/s3packs/provider_aws"
+	"github.com/orme292/s3packer/s3packs/provider_linode"
 	"github.com/orme292/s3packer/s3packs/provider_v2"
 	"github.com/orme292/s3packer/tuipack"
 )
@@ -18,12 +18,12 @@ func Init(app *conf.AppConfig) (*provider_v2.Stats, error) {
 		return nil, errors.New("unable to find the correct provider")
 	}
 
-	h, err := provider_v2.NewHandler(app, operFn, objFn)
+	handler, err := provider_v2.NewHandler(app, operFn, objFn)
 	if err != nil {
 		return &provider_v2.Stats{}, err
 	}
 
-	err = h.Run()
+	err = handler.Init()
 	if err != nil {
 		return &provider_v2.Stats{}, err
 	}
@@ -32,7 +32,7 @@ func Init(app *conf.AppConfig) (*provider_v2.Stats, error) {
 		tuipack.INFO, "Finished"))
 	app.Tui.ToScreenHeader("s3packer is finished!")
 
-	return h.Stats, nil
+	return handler.Stats, nil
 
 }
 
@@ -40,13 +40,13 @@ func getProviderFunctions(name conf.ProviderName) (provider_v2.OperGenFunc, prov
 
 	switch name {
 	case conf.ProviderNameAWS:
-		return handler_aws.NewAwsOperator, handler_aws.NewAwsObject, nil
+		return provider_aws.NewAwsOperator, provider_aws.NewAwsObject, nil
 
 	case conf.ProviderNameLinode:
-		return handler_linode.NewLinodeOperator, handler_linode.NewLinodeObject, nil
+		return provider_linode.NewLinodeOperator, provider_linode.NewLinodeObject, nil
 
 	default:
-		return nil, nil, fmt.Errorf("Unable to determine the provider")
+		return nil, nil, fmt.Errorf("unable to determine the provider")
 
 	}
 

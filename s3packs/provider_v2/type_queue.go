@@ -114,6 +114,4 @@ func (q *queue) start() {
 
 	q.stats = stats
 
-	q.app.Tui.SendOutput(tuipack.NewLogMsg(stats.String(), tuipack.ScrnLfDefault, tuipack.INFO, stats.String()))
-
 }

@@ -33,13 +33,6 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, objFn ObjectGenFunc) (*
 		supports: oper.Support(),
 	}
 
-	err = h.verifyBucket()
-	if err != nil {
-		return nil, err
-	}
-
-	app.Tui.ToScreenHeader("Running...")
-
 	paths := combinePaths(app.Dirs, app.Files)
 	h.queue, err = newQueue(paths, app, oper, objFn)
 	if err != nil {
@@ -47,6 +40,23 @@ func NewHandler(app *conf.AppConfig, operFn OperGenFunc, objFn ObjectGenFunc) (*
 	}
 
 	return h, nil
+
+}
+
+func (h *Handler) Init() error {
+
+	err := h.verifyBucket()
+	if err != nil {
+		return err
+	}
+
+	h.app.Tui.ToScreenHeader("Running...")
+
+	h.queue.start()
+
+	h.Stats.Merge(h.queue.stats)
+
+	return nil
 
 }
 
@@ -114,13 +124,6 @@ func (h *Handler) verifyBucket() error {
 
 	}
 
-	return nil
-
-}
-
-func (h *Handler) Run() error {
-
-	h.queue.start()
 	return nil
 
 }

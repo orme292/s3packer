@@ -3,6 +3,7 @@ package provider_v2
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/orme292/objectify"
@@ -60,6 +61,12 @@ func (w *worker) scan() {
 	uploadHandler := func(job *Job) (*Job, error) {
 
 		if job.status == JobStatusQueued {
+
+			done := make(chan bool)
+			go w.statusMessage(done, job.Metadata.FullPath(), 5)
+			defer func(done chan bool) {
+				done <- true
+			}(done)
 
 			job.setStatus(JobStatusWaiting, nil)
 			job.Object = w.objFn(job)
@@ -235,4 +242,19 @@ func (w *worker) scan() {
 
 	}
 
+}
+
+func (w *worker) statusMessage(done chan bool, name string, interval int) {
+	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-done:
+			return
+		case <-ticker.C:
+			w.app.Tui.RouteLogMsg(tuipack.INFO, fmt.Sprintf("Still uploading %s", name))
+			w.app.Tui.ToScreen(fmt.Sprintf("Still uploading %s", name), tuipack.ScrnLfDefault)
+		}
+	}
 }

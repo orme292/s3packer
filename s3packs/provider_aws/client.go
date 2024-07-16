@@ -1,4 +1,4 @@
-package handler_aws
+package provider_aws
 
 import (
 	"context"

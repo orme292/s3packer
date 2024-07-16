@@ -1,4 +1,4 @@
-package handler_aws
+package provider_aws
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"

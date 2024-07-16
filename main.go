@@ -11,6 +11,7 @@ import (
 
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs"
+	"github.com/orme292/s3packer/tuipack"
 	flag "github.com/spf13/pflag"
 )
 
@@ -154,11 +155,16 @@ func startWithScreen(app *conf.AppConfig) {
 
 func startPacker(app *conf.AppConfig) {
 
-	_, err := s3packs.Init(app)
+	stats, err := s3packs.Init(app)
 	if err != nil {
 		app.Tui.Screen.ExitAltScreen()
 		log.Printf("s3packer exited with error: %s\n\n", err.Error())
 		os.Exit(1)
 	}
+
+	hrb := stats.ReadableString()
+	app.Tui.SendOutput(tuipack.NewLogMsg(fmt.Sprintf("%s uploaded, %s skipped", hrb[stats.ObjectsBytes],
+		hrb[stats.SkippedBytes]), tuipack.ScrnLfDefault, tuipack.INFO, ""))
+	app.Tui.SendOutput(tuipack.NewLogMsg(stats.String(), tuipack.ScrnLfDefault, tuipack.INFO, stats.String()))
 
 }
