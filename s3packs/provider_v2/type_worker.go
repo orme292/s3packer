@@ -156,12 +156,13 @@ func (w *worker) scan() {
 			w.app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfFailed,
 				tuipack.ERROR, msg))
 			return
+		} else if len(files) == 0 {
+			return // there are times when objectify returns no error and no file entries.
 		}
 
 		for i := range files {
 
 			job := newJob(w.app, files[i], w.searchRoot)
-			job.setStatus(JobStatusQueued, nil)
 			jobs = append(jobs, job)
 
 		}
