@@ -65,7 +65,7 @@ func (p *Provider) build(inc *ProfileIncoming) error {
 
 func (p *Provider) match(s string) {
 
-	switch tidyString(s) {
+	switch tidyLowerString(s) {
 	case "aws", "amazon", "s3", "amazon s3":
 		p.Is = ProviderNameAWS
 	case "oci", "oracle", "oracle cloud":

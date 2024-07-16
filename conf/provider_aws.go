@@ -60,7 +60,7 @@ func (aws *ProviderAWS) matchACL(acl string) error {
 		AwsACLBucketOwnerFullControl: types.ObjectCannedACLBucketOwnerFullControl,
 	}
 
-	validAcl, ok := awsCannedACLs[tidyString(acl)]
+	validAcl, ok := awsCannedACLs[tidyLowerString(acl)]
 	if !ok {
 		aws.ACL = types.ObjectCannedACLPrivate
 		return fmt.Errorf("%s %q", InvalidAWSACL, acl)
@@ -87,7 +87,7 @@ func (aws *ProviderAWS) matchStorage(class string) error {
 		AwsClassSnow:               types.StorageClassGlacier,
 	}
 
-	validClass, ok := awsStorageClasses[tidyUpString(class)]
+	validClass, ok := awsStorageClasses[tidyUpperString(class)]
 	if !ok {
 		aws.Storage = types.StorageClassStandard
 		return fmt.Errorf("%s %q", InvalidStorageClass, class)

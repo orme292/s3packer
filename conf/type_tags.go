@@ -23,7 +23,7 @@ func (t *Tags) build(tags map[string]string) error {
 func (t *Tags) validate() error {
 
 	for key := range *t {
-		if tidyString(key) == "s3p-checksum-sha256" || tidyString(key) == "s3p-origin-path" {
+		if tidyLowerString(key) == "s3p-checksum-sha256" || tidyLowerString(key) == "s3p-origin-path" {
 			return fmt.Errorf("reserved tag '%s' cannot be used", key)
 		}
 	}

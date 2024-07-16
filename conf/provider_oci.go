@@ -24,7 +24,7 @@ func (oci *ProviderOCI) build(inc *ProfileIncoming) error {
 	}
 
 	oci.Profile = inc.Provider.Profile
-	if tidyUpString(oci.Profile) == OciDefaultProfile {
+	if tidyUpperString(oci.Profile) == OciDefaultProfile {
 		oci.Profile = OciDefaultProfile
 	}
 

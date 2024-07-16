@@ -31,7 +31,7 @@ func (o *Opts) build(inc *ProfileIncoming) error {
 
 	o.MaxUploads = inc.Options.MaxUploads
 
-	switch tidyString(inc.Options.OverwriteObjects) {
+	switch tidyLowerString(inc.Options.OverwriteObjects) {
 
 	case OverwriteAlways.String(), "yes", "true":
 		o.Overwrite = OverwriteAlways

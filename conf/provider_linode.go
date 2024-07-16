@@ -54,7 +54,7 @@ func (l *ProviderLinode) matchRegion(region string) error {
 		LinodeRegionAshburn:    LinodeClusterAshburn,
 	}
 
-	endpoint, ok := linodeEndpointsMap[tidyString(region)]
+	endpoint, ok := linodeEndpointsMap[tidyLowerString(region)]
 	if !ok {
 		l.Endpoint = LinodeClusterAshburn
 		return fmt.Errorf("%s, %q", LinodeInvalidRegion, region)

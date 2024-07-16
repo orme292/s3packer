@@ -50,13 +50,13 @@ func sanitizeString(s string) string {
 	return reg.ReplaceAllString(s, "")
 }
 
-// tidyString takes a string and performs two operations on it: trimming any leading/trailing whitespace and converting it to lowercase.
+// tidyLowerString takes a string and performs two operations on it: trimming any leading/trailing whitespace and converting it to lowercase.
 // It then returns the resulting modified string.
-func tidyString(s string) string {
+func tidyLowerString(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
 }
 
-func tidyUpString(s string) string {
+func tidyUpperString(s string) string {
 	return strings.TrimSpace(strings.ToUpper(s))
 }
 
