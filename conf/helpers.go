@@ -59,7 +59,3 @@ func tidyLowerString(s string) string {
 func tidyUpperString(s string) string {
 	return strings.TrimSpace(strings.ToUpper(s))
 }
-
-func trimPaths(path string) string {
-	return strings.TrimRight(path, "/")
-}
