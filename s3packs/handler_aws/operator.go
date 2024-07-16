@@ -152,6 +152,10 @@ func (oper *AwsOperator) ObjectUpload(obj provider_v2.Object) error {
 		return fmt.Errorf("trouble building object to upload")
 	}
 
+	if awsObj.job.Metadata.HasChanged() {
+		return fmt.Errorf("file changed during upload: %s", awsObj.job.Metadata.FullPath())
+	}
+
 	input := &s3.PutObjectInput{
 		ACL:               awsObj.acl,
 		Body:              awsObj.f,
@@ -164,7 +168,7 @@ func (oper *AwsOperator) ObjectUpload(obj provider_v2.Object) error {
 
 	_, err := oper.AWS.manager.Upload(context.Background(), input)
 	if err != nil {
-		return fmt.Errorf("error uploading object: %s", err.Error())
+		return fmt.Errorf("error uploading [%s]: %s", err.Error(), awsObj.key)
 	}
 
 	return nil
