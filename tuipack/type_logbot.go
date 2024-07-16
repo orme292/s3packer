@@ -148,9 +148,9 @@ func (lb *LogBot) SendOutput(msg *LogMsg) {
 
 func (lb *LogBot) ScreenQuit() {
 
-	if lb.Output.Screen && lb.Screen != nil {
+	if lb.Screen != nil {
 		lb.ToScreenHeader("s3packer exited.")
-		lb.Screen.Quit()
+		lb.Screen.Send(TuiQuit{})
 	}
 
 }
