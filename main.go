@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/orme292/s3packer/conf"
@@ -35,24 +37,34 @@ import (
 // TODO: Add more readable log output, check log levels make sense
 // TODO: Consider ErrorAs implementation and hard coding error messages in Const
 
+type appFlags struct {
+	profile  string
+	create   string
+	noscreen bool
+}
+
 /*
 getFlags uses the flag package to configure and get command line arguments. It returns:
 -- profile: The filename of the profile to load.
 */
-func getFlags() (profile, create string, err error) {
+func getFlags() (appFlags, error) {
 
-	flag.StringVar(&profile, "profile", "", "The filename of the profile you want to open.")
-	flag.StringVar(&create, "create", "", "Create a new profile with the specified filename.")
+	var err error
+	flags := appFlags{}
+
+	flag.StringVar(&flags.profile, "profile", "", "The filename of the profile you want to open.")
+	flag.StringVar(&flags.create, "create", "", "Create a new profile with the specified filename.")
+	flag.BoolVar(&flags.noscreen, "noscreen", false, "No fancy text effects, output logs as configured in the profile.")
 	flag.Parse()
 
-	if create == "" && profile == "" {
+	if flags.create == "" && flags.profile == "" {
 		err = errors.New("must specify --create=\"filename\" or --profile=\"filename\"")
-		return
 	}
-	if create != "" && profile != "" {
+	if flags.create != "" && flags.profile != "" {
 		err = errors.New("use either --create or --profile, not both")
 	}
-	return
+
+	return flags, err
 
 }
 
@@ -67,32 +79,37 @@ main is the entry point of the program. It does the following:
 */
 func main() {
 
-	profile, create, err := getFlags()
+	flags, err := getFlags()
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	if create != "" {
+	if flags.create != "" {
 
-		builder := conf.NewBuilder(create)
+		builder := conf.NewBuilder(flags.create)
 		err = builder.YamlOut()
 		if err != nil {
 			log.Fatalf("Unable to write profile: %v", err)
 		}
 
-		log.Printf("File written: %s", create)
+		log.Printf("File written: %s", flags.create)
 		os.Exit(0)
 
 	}
 
-	builder := conf.NewBuilder(profile)
+	builder := conf.NewBuilder(flags.profile)
 	app, err := builder.FromYaml()
 	if err != nil {
 		log.Fatalf("Error loading profile: %v", err)
 	}
 
-	if app.Tui.Output.Screen {
+	if flags.noscreen == true {
+		app.LogOpts.Screen = false
+		app.Tui.Screen = nil
+	}
+
+	if app.Tui.Output.Screen && flags.noscreen == false {
 		startWithScreen(app)
 	} else {
 		startWithoutScreen(app)
@@ -102,16 +119,19 @@ func main() {
 
 }
 
-func startPacker(app *conf.AppConfig) {
-	_, err := s3packs.Do(app)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-}
-
 func startWithoutScreen(app *conf.AppConfig) {
+
+	app.Tui.Screen = nil
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT)
+	go func() {
+		<-sig
+		os.Exit(1)
+	}()
+
 	startPacker(app)
+
 }
 
 func startWithScreen(app *conf.AppConfig) {
@@ -123,7 +143,21 @@ func startWithScreen(app *conf.AppConfig) {
 
 	_, err := app.Tui.Screen.Run()
 	if err != nil {
-		fmt.Println("Couldn't start TUI.")
+		if app.Tui.Screen != nil {
+			app.Tui.Screen.ExitAltScreen()
+			app.Tui.ScreenQuit()
+		}
+		log.Fatalf("Couldn't start TUI.\n")
+	}
+
+}
+
+func startPacker(app *conf.AppConfig) {
+
+	_, err := s3packs.Init(app)
+	if err != nil {
+		app.Tui.Screen.ExitAltScreen()
+		log.Printf("s3packer exited with error: %s\n\n", err.Error())
 		os.Exit(1)
 	}
 
