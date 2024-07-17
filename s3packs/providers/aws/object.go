@@ -6,11 +6,11 @@ import (
 	"regexp"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/orme292/s3packer/s3packs/provider_v2"
+	"github.com/orme292/s3packer/s3packs/provider"
 )
 
 type AwsObject struct {
-	job *provider_v2.Job
+	job *provider.Job
 
 	f *os.File
 
@@ -24,7 +24,7 @@ type AwsObject struct {
 	tags string
 }
 
-func NewAwsObject(job *provider_v2.Job) provider_v2.Object {
+func NewAwsObject(job *provider.Job) provider.Object {
 	return &AwsObject{
 		job: job,
 	}

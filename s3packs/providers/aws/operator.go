@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/provider_v2"
+	"github.com/orme292/s3packer/s3packs/provider"
 )
 
 type AwsOperator struct {
@@ -17,7 +17,7 @@ type AwsOperator struct {
 	AWS *AwsClient
 }
 
-func NewAwsOperator(app *conf.AppConfig) (oper provider_v2.Operator, err error) {
+func NewAwsOperator(app *conf.AppConfig) (oper provider.Operator, err error) {
 
 	client := AwsClient{
 		details: &details{
@@ -119,7 +119,7 @@ func (oper *AwsOperator) ObjectDelete(key string) error {
 
 }
 
-func (oper *AwsOperator) ObjectExists(obj provider_v2.Object) (bool, error) {
+func (oper *AwsOperator) ObjectExists(obj provider.Object) (bool, error) {
 
 	awsObj, ok := obj.(*AwsObject)
 	if !ok {
@@ -145,7 +145,7 @@ func (oper *AwsOperator) ObjectExists(obj provider_v2.Object) (bool, error) {
 
 }
 
-func (oper *AwsOperator) ObjectUpload(obj provider_v2.Object) error {
+func (oper *AwsOperator) ObjectUpload(obj provider.Object) error {
 
 	awsObj, ok := obj.(*AwsObject)
 	if !ok {
@@ -191,8 +191,8 @@ func (oper *AwsOperator) GetObjectTags(key string) (map[string]string, error) {
 
 }
 
-func (oper *AwsOperator) Support() *provider_v2.Supports {
+func (oper *AwsOperator) Support() *provider.Supports {
 
-	return provider_v2.NewSupports(true, true, true, false)
+	return provider.NewSupports(true, true, true, false)
 
 }

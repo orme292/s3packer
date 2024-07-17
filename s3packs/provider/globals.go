@@ -1,4 +1,4 @@
-package provider_v2
+package provider
 
 const (
 	EmptyPath = ""

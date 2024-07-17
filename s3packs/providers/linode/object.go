@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/orme292/s3packer/s3packs/provider_v2"
+	"github.com/orme292/s3packer/s3packs/provider"
 )
 
 type LinodeObject struct {
-	job *provider_v2.Job
+	job *provider.Job
 
 	f *os.File
 
@@ -17,7 +17,7 @@ type LinodeObject struct {
 	bucket string
 }
 
-func NewLinodeObject(job *provider_v2.Job) provider_v2.Object {
+func NewLinodeObject(job *provider.Job) provider.Object {
 	return &LinodeObject{
 		job: job,
 	}

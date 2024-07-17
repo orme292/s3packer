@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/provider_v2"
+	"github.com/orme292/s3packer/s3packs/provider"
 )
 
 type LinodeOperator struct {
@@ -62,7 +62,7 @@ func (oper *LinodeOperator) ObjectDelete(key string) error {
 	return nil
 }
 
-func (oper *LinodeOperator) ObjectExists(obj provider_v2.Object) (bool, error) {
+func (oper *LinodeOperator) ObjectExists(obj provider.Object) (bool, error) {
 
 	linObj, ok := obj.(*LinodeObject)
 	if !ok {
@@ -88,7 +88,7 @@ func (oper *LinodeOperator) ObjectExists(obj provider_v2.Object) (bool, error) {
 
 }
 
-func (oper *LinodeOperator) ObjectUpload(obj provider_v2.Object) error {
+func (oper *LinodeOperator) ObjectUpload(obj provider.Object) error {
 
 	linObj, ok := obj.(*LinodeObject)
 	if !ok {
@@ -118,11 +118,11 @@ func (oper *LinodeOperator) GetObjectTags(key string) (map[string]string, error)
 	return nil, nil
 }
 
-func (oper *LinodeOperator) Support() *provider_v2.Supports {
-	return provider_v2.NewSupports(true, false, false, false)
+func (oper *LinodeOperator) Support() *provider.Supports {
+	return provider.NewSupports(true, false, false, false)
 }
 
-func NewLinodeOperator(app *conf.AppConfig) (oper provider_v2.Operator, err error) {
+func NewLinodeOperator(app *conf.AppConfig) (oper provider.Operator, err error) {
 
 	client := LinodeClient{
 		details: &details{

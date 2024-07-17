@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/orme292/s3packer/s3packs/provider_v2"
+	"github.com/orme292/s3packer/s3packs/provider"
 )
 
 type OracleObject struct {
-	job *provider_v2.Job
+	job *provider.Job
 
 	key    string
 	bucket string
@@ -16,7 +16,7 @@ type OracleObject struct {
 	tags map[string]string
 }
 
-func NewOracleObject(job *provider_v2.Job) provider_v2.Object {
+func NewOracleObject(job *provider.Job) provider.Object {
 	return &OracleObject{
 		job: job,
 	}

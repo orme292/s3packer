@@ -8,7 +8,7 @@ import (
 	"github.com/oracle/oci-go-sdk/v65/objectstorage"
 	"github.com/oracle/oci-go-sdk/v65/objectstorage/transfer"
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/provider_v2"
+	"github.com/orme292/s3packer/s3packs/provider"
 )
 
 type OracleOperator struct {
@@ -16,7 +16,7 @@ type OracleOperator struct {
 	Oracle *OracleClient
 }
 
-func NewOracleOperator(app *conf.AppConfig) (oper provider_v2.Operator, err error) {
+func NewOracleOperator(app *conf.AppConfig) (oper provider.Operator, err error) {
 
 	client, err := NewOracleClient(app.Provider.OCI.Profile, app.Provider.OCI.Compartment)
 	if err != nil {
@@ -78,7 +78,7 @@ func (oper *OracleOperator) BucketDelete() error {
 	return nil
 }
 
-func (oper *OracleOperator) ObjectExists(obj provider_v2.Object) (bool, error) {
+func (oper *OracleOperator) ObjectExists(obj provider.Object) (bool, error) {
 
 	oobj, ok := obj.(*OracleObject)
 	if !ok {
@@ -108,7 +108,7 @@ func (oper *OracleOperator) ObjectDelete(key string) error {
 	return nil
 }
 
-func (oper *OracleOperator) ObjectUpload(obj provider_v2.Object) error {
+func (oper *OracleOperator) ObjectUpload(obj provider.Object) error {
 
 	oobj, ok := obj.(*OracleObject)
 	if !ok {
@@ -153,8 +153,8 @@ func (oper *OracleOperator) GetObjectTags(key string) (map[string]string, error)
 	return make(map[string]string), nil
 }
 
-func (oper *OracleOperator) Support() *provider_v2.Supports {
+func (oper *OracleOperator) Support() *provider.Supports {
 
-	return provider_v2.NewSupports(true, false, false, false)
+	return provider.NewSupports(true, false, false, false)
 
 }

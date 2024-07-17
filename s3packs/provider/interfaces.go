@@ -1,4 +1,4 @@
-package provider_v2
+package provider
 
 import (
 	"github.com/orme292/s3packer/conf"
