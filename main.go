@@ -157,7 +157,9 @@ func startPacker(app *conf.AppConfig) {
 
 	stats, err := s3packs.Init(app)
 	if err != nil {
-		app.Tui.Screen.ExitAltScreen()
+		if app.Tui.Screen != nil {
+			app.Tui.Screen.ExitAltScreen()
+		}
 		log.Printf("s3packer exited with error: %s\n\n", err.Error())
 		os.Exit(1)
 	}
