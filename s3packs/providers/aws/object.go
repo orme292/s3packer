@@ -59,7 +59,6 @@ func (o *AwsObject) Pre() error {
 
 	f, err := os.Open(o.job.Metadata.FullPath())
 	if err != nil {
-		fmt.Printf("Error opening file %s: %s\n", o.job.Metadata.FullPath(), err)
 		return err
 	}
 
