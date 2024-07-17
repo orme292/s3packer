@@ -1,4 +1,4 @@
-package provider_aws
+package aws
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package provider_linode
+package linode
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"

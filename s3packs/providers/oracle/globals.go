@@ -1,1 +1,7 @@
-package provider_oci
+package oci
+
+const (
+	EmptyString          = ""
+	MultipartTagPrefix   = "opc-meta-"
+	OracleDefaultProfile = "DEFAULT"
+)

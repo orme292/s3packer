@@ -1,4 +1,4 @@
-package provider_linode
+package linode
 
 import (
 	"context"

@@ -170,4 +170,9 @@ func startPacker(app *conf.AppConfig) {
 	app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault, tuipack.INFO, msg))
 	app.Tui.SendOutput(tuipack.NewLogMsg(stats.String(), tuipack.ScrnLfDefault, tuipack.INFO, stats.String()))
 
+	if app.Tui.Screen != nil {
+		app.Tui.Screen.ExitAltScreen()
+		os.Exit(0)
+	}
+
 }

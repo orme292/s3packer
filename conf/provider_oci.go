@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/oracle/oci-go-sdk/v49/objectstorage"
+	"github.com/oracle/oci-go-sdk/v65/objectstorage"
 )
 
 // ProviderOCI represents the OCI provider configuration.
@@ -38,6 +38,7 @@ func (oci *ProviderOCI) build(inc *ProfileIncoming) error {
 // The constant values above are used to match the string.
 func (oci *ProviderOCI) matchStorage(tier string) error {
 
+	// TODO: implement a title caser using golang.org/x/text/cases
 	tier = strings.ToLower(strings.TrimSpace(tier))
 
 	ociStorageTiersMap := map[string]objectstorage.StorageTierEnum{

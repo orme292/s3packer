@@ -5,9 +5,10 @@ import (
 	"fmt"
 
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/provider_aws"
-	"github.com/orme292/s3packer/s3packs/provider_linode"
 	"github.com/orme292/s3packer/s3packs/provider_v2"
+	s3aws "github.com/orme292/s3packer/s3packs/providers/aws"
+	s3linode "github.com/orme292/s3packer/s3packs/providers/linode"
+	s3oracle "github.com/orme292/s3packer/s3packs/providers/oracle"
 	"github.com/orme292/s3packer/tuipack"
 )
 
@@ -40,10 +41,13 @@ func getProviderFunctions(name conf.ProviderName) (provider_v2.OperGenFunc, prov
 
 	switch name {
 	case conf.ProviderNameAWS:
-		return provider_aws.NewAwsOperator, provider_aws.NewAwsObject, nil
+		return s3aws.NewAwsOperator, s3aws.NewAwsObject, nil
 
 	case conf.ProviderNameLinode:
-		return provider_linode.NewLinodeOperator, provider_linode.NewLinodeObject, nil
+		return s3linode.NewLinodeOperator, s3linode.NewLinodeObject, nil
+
+	case conf.ProviderNameOCI:
+		return s3oracle.NewOracleOperator, s3oracle.NewOracleObject, nil
 
 	default:
 		return nil, nil, fmt.Errorf("unable to determine the provider")
