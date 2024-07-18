@@ -55,8 +55,9 @@ See the [releases][releases_url] page...
 
 **s3packer** supports AWS S3, Oracle Cloud Object Storage (OCI), and Linode (Akamai) Object Storage.
 
-- OCI: [README_OCI.md][s3packer_oci_readme_url]
-- Akamai: [README_AKAMAI.md][s3packer_akamai_readme_url]
+- AWS: [using_aws.md][s3packer_aws_readme_url]
+- OCI: [using_oci.md][s3packer_oci_readme_url]
+- Linode: [using_linode.md][s3packer_akamai_readme_url]
 
 See the example profiles:
 - [example1.yaml][example1_url] (AWS)
@@ -111,7 +112,7 @@ Provider:
 
 ---
 Each provider needs their own special fields filled out.<br/>
-SEE: [docs/general_config.md](https://github.com/orme292/s3packer/blob/master/docs/general_config.md)
+SEE: [docs/general_config.md](https://github.com/orme292/s3packer/blob/master/docs/)
 
 ### **Bucket**
 
@@ -328,8 +329,11 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 [repo_license_url]: https://github.com/orme292/s3packer/blob/master/LICENSE
 [s3_acl_url]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
 
-[s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/README_OCI.md
-[s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/README_AKAMAI.md
+[s3packer_aws_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_aws.md
+
+[s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_oci.md
+
+[s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_linode.md
 
 [example1_url]:https://github.com/orme292/s3packer/blob/master/profiles/example1.yaml
 [example2_url]:https://github.com/orme292/s3packer/blob/master/profiles/example2.yaml
