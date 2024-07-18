@@ -140,13 +140,10 @@ func (m *TuiModel) View() string {
 
 	if m.isQuitting {
 		s += NEWLINE
+		return lipgloss.NewStyle().UnsetMargins().Render(s)
 	} else {
 		s += ScrnHelpMessage
+		return appStyle.Render(s)
 	}
-
-	if m.isQuitting {
-		return lipgloss.NewStyle().UnsetMargins().Render(s)
-	}
-	return appStyle.Render(s)
 
 }
