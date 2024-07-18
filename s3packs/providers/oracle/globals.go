@@ -2,6 +2,6 @@ package oci
 
 const (
 	EmptyString          = ""
-	MultipartTagPrefix   = "opc-meta-"
+	MetadataTagPrefix    = "opc-meta-"
 	OracleDefaultProfile = "DEFAULT"
 )

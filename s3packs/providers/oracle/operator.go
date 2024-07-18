@@ -3,12 +3,15 @@ package oci
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"reflect"
 
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/objectstorage"
 	"github.com/oracle/oci-go-sdk/v65/objectstorage/transfer"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/provider"
+	"github.com/orme292/s3packer/tuipack"
 )
 
 type OracleOperator struct {
@@ -62,15 +65,18 @@ func (oper *OracleOperator) BucketExists() (bool, error) {
 	}
 
 	response, err := oper.Oracle.obj.HeadBucket(context.Background(), request)
-	if err != nil {
-		return false, err
+	code, msg, t := getResponseCode(response)
+
+	if code >= 200 && code <= 299 {
+		return true, nil
+	} else if code == 404 {
+		return false, nil
 	}
 
-	if response.RawResponse.StatusCode != 200 {
-		return false, fmt.Errorf("returned non 200 status code")
-	}
+	logmsg := fmt.Sprintf("OCI returned [%s] code %d, msg: %s", t.String(), code, msg)
+	oper.App.Tui.SendOutput(tuipack.NewLogMsg(logmsg, tuipack.ScrnLfDefault, tuipack.INFO, logmsg))
 
-	return true, nil
+	return false, err
 
 }
 
@@ -92,16 +98,21 @@ func (oper *OracleOperator) ObjectExists(obj provider.Object) (bool, error) {
 	}
 
 	response, err := oper.Oracle.obj.HeadObject(context.Background(), request)
-	if err != nil {
-		return true, err
+	code, msg, t := getResponseCode(response)
+
+	if code >= 200 && code <= 299 {
+		if response.ETag != nil && response.ETag != common.String(EmptyString) {
+			return true, nil
+		}
+		return true, fmt.Errorf("OK, but with unexpected ETag")
+	} else if code == 404 {
+		return false, fmt.Errorf("object not found")
 	}
 
-	if response.ETag != common.String(EmptyString) {
-		return true, nil
-	}
+	logmsg := fmt.Sprintf("OCI returned [%s] code %d, msg: %s", t.String(), code, msg)
+	oper.App.Tui.SendOutput(tuipack.NewLogMsg(logmsg, tuipack.ScrnHelpMessage, tuipack.INFO, logmsg))
 
-	return false, fmt.Errorf("object etag not found: %s", oobj.key)
-
+	return true, err
 }
 
 func (oper *OracleOperator) ObjectDelete(key string) error {
@@ -156,5 +167,46 @@ func (oper *OracleOperator) GetObjectTags(key string) (map[string]string, error)
 func (oper *OracleOperator) Support() *provider.Supports {
 
 	return provider.NewSupports(true, false, false, false)
+
+}
+
+func getResponseCode(response any) (int, string, reflect.Type) {
+
+	var raw http.Response
+	switch response.(type) {
+	case objectstorage.HeadBucketResponse:
+		raw = *response.(objectstorage.HeadBucketResponse).HTTPResponse()
+	case objectstorage.HeadObjectResponse:
+		raw = *response.(objectstorage.HeadObjectResponse).HTTPResponse()
+	case transfer.UploadResponse:
+		if response.(transfer.UploadResponse).SinglepartUploadResponse != nil {
+			raw = *response.(transfer.UploadResponse).SinglepartUploadResponse.HTTPResponse()
+		}
+		if response.(transfer.UploadResponse).MultipartUploadResponse != nil {
+			raw = *response.(transfer.UploadResponse).MultipartUploadResponse.HTTPResponse()
+		}
+	}
+
+	var msg string
+	switch code := raw.StatusCode; {
+	case code == 401:
+		msg = "not authenticated"
+	case code == 403:
+		msg = "invalid region"
+	case code == 404:
+		msg = "not found"
+	case code == 409:
+		msg = "resource already exists"
+	case code == 429:
+		msg = "too many requests"
+	case code >= 500 && code <= 503:
+		msg = "internal server error"
+	case code >= 200 && code <= 299:
+		msg = "ok"
+	default:
+		msg = "unknown response"
+	}
+
+	return raw.StatusCode, msg, reflect.TypeOf(response)
 
 }

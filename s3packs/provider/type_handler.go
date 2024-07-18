@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/tuipack"
@@ -92,6 +93,7 @@ func (h *Handler) createBucket() error {
 			tuipack.NewLogMsg("Bucket Created", tuipack.ScrnLfUpload,
 				tuipack.INFO, "Bucket Created"))
 
+		time.Sleep(time.Second * 3)
 	}
 
 	h.app.Tui.ResetHeader()

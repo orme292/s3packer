@@ -3,6 +3,7 @@ package oci
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/orme292/s3packer/s3packs/provider"
 )
@@ -14,11 +15,14 @@ type OracleObject struct {
 	bucket string
 
 	tags map[string]string
+
+	multipartThreshold int64
 }
 
 func NewOracleObject(job *provider.Job) provider.Object {
 	return &OracleObject{
-		job: job,
+		job:                job,
+		multipartThreshold: 1024 * 1024 * 5,
 	}
 }
 
@@ -89,17 +93,19 @@ func (o *OracleObject) setTags() {
 
 }
 
-// This is a workaround for an issue with how metadata is handled when using transfer.UploadManager
-// to handle uploads. When UploadManager handles a single-part upload, it automatically prefixes the
-// metadata tags with "opc-meta-", which is required by OCI. When handling a multipart upload, it
-// does not prefix the metadata tags which can cause the upload to fail. So, here we see if the file
-// meets the multipart threshold (set in the UploadRequest above), and if it does, we prefix all the
-// tags with "opc-meta-".
+// This is a workaround for an issue with how metadata is handled when using transfer.UploadManager.
+// When UploadManager handles a single-part upload, it automatically prefixes the
+// metadata tags with the required prefix "opc-meta-". When handling a multipart upload, it
+// does not prefix the metadata tags and causes the upload to fail. Here we see if the file
+// meets the multipart threshold (50MiB unless set otherwise in the UploadRequest), and if it does,
+// we prefix all the tags with "opc-meta-", or the value of the const MetadataTagPrefix.
 func (o *OracleObject) setTagsWithWorkaround(sz int64) {
 	tags := make(map[string]string)
-	if sz > int64(1024*1024*5) {
+	if sz > o.multipartThreshold {
 		for k, v := range o.tags {
-			tags[fmt.Sprintf("%s%s", MultipartTagPrefix, k)] = v
+			if strings.HasPrefix(strings.ToLower(k), MetadataTagPrefix) == false {
+				tags[fmt.Sprintf("%s%s", MetadataTagPrefix, k)] = v
+			}
 		}
 		o.tags = tags
 	}
