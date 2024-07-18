@@ -75,10 +75,7 @@ func (o *AwsObject) setTags(input map[string]string) {
 		return
 	}
 	cleanString := func(s string) string {
-		reg, err := regexp.Compile(`[^a-zA-Z0-9_./=\+\-:@\s]+`)
-		if err != nil {
-			return ""
-		}
+		reg := regexp.MustCompile(`[^a-zA-Z0-9_./=\+\-:@\s]+`)
 		return reg.ReplaceAllString(s, "_")
 	}
 
