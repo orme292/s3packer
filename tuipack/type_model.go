@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	numListedResults = 23
-	numErrorResults  = 7
+	numDefaultListedResults = 125
+	numDefaultErrorResults  = 7
 )
 
 type TuiModel struct {
@@ -17,6 +17,8 @@ type TuiModel struct {
 	errors     []TuiResultMsg
 	results    []TuiResultMsg
 	isQuitting bool
+	Width      int
+	Height     int
 }
 
 type TuiQuit struct{}
@@ -28,14 +30,14 @@ var (
 func NewTuiModel() TuiModel {
 
 	s := spinner.New()
-	s.Spinner = spinner.Meter
+	s.Spinner = spinner.Line
 	s.Style = StyleSpinner
 
 	return TuiModel{
 		spinner: s,
 		Header:  "Starting Up...",
-		errors:  make([]TuiResultMsg, numErrorResults),
-		results: make([]TuiResultMsg, numListedResults),
+		errors:  make([]TuiResultMsg, numDefaultErrorResults),
+		results: make([]TuiResultMsg, numDefaultListedResults),
 	}
 
 }
@@ -47,6 +49,10 @@ func (m TuiModel) Init() tea.Cmd {
 func (m TuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.Width = msg.Width - 6
+		m.Height = msg.Height - 19
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
@@ -85,6 +91,8 @@ func (m TuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	return m, nil
+
 }
 
 func (m TuiModel) View() string {
@@ -102,17 +110,29 @@ func (m TuiModel) View() string {
 		if err.Msg == EMPTY {
 			s += StyleHelpMessage.Render("..........")
 		}
-		s += err.String() + NEWLINE
+		if len(err.String()) > m.Width {
+			s += err.String()[:m.Width] + NEWLINE
+		} else {
+			s += err.String() + NEWLINE
+		}
+
 	}
 
 	s += NEWLINE
 
-	for _, res := range m.results {
-		if res.Msg == EMPTY {
-			s += EMPTY
+	for i := 0; i < m.Height; i++ {
+		if len(m.results[i].String()) > m.Width {
+			s += m.results[i].String()[:m.Width] + NEWLINE
+		} else {
+			s += m.results[i].String() + NEWLINE
 		}
-		s += res.String() + NEWLINE
 	}
+	// for _, res := range m.results {
+	// 	if res.Msg == EMPTY {
+	// 		s += EMPTY
+	// 	}
+	// 	s += res.String() + NEWLINE
+	// }
 
 	s += "\n\n"
 
