@@ -170,7 +170,7 @@ func (oper *OracleOperator) Support() *provider.Supports {
 
 }
 
-func getResponseCode(response any) (int, string, reflect.Type) {
+func getResponseCode(response any) (code int, msg string, t reflect.Type) {
 
 	var raw http.Response
 	switch v := response.(type) {
@@ -187,8 +187,7 @@ func getResponseCode(response any) (int, string, reflect.Type) {
 		}
 	}
 
-	var msg string
-	switch code := raw.StatusCode; {
+	switch code = raw.StatusCode; {
 	case code == 401:
 		msg = "not authenticated"
 	case code == 403:

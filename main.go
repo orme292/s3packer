@@ -171,6 +171,7 @@ func startPacker(app *conf.AppConfig) {
 	if err != nil {
 		if app.Tui.Screen != nil {
 			app.Tui.Screen.ExitAltScreen()
+			app.Tui.ScreenQuit()
 		}
 		log.Printf("s3packer exited with error: %s\n\n", err.Error())
 		os.Exit(1)
@@ -182,8 +183,14 @@ func startPacker(app *conf.AppConfig) {
 	app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault, tuipack.INFO, msg))
 	app.Tui.SendOutput(tuipack.NewLogMsg(stats.String(), tuipack.ScrnLfDefault, tuipack.INFO, stats.String()))
 
+	if app.Tui.Output.Screen {
+		fmt.Printf("%s uploaded, %s skipped", hrb[stats.ObjectsBytes], hrb[stats.SkippedBytes])
+		fmt.Println(stats.String())
+	}
+
 	if app.Tui.Screen != nil {
 		app.Tui.Screen.ExitAltScreen()
+		app.Tui.ScreenQuit()
 	}
 
 	os.Exit(0)
