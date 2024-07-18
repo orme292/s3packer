@@ -107,10 +107,12 @@ func main() {
 
 	if flags.noscreen == true {
 		app.LogOpts.Screen = false
-		app.Tui.Screen = nil
+		app.Tui.Output.Screen = false
 	}
 
-	if app.Tui.Output.Screen && flags.noscreen == false {
+	startMessage(app)
+
+	if app.Tui.Output.Screen {
 		startWithScreen(app)
 	} else {
 		startWithoutScreen(app)
@@ -120,9 +122,15 @@ func main() {
 
 }
 
-func startWithoutScreen(app *conf.AppConfig) {
+func startMessage(app *conf.AppConfig) {
 
-	app.Tui.Screen = nil
+	fmt.Printf("\ns3packer\n\n")
+	fmt.Printf("Logging [screen:%v] [file:%v] [console:%v]\n", app.LogOpts.Screen, app.LogOpts.File, app.LogOpts.Console)
+	time.Sleep(1 * time.Second)
+
+}
+
+func startWithoutScreen(app *conf.AppConfig) {
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT)
@@ -138,7 +146,11 @@ func startWithoutScreen(app *conf.AppConfig) {
 func startWithScreen(app *conf.AppConfig) {
 
 	go func() {
-		time.Sleep(time.Second * 5)
+		for {
+			if app.Tui.Screen != nil {
+				break
+			}
+		}
 		startPacker(app)
 	}()
 
@@ -172,7 +184,8 @@ func startPacker(app *conf.AppConfig) {
 
 	if app.Tui.Screen != nil {
 		app.Tui.Screen.ExitAltScreen()
-		os.Exit(0)
 	}
+
+	os.Exit(0)
 
 }
