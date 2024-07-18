@@ -53,6 +53,8 @@ func (h *Handler) Init() error {
 
 	h.app.Tui.ToScreenHeader("Running...")
 
+	time.Sleep(time.Second * 3)
+
 	h.queue.start()
 
 	h.Stats.Merge(h.queue.stats)
@@ -93,7 +95,6 @@ func (h *Handler) createBucket() error {
 			tuipack.NewLogMsg("Bucket Created", tuipack.ScrnLfUpload,
 				tuipack.INFO, "Bucket Created"))
 
-		time.Sleep(time.Second * 3)
 	}
 
 	h.app.Tui.ResetHeader()
