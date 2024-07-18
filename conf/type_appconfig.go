@@ -35,7 +35,7 @@ func NewAppConfig() *AppConfig {
 			Linode: &ProviderLinode{},
 		},
 		Opts: &Opts{
-			MaxUploads:     50,
+			MaxUploads:     1,
 			FollowSymlinks: false,
 			WalkDirs:       true,
 			Overwrite:      OverwriteNever,
@@ -49,8 +49,8 @@ func NewAppConfig() *AppConfig {
 		},
 		Tags: make(Tags),
 		TagOpts: &TagOpts{
-			ChecksumSHA256: true,
-			OriginPath:     true,
+			ChecksumSHA256: false,
+			OriginPath:     false,
 		},
 		LogOpts: &LogOpts{
 			Level:   zerolog.WarnLevel,
