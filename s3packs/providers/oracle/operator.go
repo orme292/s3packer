@@ -173,17 +173,17 @@ func (oper *OracleOperator) Support() *provider.Supports {
 func getResponseCode(response any) (int, string, reflect.Type) {
 
 	var raw http.Response
-	switch response.(type) {
+	switch v := response.(type) {
 	case objectstorage.HeadBucketResponse:
-		raw = *response.(objectstorage.HeadBucketResponse).HTTPResponse()
+		raw = *v.HTTPResponse()
 	case objectstorage.HeadObjectResponse:
-		raw = *response.(objectstorage.HeadObjectResponse).HTTPResponse()
+		raw = *v.HTTPResponse()
 	case transfer.UploadResponse:
 		if response.(transfer.UploadResponse).SinglepartUploadResponse != nil {
-			raw = *response.(transfer.UploadResponse).SinglepartUploadResponse.HTTPResponse()
+			raw = *v.SinglepartUploadResponse.HTTPResponse()
 		}
 		if response.(transfer.UploadResponse).MultipartUploadResponse != nil {
-			raw = *response.(transfer.UploadResponse).MultipartUploadResponse.HTTPResponse()
+			raw = *v.MultipartUploadResponse.HTTPResponse()
 		}
 	}
 

@@ -65,7 +65,7 @@ func (o *OracleObject) setTags() {
 	}
 
 	cleanStr := func(s string) string {
-		reg, err := regexp.Compile("[^a-zA-Z0-9_\\.\\/\\=\\+\\-\\:\\@\\s]+")
+		reg, err := regexp.Compile(`[^a-zA-Z0-9_./=\+\-:@\s]+`)
 		if err != nil {
 			return ""
 		}

@@ -64,7 +64,6 @@ func (k *ObjectKey) String(method conf.Naming, omit bool) string {
 	case conf.NamingRelative:
 		k.path = strip(fmt.Sprintf("%s/%s", k.pathPrefix, k.path))
 	default:
-		k.path = fmt.Sprintf("%s", k.pathPrefix)
 		k.path = fmt.Sprintf("%s/%s", k.pathPrefix, strings.TrimPrefix(k.dir, "/"))
 	}
 

@@ -12,8 +12,8 @@ type TuiResultMsg struct {
 
 func (r TuiResultMsg) String() string {
 
-	if len(r.Msg) == 0 {
-		return ""
+	if r.Msg == "" {
+		return r.Msg
 	}
 
 	var s string

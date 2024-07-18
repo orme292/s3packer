@@ -27,13 +27,13 @@ var (
 	appStyle = lipgloss.NewStyle().Margin(3, 3)
 )
 
-func NewTuiModel() TuiModel {
+func NewTuiModel() *TuiModel {
 
 	s := spinner.New()
 	s.Spinner = spinner.Line
 	s.Style = StyleSpinner
 
-	return TuiModel{
+	return &TuiModel{
 		spinner: s,
 		Header:  "Starting Up...",
 		errors:  make([]TuiResultMsg, numDefaultErrorResults),
@@ -42,11 +42,11 @@ func NewTuiModel() TuiModel {
 
 }
 
-func (m TuiModel) Init() tea.Cmd {
+func (m *TuiModel) Init() tea.Cmd {
 	return m.spinner.Tick
 }
 
-func (m TuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *TuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -95,7 +95,7 @@ func (m TuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 }
 
-func (m TuiModel) View() string {
+func (m *TuiModel) View() string {
 
 	var s string
 	s = ScrnAppHeader

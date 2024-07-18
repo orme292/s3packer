@@ -23,7 +23,7 @@ type OracleClient struct {
 	details details
 }
 
-func NewOracleClient(profile string, compartment string) (*OracleClient, error) {
+func NewOracleClient(profile, compartment string) (*OracleClient, error) {
 
 	client := &OracleClient{
 		details: details{
