@@ -11,8 +11,9 @@ Bucket:
   Name: MyBackupBucket
   Region: us-ashburn-1
 Options:
-  MaxParts: 10
   MaxUploads: 5
+  FollowSymlinks: false
+  WalkDirs: true
   OverwriteObjects: never
 Tagging:
   OriginPath: true
@@ -27,9 +28,10 @@ Objects:
   OmitRootDir: true
 Logging:
   Level: 4
-  OutputToConsole: true
-  OutputToFile: true
-  Path: /var/log/s3packer.log
+  Screen: true
+  Console: true
+  File: true
+  Logfile: /var/log/backups/s3packer.log
 Files:
   - /documents/to_jenny/letter_1.doc
   - /documents/to_jenny/letter_2.doc
