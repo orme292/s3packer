@@ -127,12 +127,6 @@ func (m *TuiModel) View() string {
 			s += m.results[i].String() + NEWLINE
 		}
 	}
-	// for _, res := range m.results {
-	// 	if res.Msg == EMPTY {
-	// 		s += EMPTY
-	// 	}
-	// 	s += res.String() + NEWLINE
-	// }
 
 	s += "\n\n"
 
@@ -150,6 +144,9 @@ func (m *TuiModel) View() string {
 		s += ScrnHelpMessage
 	}
 
+	if m.isQuitting {
+		return lipgloss.NewStyle().UnsetMargins().Render(s)
+	}
 	return appStyle.Render(s)
 
 }
