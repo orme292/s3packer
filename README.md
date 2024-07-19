@@ -1,6 +1,6 @@
 # s3packer - A configurable profile-based S3 backup and upload tool.
 
-**Linux/MacOS |||||** Amazon S3 **|** Oracle Cloud Object Storage **|** Akamai (Linode) Object Storage
+**CLI for Linux/MacOS**  **supports** Amazon S3 **|** Oracle Cloud Object Storage **|** Linode (Akamai) Object Storage
 
 ---
 [![Go Version][go_version_img]][go_version_url]
@@ -19,14 +19,30 @@ Special thanks to JetBrains! </br>
 ---
 ## About
 
-**s3packer is a configurable yaml-based S3 storage upload and backup tool. Instead of figuring out and managing complex
-commands, you can create a YAML config that tells s3packer what to upload, where to upload it, how to name, and how to
-tag the files.**
+s3packer is a configurable yaml-based S3 storage upload and backup tool. Use YAML-based configs with s3packer that tell
+it what to upload, where to upload, how to name, and how to tag the objects. Redundancy is easier by using separate
+profiles for each provider. s3packer supports several AWS, OCI (Oracle Cloud), and Linode (Akamai).
 
-**s3packer makes redundancy a breeze. Just use profiles to upload to multiple S3 providers. s3packer supports several
-services: AWS, OCI (Oracle Cloud), and Linode (Akamai).**
+---
 
-**Build support for other major projects by using the interfaces in the Provider package (s3packs/provider/).**
+## Add Support for new Providers
+
+**You can build support for a custom provider by using the _s3packs/provider_ package interfaces. To implement your own
+provider:**
+
+- Create a new package under s3packs/providers (e.g. s3packs/providers/azure). Use a simple name prefixed with s3,
+  like "s3azure", as the package name.
+- Implement the operator and object interface (
+  see: [s3packs/provider/interfaces.go](https://github.com/orme292/s3packer/blob/master/s3packs/provider/interfaces.go))
+- Implement the generator function interfaces (OperGenFunc, ObjectGenFunc)
+- Add the required configuration code
+  - see: [conf/type_provider.go](https://github.com/orme292/s3packer/blob/master/conf/type_provider.go)
+  - see example: [conf/provider_aws.go](https://github.com/orme292/s3packer/blob/master/conf/provider_aws.go)
+- Add new provider to the getProviderFunctions
+  fn [s3packs/main.go](https://github.com/orme292/s3packer/blob/master/s3packs/main.go)
+
+See current provider code for implementation
+examples: [aws](https://github.com/orme292/s3packer/blob/master/s3packs/providers/aws), [oci](https://github.com/orme292/s3packer/blob/master/s3packs/providers/oci), [linode](https://github.com/orme292/s3packer/blob/master/s3packs/providers/linode)
 
 ---
 
@@ -37,13 +53,13 @@ See the [releases][releases_url] page...
 ---
 ## Providers
 
-**s3packer** supports AWS S3, Oracle Cloud Object Storage, and Linode (Akamai) Object Storage. This readme will
-go over using AWS as a provider, but there are additional docs available for other providers.
+**s3packer** supports AWS S3, Oracle Cloud Object Storage (OCI), and Linode (Akamai) Object Storage.
 
-- OCI: [README_OCI.md][s3packer_oci_readme_url]
-- Akamai: [README_AKAMAI.md][s3packer_akamai_readme_url]
+- AWS: [using_aws.md][s3packer_aws_readme_url]
+- OCI: [using_oci.md][s3packer_oci_readme_url]
+- Linode: [using_linode.md][s3packer_akamai_readme_url]
 
-You can see sample profiles here:
+See the example profiles:
 - [example1.yaml][example1_url] (AWS)
 - [example2.yaml][example2_url] (OCI)
 - [example3.yaml][example3_url] (Linode/Akamai)
@@ -71,41 +87,42 @@ $ s3packer --create="my-new-profile.yaml"
 
 ## Setting up a Profile
 
-s3packer profiles are written in YAML. To set one up, you just need to fill out a few fields, and you’ll be good to go!
+s3packer profiles are written in YAML. To set one up, you just need to fill out a few fields before you can get started.
 
-First, make sure you specify that you're using Version 4 of the profile format:
+### **Version**<br/>
 
 ```yaml
-Version: 5
+Version: 6
 ```
 
-Be sure to specify a provider:
+---
+
+### **Provider**
+
+Tell s3packer which service you're using
+
+| PROVIDER | Acceptable Values | Required | Description                        |
+|:---------|:------------------|:---------|:-----------------------------------|
+| Use      | aws, oci, linode  | Y        | name of provider you will be using |
 
 ```yaml
 Provider:
   Use: aws
 ```
 
-Use your AWS Key/Secret pair:
+---
+Each provider needs their own special fields filled out.<br/>
+SEE: [docs/general_config.md](https://github.com/orme292/s3packer/blob/master/docs/)
 
-```yaml
-Version: 5
-Provider:
-  Use: aws
-  Key: "my-key"
-  Secret: "my-secret"
-```
+### **Bucket**
 
-Or you can specify a profile that's already set up in your `~/.aws/credentials` file:
+Tell s3packer where the bucket is and whether to create it
 
-```yaml
-Version: 5
-Provider:
-  Use: aws
-  Profile: "myAwsCliProfile""
-```
-
-Configure your bucket:
+| BUCKET | Acceptable Values | Default | Required | Description                                                  |
+|:-------|:------------------|:--------|:---------|:-------------------------------------------------------------|
+| Create | boolean           | false   | F        | Whether s3packer should create the bucket if it is not found |
+| Name   | any string        |         | Y        | The name of the bucket                                       |
+| Region | any string        |         | Y        | The region that the bucket is or will be in, e.g. eu-north-1 |
 
 ```yaml
 Bucket:
@@ -114,75 +131,62 @@ Bucket:
   Region: "eu-north-1"
 ```
 
-And then, tell s3packer what you want to upload. You can specify directories or individual files. When you specify a
-directory, s3packer will traverse all subdirectories.
-
-```yaml
-Files:
-  - "/Users/forrest/docs/stocks/apple"
-  - "/Users/jenny/docs/song_lyrics"
-Dirs:
-  - "/Users/forrest/docs/job-application-lawn-mower.pdf"
-  - "/Users/forrest/docs/dr-pepper-recipe.txt"
-  - "/Users/jenny/letters/from-forrest.docx"
-```
---- 
-
-### Tags
-
-You can also add tags to your files. Just add a `Tags` section to your profile:
-
-```yaml
-Tags:
-  Author: "Forrest Gump"
-  Year: 1994
-```
 ---
 
-### AWS Specific Options
+### **Options**
 
-Configure your object ACLs and the storage type.
+s3packer's configurable options
+
+| OPTIONS          | Acceptable Values | Default | Required | Description                                                |
+|:-----------------|:------------------|:--------|:---------|:-----------------------------------------------------------|
+| MaxUploads       | any integer       | 1       | N        | The number of simultaneous uploads, at least 1.            |
+| FollowSymlinks   | boolean           | false   | N        | Whether to follow symlinks under dirs provided             |
+| WalkDirs         | boolean           | true    | N        | Whether s3packer will walk subdirectories of dirs provided |
+| OverwriteObjects | always, never     | never   | N        | Whether overwrite objects that already exist in the bucket |
+
+<details>
+<summary>
+  MaxUpload considerations
+</summary>
+
+Some providers can struggle with a high number of simultaneous uploads. Generally, anywhere between 1 and 5 is safe,
+however providers like AWS have demonstrated the ability to handle up to 50, or even more.
+
+It's important to note that large files can be broken up into many parts which are then simultaneously uploaded. Part
+count, part size, and the large file threshold values are not configured by s3packer, unless otherwise called out.
+
+For example, if you specify a MaxUploads value of 5, and s3packer tries to upload 5 large files that are each split into
+20 parts, then there would be 100 simultaneous uploads happening. If you specify a MaxUpload value of 50 and there are
+50 large files each split into 20 parts, then you could potentially have as many as 1,000 simultaneous uploads.
+</details>
 
 ```yaml
-AWS:
-  ACL: "private"
-  Storage: "ONEZONE_IA"
+Options:
+  MaxUploads: 1
+  FollowSymlinks: false
+  WalkDirs: true
+  OverwriteObjects: "never"
 ```
-
-**ACL** <br/>
-The default is `private`, but you can use any canned ACL:
-- `public-read`
-- `public-read-write`
-- `authenticated-read`
-- `aws-exec-read`
-- `bucket-owner-read`
-- `bucket-owner-full-control`
-- `log-delivery-write`
-
-Read more about ACLs here: [https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html][s3_acl_url]
-
-**Storage** <br/>
-The default is `STANDARD`, but you can use any of the following storage classes:
-- `STANDARD`
-- `STANDARD_IA`
-- `ONEZONE_IA`
-- `INTELLIGENT_TIERING`
-- `GLACIER`
-- `DEEP_ARCHIVE`
 
 ---
 
-### Extra Options
+### **Objects**
 
-You can also customize how your files are stored, accessed, tagged, and uploaded using these options.
+s3packer's configurable options for object name and renaming
 
----
+| OBJECTS     | Acceptable Values  | Default | Required | Description                                                                              |
+|:------------|:-------------------|:--------|:---------|:-----------------------------------------------------------------------------------------|
+| NamingType  | absolute, relative |         | Y        | the method s3packer uses to name objects that it uploads                                 |
+| NamePrefix  | any string         |         | N        | The string that will be prefixed to the object's "file" name                             |
+| PathPrefix  | any string         |         | N        | a string path that will be prefixed to the object's "file" name and "path" name          |
+| OmitRootDir | boolean            | True    | N        | whether the relative root of a provided directory will be added to the objects path name |
 
 ```yaml
 Objects:
-  NamingType: "relative"
-  NamePrefix: "monthly-"
-  PathPrefix: "/backups/monthly"
+  NamingType: absolute
+  NamePrefix: backup-
+  PathPrefix: /backups/april/2023
+  OmitRootDir: true
 ```
 
 **NamingType** <br/>
@@ -193,33 +197,66 @@ The default is `relative`.
 - `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
 
 **NamePrefix** <br/>
-This is blank by default. Any value you put here will be added before the filename when it's uploaded to S3.
-Using something like `weekly-` will add that string to any file you're uploading, like `weekly-log.log` or `weekly-2021-01-01.log`.
+This is blank by default. Any value you put here will be added before the filename when it's uploaded to S3. Using
+something like `weekly-` will add that string to any file you're uploading, like `weekly-log.log`
+or `weekly-2021-01-01.log`.
 
 **PathPrefix** <br/>
-This is blank by default. Any value put here will be added before the file path when it's uploaded to S3.
-If you use something like `/backups/monthly`, the file will be uploaded to `/backups/monthly/your-file.txt`.
+This is blank by default. Any value put here will be added before the file path when it's uploaded to S3. If you use
+something like `/backups/monthly`, the file will be uploaded to `/backups/monthly/your-file.txt`.
 
 ---
+
+### **Files, Dirs**
+
+Tells s3packer what you want to upload. You can specify directories or individual files. When you specify a directory,
+s3packer will **NOT** traverse subdirectories, unless configured to. You must specify one or the other.
+
+| FILES | Required | Description                                         |
+|:------|:---------|:----------------------------------------------------|
+| path  | Y        | the absolute path to the file that will be uploaded |
+
+| DIRS | Required | Description                                              |
+|:-----|:---------|:---------------------------------------------------------|
+| path | Y        | the absolute path to the directory that will be uploaded |
 
 ```yaml
-Options:
-  OverwriteObjects: "never"
+Files:
+  - "/Users/forrest/docs/stocks/apple"
+  - "/Users/jenny/docs/song_lyrics"
+Dirs:
+  - "/Users/forrest/docs/objJob-application-lawn-mower.pdf"
+  - "/Users/forrest/docs/dr-pepper-recipe.txt"
+  - "/Users/jenny/letters/from-forrest.docx"
 ```
 
-**MaxParts** <br/>
-The default depends on the provider. The AWS default is `100`. MaxParts specifies the number of pieces a large file will
-be broken up into before uploading and reassembling.
+--- 
 
-**MaxUploads** <br/>
-The default is `5`. This is the maximum number of files that will be uploaded at the same time. Concurrency is at the
-directory level, so the biggest speed gains are seen when uploading a directory with many files.
+### **Tags**
 
-**OverwriteObjects**  <br/>
-This is `never` by default. If you set it to `always`, s3packer will overwrite any files in the bucket that
-have the same name as what you're uploading. Useful if you're uploading a file that is updated over and over again.
+Add tags to each uploaded object (if supported by the provider)
+
+| TAGS | Acceptable Values | Required | Description                                       |
+|:-----|:------------------|:---------|:--------------------------------------------------|
+| Key  | any value         | N        | key:value tag pair, will be converted to a string |
+
+
+```yaml
+Tags:
+  Author: "Forrest Gump"
+  Year: 1994
+```
 
 ---
+
+### **TagOptions**
+
+Options related to object tagging (dependent on whether the provider supports object tagging)
+
+| TAGOPTIONS     | Acceptable Values | Default | Required | Description                                                                           |
+|:---------------|:------------------|:--------|:---------|:--------------------------------------------------------------------------------------|
+| OriginPath     | boolean           | False   | N        | Whether s3packer will tag the object with the original absolute path of the file      |
+| ChecksumSHA256 | boolean           | False   | N        | Whether s3packer will tag the object with the sha256 checksum of the file as uploaded |
 
 ```yaml
 Tagging:
@@ -227,44 +264,37 @@ Tagging:
   ChecksumSHA256: false
 ```
 
-**OriginPath** <br/>
-This is `true` by default. Every object uploaded will be tagged with the full absolute path of the file on the local
-filesystem. This is useful if you want to be able to trace the origin of a file in S3. The tag name will be
-`s3packer-origin-path`.
-
-**ChecksumSHA256** <br/>
-This is `true` by default. Every object uploaded will be tagged with the file's calculated SHA256 checksum. The tag name
-will be `s3packer-checksum-sha256`.
+**Note on Checksum Tagging**<br/>
+Some providers have checksum validation on objects to verify that uploads are completed correctly. This checksum is
+calculated separately from that process and is only for your future reference.
 
 ---
 
-### Logging Options
+### Logging
 
-And if you like keeping track of things or want a paper trail, you can set up logging too:
+Options for logging output
+
+| LOGGING | Acceptable Values | Default                 | Required | Description                                                                               |
+|:--------|:------------------|:------------------------|:---------|:------------------------------------------------------------------------------------------|
+| Screen  | boolean           | True                    | N        | Whether s3packer will run in pretty mode, with an AltScreen display                       |
+| Level   | 1,2,3,4,5         | 2                       | N        | The severity level a log message must be to output to the console or file                 |
+| Console | boolean           | False                   | N        | Whether logging message will be output to stdout (set to false if screen is set to true). |
+| File    | boolean           | False                   | N        | Whether logging output will be written to a file. Output is structured in JSON format.    |
+| Logfile | path              | "/var/log/s3packer.log" | N        | The name of the file that output logging will be appended to.                             |
+
 
 ```yaml
 Logging:
-  Level: 1
-  OutputToConsole: true
-  OutputToFile: true
-  Path: "/var/log/backup.log"
+  Screen: false
+  Level: 3
+  Console: true
+  File: true
+  Logfile: "/var/log/backup.log"
  ```
 
-**Level:**<br/>
-This is `2` by default. The setting is by severity, with 0 being least severe and 5 being most severe. 0 will log
-all messages (including debug), and 5 will only log fatal messages which cause the program to exit.
-
-**OutputToConsole:**<br/>
-This is `true` by default. Outputs logging messages to standard output. If you set it to `false`, s3packer
-prints minimal output.
-
-**OutputToFile:**<br/>
-This is `false` by default. If you set it to `true`, s3packer will write structured log (JSON) messages to a file. You
-MUST also specify a `Path`.
-
-**Path:** <br/>
-Path of the file to write structured log messages to. If you set `OutputToFile` to `true`, you must specify a filename.
-The file will be created if it doesn't exist, and appended to if it does.
+**Notes on Level**<br/>
+This is `2` WARN by default. The setting is by severity, with 1 being least severe (INFO) and 5 being most severe (
+PANIC).
 
 ---
 
@@ -273,7 +303,8 @@ The file will be created if it doesn't exist, and appended to if it does.
 **Individual Files**
 
 If you’re uploading individual files, just remember that the prefix will be added to the start of the filenames and they’ll be uploaded right to the root of the bucket.
-Also, if you’ve got multiple files with the same name (like if you have five ‘log.log’ files from different directories), they’ll be sequentially renamed, so log.log-0, log.log-1, log.log-2, etc etc.
+Note that if you have multiple files with the same name (like if you have five ‘log.log’ files from different
+directories), they could be overwritten as you upload.
 
 **Directories**
 
@@ -298,8 +329,11 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 [repo_license_url]: https://github.com/orme292/s3packer/blob/master/LICENSE
 [s3_acl_url]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
 
-[s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/README_OCI.md
-[s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/README_AKAMAI.md
+[s3packer_aws_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_aws.md
+
+[s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_oci.md
+
+[s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_linode.md
 
 [example1_url]:https://github.com/orme292/s3packer/blob/master/profiles/example1.yaml
 [example2_url]:https://github.com/orme292/s3packer/blob/master/profiles/example2.yaml

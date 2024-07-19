@@ -9,17 +9,12 @@ AWS:
 Bucket:
   Create: true
   Name: MyBackupBucket
-  Region: us-lax-1
+  Region: us-east-1
 Options:
-  MaxParts: 10
-  MaxUploads: 5
+  MaxUploads: 10
+  FollowSymlinks: false
+  WalkDirs: true
   OverwriteObjects: never
-Tagging:
-  OriginPath: true
-  ChecksumSHA256: true
-Tags:
-  Author: Forrest Gump
-  Title: Letters to Jenny
 Objects:
   NamingType: relative
   NamePrefix: backup-
@@ -27,9 +22,10 @@ Objects:
   OmitRootDir: true
 Logging:
   Level: 4
-  OutputToConsole: true
-  OutputToFile: true
-  Path: /var/log/s3packer.log
+  Screen: true
+  Console: true
+  File: true
+  Logfile: /var/log/backups/s3packer.log
 Files:
   - /documents/to_jenny/letter_1.doc
   - /documents/to_jenny/letter_2.doc

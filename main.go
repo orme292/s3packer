@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	pal "github.com/abusomani/go-palette/palette"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs"
-	"github.com/orme292/s3packer/s3packs/objectify"
+	"github.com/orme292/s3packer/tuipack"
 	flag "github.com/spf13/pflag"
 )
 
@@ -36,24 +38,34 @@ import (
 // TODO: Add more readable log output, check log levels make sense
 // TODO: Consider ErrorAs implementation and hard coding error messages in Const
 
+type appFlags struct {
+	profile  string
+	create   string
+	noscreen bool
+}
+
 /*
 getFlags uses the flag package to configure and get command line arguments. It returns:
 -- profile: The filename of the profile to load.
 */
-func getFlags() (profile, create string, err error) {
+func getFlags() (appFlags, error) {
 
-	flag.StringVar(&profile, "profile", "", "The filename of the profile you want to open.")
-	flag.StringVar(&create, "create", "", "Create a new profile with the specified filename.")
+	var err error
+	flags := appFlags{}
+
+	flag.StringVar(&flags.profile, "profile", "", "The filename of the profile you want to open.")
+	flag.StringVar(&flags.create, "create", "", "Create a new profile with the specified filename.")
+	flag.BoolVar(&flags.noscreen, "noscreen", false, "No fancy text effects, output logs as configured in the profile.")
 	flag.Parse()
 
-	if create == "" && profile == "" {
+	if flags.create == "" && flags.profile == "" {
 		err = errors.New("must specify --create=\"filename\" or --profile=\"filename\"")
-		return
 	}
-	if create != "" && profile != "" {
+	if flags.create != "" && flags.profile != "" {
 		err = errors.New("use either --create or --profile, not both")
 	}
-	return
+
+	return flags, err
 
 }
 
@@ -68,47 +80,119 @@ main is the entry point of the program. It does the following:
 */
 func main() {
 
-	p := pal.New(pal.WithBackground(pal.Color(21)), pal.WithForeground(pal.BrightWhite), pal.WithSpecialEffects([]pal.Special{pal.Bold}))
-	_, _ = p.Println("s3packer ", s3packs.Version)
-	p.SetOptions(pal.WithDefaults(), pal.WithForeground(pal.BrightWhite))
-	_, _ = p.Println("https://github.com/orme292/s3packer\n")
-
-	profile, create, err := getFlags()
+	flags, err := getFlags()
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	if create != "" {
+	if flags.create != "" {
 
-		builder := conf.NewBuilder(create)
+		builder := conf.NewBuilder(flags.create)
 		err = builder.YamlOut()
 		if err != nil {
 			log.Fatalf("Unable to write profile: %v", err)
 		}
 
-		log.Printf("File written: %s", create)
+		log.Printf("File written: %s", flags.create)
 		os.Exit(0)
 
 	}
 
-	builder := conf.NewBuilder(profile)
-	ac, err := builder.FromYaml()
+	builder := conf.NewBuilder(flags.profile)
+	app, err := builder.FromYaml()
 	if err != nil {
 		log.Fatalf("Error loading profile: %v", err)
 	}
 
-	stats, errs := s3packs.Do(ac)
-	if len(errs.Each) > 0 {
-		for _, err := range errs.Each {
-			ac.Log.Error(err.Error())
+	if flags.noscreen == true {
+		app.LogOpts.Screen = false
+		app.Tui.Output.Screen = false
+	}
+
+	startMessage(app)
+
+	if app.Tui.Output.Screen {
+		startWithScreen(app)
+	} else {
+		startWithoutScreen(app)
+	}
+
+	os.Exit(0)
+
+}
+
+func startMessage(app *conf.AppConfig) {
+
+	fmt.Printf("\ns3packer\n\n")
+	fmt.Printf("Logging [screen:%v] [file:%v] [console:%v]\n", app.LogOpts.Screen, app.LogOpts.File, app.LogOpts.Console)
+	time.Sleep(1 * time.Second)
+
+}
+
+func startWithoutScreen(app *conf.AppConfig) {
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT)
+	go func() {
+		<-sig
+		os.Exit(1)
+	}()
+
+	startPacker(app)
+
+}
+
+func startWithScreen(app *conf.AppConfig) {
+
+	go func() {
+		for {
+			if app.Tui.Screen != nil {
+				break
+			}
 		}
+		startPacker(app)
+	}()
+
+	_, err := app.Tui.Screen.Run()
+	if err != nil {
+		if app.Tui.Screen != nil {
+			app.Tui.Screen.ExitAltScreen()
+			app.Tui.ScreenQuit()
+		}
+		log.Fatalf("Couldn't start TUI.\n")
+	}
+
+}
+
+func startPacker(app *conf.AppConfig) {
+
+	stats, err := s3packs.Init(app)
+	if err != nil {
+		if app.Tui.Screen != nil {
+			app.Tui.Screen.ExitAltScreen()
+			app.Tui.ScreenQuit()
+		}
+		log.Printf("s3packer exited with error: %s\n\n", err.Error())
 		os.Exit(1)
 	}
 
-	fmt.Printf("s3packer Finished. %d Total Objects, %d Objects and %s Successfully Transferred, %d Failed, %d Ignored.\n", stats.Objects, stats.Uploaded, objectify.FileSizeString(stats.Bytes), stats.Failed, stats.Ignored)
-	if stats.Discrep != 0 {
-		fmt.Printf("%d objects unaccounted for. There's a discrepancy between the number of objects processed and the number of objects uploaded, failed or ignored.", stats.Discrep)
+	hrb := stats.ReadableString()
+	msg := fmt.Sprintf("%s uploaded, %s skipped", hrb[stats.ObjectsBytes],
+		hrb[stats.SkippedBytes])
+	app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault, tuipack.INFO, msg))
+	app.Tui.SendOutput(tuipack.NewLogMsg(stats.String(), tuipack.ScrnLfDefault, tuipack.INFO, stats.String()))
+
+	if app.Tui.Output.Screen {
+		fmt.Printf("%s uploaded, %s skipped", hrb[stats.ObjectsBytes], hrb[stats.SkippedBytes])
+		fmt.Println(stats.String())
 	}
+
+	if app.Tui.Screen != nil {
+		app.Tui.Screen.ExitAltScreen()
+		app.Tui.ScreenQuit()
+	}
+
 	os.Exit(0)
+
 }

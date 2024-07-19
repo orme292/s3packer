@@ -4,6 +4,29 @@ bug fix, feature addition, or minor tweak.
 
 ---
 
+### **1.5.0** (2024-07-18)
+
+- conf: restructured and cleaned up the package
+- conf: some yaml fields are adjusted
+- logbot: removed the package
+- tuipack: added new package to handle the TUI and logging output (to replace logbot)
+- main: add --noscreen option to force s3p to not use the TUI
+- main: support standard logging output or new TUI output
+- readme: updated to be a general config document, moved provider specific readmes to the docs/ dir
+- docs: removed old readmes and added new docs by provider
+- s3packs/objectify: removed in factor of github.com/orme292/objectify and github.com/orme292/symwalker
+- s3packs/pack_akamai: removed
+- s3packs/pack_aws: removed
+- s3packs/pack_oci: removed
+- s3packs/provider: rewritten
+- s3packs/providers/aws: added new provider for aws based on the new provider package
+- s3packs/providers/oci: added new provider for oci *
+- s3packs/providers/linode: added new provider for linode *
+- aws-go-sdk-v2 updated to latest
+- oci-go-sdk updated to v65
+
+---
+
 ### **1.4.0** (2024-06-14)
 
 - conf: package rebuilt to be modular and readable.

@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Bucket contains all details related to the bucket, for any provider. Create is not implemented.
@@ -15,7 +16,7 @@ func (b *Bucket) build(inc *ProfileIncoming, pn ProviderName) error {
 
 	b.Name = inc.Bucket.Name
 	b.Create = inc.Bucket.Create
-	b.Region = inc.Bucket.Region
+	b.Region = strings.ToLower(inc.Bucket.Region)
 
 	return b.validate(pn)
 }

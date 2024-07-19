@@ -3,8 +3,8 @@ package conf
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/orme292/s3packer/logbot"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/orme292/s3packer/tuipack"
 	"github.com/rs/zerolog"
 )
 
@@ -19,8 +19,9 @@ type AppConfig struct {
 	Paths    []string
 	Files    []string
 	Dirs     []string
+	Skip     []string
 
-	Log *logbot.LogBot
+	Tui *tuipack.LogBot
 }
 
 // NewAppConfig returns a new AppConfig object with preconfigured defaults.
@@ -34,34 +35,34 @@ func NewAppConfig() *AppConfig {
 			Linode: &ProviderLinode{},
 		},
 		Opts: &Opts{
-			MaxParts:   10,
-			MaxUploads: 5,
-			Overwrite:  OverwriteNever,
+			MaxUploads:     1,
+			FollowSymlinks: false,
+			WalkDirs:       true,
+			Overwrite:      OverwriteNever,
 		},
 		Bucket: &Bucket{
 			Create: false,
 		},
 		Objects: &Objects{
-			NamingType: NamingNone,
+			NamingType:  NamingNone,
+			OmitRootDir: true,
 		},
 		Tags: make(Tags),
 		TagOpts: &TagOpts{
-			ChecksumSHA256:       true,
-			AwsChecksumAlgorithm: types.ChecksumAlgorithmSha256,
-			AwsChecksumMode:      types.ChecksumModeEnabled,
-			OriginPath:           true,
+			ChecksumSHA256: false,
+			OriginPath:     false,
 		},
 		LogOpts: &LogOpts{
-			Level:    zerolog.ErrorLevel,
-			Console:  true,
-			File:     false,
-			Filepath: "/var/log/s3packer.log",
+			Level:   zerolog.WarnLevel,
+			Console: false,
+			File:    false,
+			Screen:  true,
+			Logfile: "/var/log/s3packer.log",
 		},
-		Log: &logbot.LogBot{
-			Level:       zerolog.ErrorLevel,
-			FlagConsole: true,
-			FlagFile:    false,
-			Path:        "/var/log/s3packer.log",
+		Tui: &tuipack.LogBot{
+			Level:   zerolog.WarnLevel,
+			Output:  &tuipack.LogOutput{},
+			Logfile: "/var/log/s3packer.log",
 		},
 	}
 
@@ -76,10 +77,15 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 		return err
 	}
 
-	ac.Log.Level = ac.LogOpts.Level
-	ac.Log.FlagConsole = ac.LogOpts.Console
-	ac.Log.FlagFile = ac.LogOpts.File
-	ac.Log.Path = ac.LogOpts.Filepath
+	ac.Tui.Level = ac.LogOpts.Level
+	ac.Tui.Output.Screen = ac.LogOpts.Screen
+	ac.Tui.Output.Console = ac.LogOpts.Console
+	ac.Tui.Output.File = ac.LogOpts.File
+	ac.Tui.Logfile = ac.LogOpts.Logfile
+
+	if ac.Tui.Output.Screen {
+		ac.Tui.Screen = tea.NewProgram(tuipack.NewTuiModel(), tea.WithAltScreen())
+	}
 
 	err = ac.Provider.build(inc)
 	if err != nil {
@@ -117,6 +123,7 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 
 	ac.Files = inc.Files
 	ac.Dirs = inc.Dirs
+	ac.Skip = inc.Skip
 
 	return nil
 

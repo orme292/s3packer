@@ -15,11 +15,13 @@ import (
 // - Key: The AWS access key ID.
 // - Secret: The AWS secret access key.
 type ProviderAWS struct {
-	Profile string
-	Key     string
-	Secret  string
-	ACL     types.ObjectCannedACL
-	Storage types.StorageClass
+	Profile              string
+	Key                  string
+	Secret               string
+	ACL                  types.ObjectCannedACL
+	Storage              types.StorageClass
+	AwsChecksumAlgorithm types.ChecksumAlgorithm
+	AwsChecksumMode      types.ChecksumMode
 }
 
 func (aws *ProviderAWS) build(inc *ProfileIncoming) error {
@@ -38,6 +40,9 @@ func (aws *ProviderAWS) build(inc *ProfileIncoming) error {
 	aws.Secret = inc.Provider.Secret
 	aws.Profile = inc.Provider.Profile
 
+	aws.AwsChecksumAlgorithm = types.ChecksumAlgorithmSha256
+	aws.AwsChecksumMode = types.ChecksumModeEnabled
+
 	return aws.validate()
 
 }
@@ -55,7 +60,7 @@ func (aws *ProviderAWS) matchACL(acl string) error {
 		AwsACLBucketOwnerFullControl: types.ObjectCannedACLBucketOwnerFullControl,
 	}
 
-	validAcl, ok := awsCannedACLs[tidyString(acl)]
+	validAcl, ok := awsCannedACLs[tidyLowerString(acl)]
 	if !ok {
 		aws.ACL = types.ObjectCannedACLPrivate
 		return fmt.Errorf("%s %q", InvalidAWSACL, acl)
@@ -82,7 +87,7 @@ func (aws *ProviderAWS) matchStorage(class string) error {
 		AwsClassSnow:               types.StorageClassGlacier,
 	}
 
-	validClass, ok := awsStorageClasses[tidyUpString(class)]
+	validClass, ok := awsStorageClasses[tidyUpperString(class)]
 	if !ok {
 		aws.Storage = types.StorageClassStandard
 		return fmt.Errorf("%s %q", InvalidStorageClass, class)

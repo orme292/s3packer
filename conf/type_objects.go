@@ -31,7 +31,7 @@ type Objects struct {
 }
 
 func (o *Objects) build(inc *ProfileIncoming) error {
-	switch tidyString(inc.Objects.NamingType) {
+	switch tidyLowerString(inc.Objects.NamingType) {
 
 	case NamingAbsolute.String(), "abs":
 		o.NamingType = NamingAbsolute

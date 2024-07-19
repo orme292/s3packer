@@ -2,13 +2,17 @@ package conf
 
 import (
 	"fmt"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 // ProviderLinode represents the Linode/Akamai provider configuration
 type ProviderLinode struct {
-	Key      string
-	Secret   string
-	Endpoint string
+	Key       string
+	Secret    string
+	Endpoint  string
+	BucketACL types.BucketCannedACL
+	ObjectACL types.ObjectCannedACL
 }
 
 func (l *ProviderLinode) build(inc *ProfileIncoming) error {
@@ -17,6 +21,9 @@ func (l *ProviderLinode) build(inc *ProfileIncoming) error {
 	if err != nil {
 		return err
 	}
+
+	l.BucketACL = types.BucketCannedACLPrivate
+	l.ObjectACL = types.ObjectCannedACLPublicRead
 
 	l.Key = inc.Provider.Key
 	l.Secret = inc.Provider.Secret
@@ -47,7 +54,7 @@ func (l *ProviderLinode) matchRegion(region string) error {
 		LinodeRegionAshburn:    LinodeClusterAshburn,
 	}
 
-	endpoint, ok := linodeEndpointsMap[tidyString(region)]
+	endpoint, ok := linodeEndpointsMap[tidyLowerString(region)]
 	if !ok {
 		l.Endpoint = LinodeClusterAshburn
 		return fmt.Errorf("%s, %q", LinodeInvalidRegion, region)
@@ -62,6 +69,10 @@ func (l *ProviderLinode) validate() error {
 
 	if l.Secret == Empty || l.Key == Empty {
 		return fmt.Errorf("bad Linode config: %v", LinodeAuthNeeded)
+	}
+
+	if l.Endpoint == "" {
+		return fmt.Errorf("bad Linode config: %v", LinodeInvalidRegion)
 	}
 
 	return nil
