@@ -4,5 +4,6 @@ s3packer
 /scripts/
 /s3pack-old/*
 /profiles/test_profile*
-/playground
-/terraform
+/playground/
+/terraform/
+/bin/*
