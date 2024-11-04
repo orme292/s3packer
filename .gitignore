@@ -6,4 +6,4 @@ s3packer
 /profiles/test_profile*
 /playground
 /terraform
-/bin
+./bin
