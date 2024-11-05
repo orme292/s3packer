@@ -1,19 +1,19 @@
 ---
-name: Quality Assurance
+name: Code Quality and Vulnerability Check
 on:
   push:
     paths: ['**.go']
   pull_request:
     branches:
       - master
-    types: [opened, edited, synchronize, reopened]
+    types: [ opened, edited, reopened ]
     paths: ['**.go']
 
 jobs:
   quality-check:
     strategy:
       matrix:
-        go: [1.22.0]
+        go: [ 1.23.0 ]
         os: ['ubuntu-latest']
     runs-on: ${{ matrix.os }}
     steps:

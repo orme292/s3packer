@@ -1,5 +1,5 @@
 ---
-name: Prod Release
+name: Build Release Package
 on:
   push:
     branches:
@@ -12,7 +12,7 @@ jobs:
   prod-merge-build-release:
     strategy:
       matrix:
-        go-version: [1.22.0]
+        go-version: [ 1.23.0 ]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -38,33 +38,33 @@ jobs:
       - name: Install Dependencies
         run: go get .
 
-      - name: Make Artifact Directories
-        run: mkdir -p ./bin/linux-arm64 && mkdir -p ./bin/linux-amd64 && mkdir -p ./bin/mac-arm64 && mkdir -p ./bin/mac-amd64
+      - name: Create Artifact Directories
+        run: mkdir -p ./bin/linux-arm64 && mkdir -p ./bin/linux-amd64 && mkdir -p ./bin/mac-apple-silicon && mkdir -p ./bin/mac-intel
 
       - name: Copy Release Files
-        run: cp ./VERSION ./bin/linux-amd64/ && cp ./VERSION ./bin/linux-arm64/ && cp ./VERSION ./bin/mac-amd64/ && cp ./VERSION ./bin/mac-arm64/
+        run: cp ./VERSION ./bin/linux-amd64/ && cp ./VERSION ./bin/linux-arm64/ && cp ./VERSION ./bin/mac-intel/ && cp ./VERSION ./bin/mac-apple-silicon/
       - name: Copy CHANGELOG.md
-        run: cp ./CHANGELOG.md ./bin/linux-amd64/ && cp ./CHANGELOG.md ./bin/linux-arm64/ && cp ./CHANGELOG.md ./bin/mac-amd64/ && cp ./CHANGELOG.md ./bin/mac-arm64/
+        run: cp ./CHANGELOG.md ./bin/linux-amd64/ && cp ./CHANGELOG.md ./bin/linux-arm64/ && cp ./CHANGELOG.md ./bin/mac-intel/ && cp ./CHANGELOG.md ./bin/mac-apple-silicon/
       - name: Copy README.md
-        run: cp ./README.md ./bin/linux-amd64/ && cp ./README.md ./bin/linux-arm64/ && cp ./README.md ./bin/mac-amd64/ && cp ./README.md ./bin/mac-arm64/
+        run: cp ./README.md ./bin/linux-amd64/ && cp ./README.md ./bin/linux-arm64/ && cp ./README.md ./bin/mac-intel/ && cp ./README.md ./bin/mac-apple-silicon/
 
       - name: Build Linux ARM64 Artifact
-        run: GOOS=linux GOOARCH=arm64 go build -o ./bin/linux-arm64/s3packer .
+        run: GOOS=linux GOOARCH=arm64 go build -o ./bin/linux-arm64/s3p .
       - name: Build Linux AMD64 Artifact
-        run: GOOS=linux GOOARCH=amd64 go build -o ./bin/linux-amd64/s3packer .
+        run: GOOS=linux GOOARCH=amd64 go build -o ./bin/linux-amd64/s3p .
       - name: Build MacOS ARM64 Artifact
-        run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/mac-arm64/s3packer .
+        run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/mac-apple-silicon/s3p .
       - name: Build MacOS AMD64 Artifact
-        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/mac-amd64/s3packer .
+        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/mac-intel/s3p .
 
       - name: Create Archive linux-arm64
         run: tar -czvf ./bin/s3packer-linux-arm64.tar.gz -C ./bin/linux-arm64/ .
       - name: Create Archive linux-amd64
         run: tar -czvf ./bin/s3packer-linux-amd64.tar.gz -C ./bin/linux-amd64/ .
-      - name: Create Archive mac-arm64
-        run: tar -czvf ./bin/s3packer-mac-arm64.tar.gz -C ./bin/mac-arm64/ .
-      - name: Create Archive mac-amd64
-        run: tar -czvf ./bin/s3packer-mac-amd64.tar.gz -C ./bin/mac-amd64/ .
+      - name: Create Archive mac-apple-silicon
+        run: tar -czvf ./bin/s3packer-mac-apple-silicon.tar.gz -C ./bin/mac-apple-silicon/ .
+      - name: Create Archive mac-intel
+        run: tar -czvf ./bin/s3packer-mac-intel.tar.gz -C ./bin/mac-intel/ .
 
       - name: Create New Release
         uses: softprops/action-gh-release@v1
@@ -79,7 +79,7 @@ jobs:
           files: |
             ./bin/s3packer-linux-arm64.tar.gz
             ./bin/s3packer-linux-amd64.tar.gz
-            ./bin/s3packer-mac-arm64.tar.gz
-            ./bin/s3packer-mac-amd64.tar.gz
+            ./bin/s3packer-mac-apple-silicon.tar.gz
+            ./bin/s3packer-mac-intel.tar.gz
             ./LICENSE
             ./CHANGELOG.md
