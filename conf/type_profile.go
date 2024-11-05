@@ -135,10 +135,10 @@ func (p *ProfileIncoming) loadSampleData() {
 	p.Objects.OmitRootDir = true
 
 	p.Logging.Level = 4
-	p.Logging.Screen = true
-	p.Logging.Console = false
+	p.Logging.Screen = false
+	p.Logging.Console = true
 	p.Logging.File = true
-	p.Logging.Logfile = "/var/log/s3packer.log"
+	p.Logging.Logfile = "/var/log/s3p.log"
 
 	p.Files = []string{
 		"/documents/to_jenny/letter_1.doc",

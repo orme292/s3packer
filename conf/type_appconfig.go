@@ -54,15 +54,15 @@ func NewAppConfig() *AppConfig {
 		},
 		LogOpts: &LogOpts{
 			Level:   zerolog.WarnLevel,
-			Console: false,
+			Console: true,
 			File:    false,
-			Screen:  true,
-			Logfile: "/var/log/s3packer.log",
+			Screen:  false,
+			Logfile: "/var/log/s3p.log",
 		},
 		Tui: &tuipack.LogBot{
 			Level:   zerolog.WarnLevel,
 			Output:  &tuipack.LogOutput{},
-			Logfile: "/var/log/s3packer.log",
+			Logfile: "/var/log/s3p.log",
 		},
 	}
 
