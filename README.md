@@ -274,13 +274,13 @@ calculated separately from that process and is only for your future reference.
 
 Options for logging output
 
-| LOGGING | Acceptable Values | Default                 | Required | Description                                                                               |
-|:--------|:------------------|:------------------------|:---------|:------------------------------------------------------------------------------------------|
-| Screen  | boolean           | True                    | N        | Whether s3packer will run in pretty mode, with an AltScreen display                       |
-| Level   | 1,2,3,4,5         | 2                       | N        | The severity level a log message must be to output to the console or file                 |
-| Console | boolean           | False                   | N        | Whether logging message will be output to stdout (set to false if screen is set to true). |
-| File    | boolean           | False                   | N        | Whether logging output will be written to a file. Output is structured in JSON format.    |
-| Logfile | path              | "/var/log/s3packer.log" | N        | The name of the file that output logging will be appended to.                             |
+| LOGGING | Acceptable Values | Default            | Required | Description                                                                               |
+|:--------|:------------------|:-------------------|:---------|:------------------------------------------------------------------------------------------|
+| Screen  | boolean           | False              | N        | Whether s3packer will run in pretty mode, with an AltScreen display                       |
+| Level   | 1-5               | 2                  | N        | The severity level a log message must be to output to the console or file                 |
+| Console | boolean           | True               | N        | Whether logging message will be output to stdout (set to false if screen is set to true). |
+| File    | boolean           | False              | N        | Whether logging output will be written to a file. Output is structured in JSON format.    |
+| Logfile | path              | "/var/log/s3p.log" | N        | The name of the file that output logging will be appended to.                             |
 
 
 ```yaml
