@@ -1,6 +1,6 @@
 module github.com/orme292/s3packer
 
-go 1.22.5
+go 1.23.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.32.3
