@@ -81,8 +81,8 @@ github.com/muesli/cancelreader v0.2.2 h1:3I4Kt4BQjOR54NavqnDogx/MIoWBFa0StPA8ELU
 github.com/muesli/cancelreader v0.2.2/go.mod h1:3XuTXfFS2VjM+HTLZY9Ak0l6eUKfijIfMUZ4EgX0QYo=
 github.com/muesli/termenv v0.15.2 h1:GohcuySI0QmI3wN8Ok9PtKGkgkFIk7y6Vpb5PvrY+Wo=
 github.com/muesli/termenv v0.15.2/go.mod h1:Epx+iuz8sNs7mNKhxzH4fWXGNpZwUaJKRS1noLXviQ8=
-github.com/oracle/oci-go-sdk/v65 v65.77.1 h1:gqjTXIUWvTihkn470AclxSAMcR1JecqjD2IUtp+sDIU=
-github.com/oracle/oci-go-sdk/v65 v65.77.1/go.mod h1:IBEV9l1qBzUpo7zgGaRUhbB05BVfcDGYRFBCPlTcPp0=
+github.com/oracle/oci-go-sdk/v65 v65.78.0 h1:iM7lFFA7cJkUD4tmrlsAHWgL3HuTuF9mdvTAliMkcFA=
+github.com/oracle/oci-go-sdk/v65 v65.78.0/go.mod h1:IBEV9l1qBzUpo7zgGaRUhbB05BVfcDGYRFBCPlTcPp0=
 github.com/orme292/objectify v0.3.3 h1:pJi1tVVISirH5hfwGg+JbkNwFGz8iKBHbVyJF7xrHWs=
 github.com/orme292/objectify v0.3.3/go.mod h1:3+eIByxdnnMDiJ2cjByPvAttulndjAjzITugTdEo1X4=
 github.com/orme292/symwalker v0.2.2 h1:GcU7K8szoNdRep+7RE7im1gQezg1z0IliHx/A6KvYeU=
