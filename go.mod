@@ -13,7 +13,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.26.6
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/google/uuid v1.6.0
-	github.com/oracle/oci-go-sdk/v65 v65.77.1
+	github.com/oracle/oci-go-sdk/v65 v65.81.1
 	github.com/orme292/objectify v0.3.3
 	github.com/orme292/symwalker v0.2.2
 	github.com/rs/zerolog v1.33.0
@@ -41,7 +41,6 @@ require (
 	github.com/charmbracelet/x/term v0.1.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
