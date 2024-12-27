@@ -340,7 +340,7 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 
 [go_version_img]: https://img.shields.io/github/go-mod/go-version/orme292/s3packer?style=for-the-badge&logo=go
 [go_report_img]: https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none
-[repo_license_img]: https://img.shields.io/badge/license-GPL%202.0-orange?style=for-the-badge&logo=none
+[repo_license_img]: https://img.shields.io/badge/license-MIT-orange?style=for-the-badge&logo=none
 
 [jetbrains_logo]: https://resources.jetbrains.com/storage/products/company/brand/logos/jb_square.svg
 [jetbrains_oss_url]: https://www.jetbrains.com/community/opensource/#support
