@@ -13,7 +13,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.26.6
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/google/uuid v1.6.0
-	github.com/oracle/oci-go-sdk/v65 v65.77.1
+	github.com/oracle/oci-go-sdk/v65 v65.81.1
 	github.com/orme292/objectify v0.3.3
 	github.com/orme292/symwalker v0.2.2
 	github.com/rs/zerolog v1.33.0
