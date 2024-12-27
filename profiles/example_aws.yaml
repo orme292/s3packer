@@ -22,7 +22,6 @@ Objects:
   OmitRootDir: true
 Logging:
   Level: 4
-  Screen: true
   Console: true
   File: true
   Logfile: /var/log/backups/s3packer.log

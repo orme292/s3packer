@@ -3,7 +3,6 @@ package conf
 import (
 	"fmt"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/orme292/s3packer/tuipack"
 	"github.com/rs/zerolog"
 )
@@ -56,7 +55,6 @@ func NewAppConfig() *AppConfig {
 			Level:   zerolog.WarnLevel,
 			Console: true,
 			File:    false,
-			Screen:  false,
 			Logfile: "/var/log/s3p.log",
 		},
 		Tui: &tuipack.LogBot{
@@ -78,14 +76,9 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 	}
 
 	ac.Tui.Level = ac.LogOpts.Level
-	ac.Tui.Output.Screen = ac.LogOpts.Screen
 	ac.Tui.Output.Console = ac.LogOpts.Console
 	ac.Tui.Output.File = ac.LogOpts.File
 	ac.Tui.Logfile = ac.LogOpts.Logfile
-
-	if ac.Tui.Output.Screen {
-		ac.Tui.Screen = tea.NewProgram(tuipack.NewTuiModel(), tea.WithAltScreen())
-	}
 
 	err = ac.Provider.build(inc)
 	if err != nil {

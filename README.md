@@ -274,18 +274,16 @@ calculated separately from that process and is only for your future reference.
 
 Options for logging output
 
-| LOGGING | Acceptable Values | Default            | Required | Description                                                                               |
-|:--------|:------------------|:-------------------|:---------|:------------------------------------------------------------------------------------------|
-| Screen  | boolean           | False              | N        | Whether s3packer will run in pretty mode, with an AltScreen display                       |
-| Level   | 1-5               | 2                  | N        | The severity level a log message must be to output to the console or file                 |
-| Console | boolean           | True               | N        | Whether logging message will be output to stdout (set to false if screen is set to true). |
-| File    | boolean           | False              | N        | Whether logging output will be written to a file. Output is structured in JSON format.    |
-| Logfile | path              | "/var/log/s3p.log" | N        | The name of the file that output logging will be appended to.                             |
+| LOGGING | Acceptable Values | Default            | Required | Description                                                                            |
+|:--------|:------------------|:-------------------|:---------|:---------------------------------------------------------------------------------------|
+| Level   | 1-5               | 2                  | N        | The severity level a log message must be to output to the console or file              |
+| Console | boolean           | True               | N        | Whether logging message will be output to stdout.                                      |
+| File    | boolean           | False              | N        | Whether logging output will be written to a file. Output is structured in JSON format. |
+| Logfile | path              | "/var/log/s3p.log" | N        | The name of the file that output logging will be appended to.                          |
 
 
 ```yaml
 Logging:
-  Screen: false
   Level: 3
   Console: true
   File: true
@@ -324,7 +322,8 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 <!-- Links -->
 [releases_url]: https://github.com/orme292/s3packer/releases
 [issue_repo_url]: https://github.com/orme292/s3packer/issues/new/choose
-[go_version_url]: https://golang.org/doc/go1.22
+
+[go_version_url]: https://golang.org/doc/go1.23
 [go_report_url]: https://goreportcard.com/report/github.com/orme292/s3packer
 [repo_license_url]: https://github.com/orme292/s3packer/blob/master/LICENSE
 [s3_acl_url]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
@@ -339,7 +338,7 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 [example2_url]:https://github.com/orme292/s3packer/blob/master/profiles/example2.yaml
 [example3_url]:https://github.com/orme292/s3packer/blob/master/profiles/example3.yaml
 
-[go_version_img]: https://img.shields.io/badge/Go-1.22-00ADD8?style=for-the-badge&logo=go
+[go_version_img]: https://img.shields.io/github/go-mod/go-version/orme292/s3packer?style=for-the-badge&logo=go
 [go_report_img]: https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none
 [repo_license_img]: https://img.shields.io/badge/license-GPL%202.0-orange?style=for-the-badge&logo=none
 

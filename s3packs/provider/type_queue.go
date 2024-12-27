@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/tuipack"
 	sw "github.com/orme292/symwalker"
 )
 
@@ -28,15 +27,12 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		objGenFn: objFn,
 	}
 
-	app.Tui.ToScreenHeader("Scanning files...")
-
 	for file, mode := range paths {
 
 		if mode.IsDir() {
 
 			msg := fmt.Sprintf("Walking %s", file)
-			app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
-				tuipack.INFO, msg))
+			app.Tui.Info(msg)
 
 			opts := sw.NewSymConf(file,
 				sw.WithoutFiles(),
@@ -45,9 +41,7 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 
 			results, err := sw.SymWalker(opts)
 			if err != nil {
-				msg = fmt.Sprintf("Error walking %s: %v", file, err)
-				app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfFailed,
-					tuipack.ERROR, msg))
+				app.Tui.Error(msg)
 				continue
 			}
 
@@ -61,8 +55,7 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		} else {
 
 			msg := fmt.Sprintf("Reading %s", file)
-			app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault,
-				tuipack.INFO, msg))
+			app.Tui.Info(msg)
 
 			j := newWorker(app, file, EmptyPath, false, true, JobStatusQueued, oper, objFn)
 			q.workers = append(q.workers, j)
@@ -70,8 +63,6 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		}
 
 	}
-
-	app.Tui.ResetHeader()
 
 	return q, nil
 
@@ -82,8 +73,6 @@ func (q *queue) start() {
 	sem := make(chan struct{}, q.app.Opts.MaxUploads)
 	var wg sync.WaitGroup
 	wg.Add(len(q.workers))
-
-	q.app.Tui.ResetHeader()
 
 	stats := &Stats{}
 	var agg []*Stats

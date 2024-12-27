@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/tuipack"
 )
 
 type Handler struct {
@@ -51,8 +50,6 @@ func (h *Handler) Init() error {
 		return err
 	}
 
-	h.app.Tui.ToScreenHeader("Running...")
-
 	time.Sleep(time.Second * 3)
 
 	h.queue.start()
@@ -69,14 +66,9 @@ func (h *Handler) createBucket() error {
 		return fmt.Errorf("bucket creation not supported")
 	}
 
-	h.app.Tui.ToScreenHeader("Creating bucket...")
-
 	if h.supports.BucketCreate && h.app.Bucket.Create {
 
-		h.app.Tui.SendOutput(
-			tuipack.NewLogMsg(
-				"Creating bucket...", tuipack.ScrnLfDefault,
-				tuipack.INFO, "Creating bucket"))
+		h.app.Tui.Info("Creating bucket")
 
 		err := h.oper.BucketCreate()
 		if err != nil {
@@ -91,13 +83,9 @@ func (h *Handler) createBucket() error {
 			return fmt.Errorf("created bucket but couldn't verify it exists")
 		}
 
-		h.app.Tui.SendOutput(
-			tuipack.NewLogMsg("Bucket Created", tuipack.ScrnLfUpload,
-				tuipack.INFO, "Bucket Created"))
+		h.app.Tui.Info("Bucket Created")
 
 	}
-
-	h.app.Tui.ResetHeader()
 
 	return nil
 
@@ -106,13 +94,9 @@ func (h *Handler) createBucket() error {
 func (h *Handler) verifyBucket() error {
 
 	// Check if bucket exists. If it does not, create it.
-	h.app.Tui.ToScreen("Looking for bucket...", tuipack.ScrnLfDefault)
-
 	exists, err := h.oper.BucketExists()
 	if err != nil && err.Error() != "bucket not found" {
-		h.app.Tui.SendOutput(
-			tuipack.NewLogMsg("Bucket not found.", tuipack.ScrnLfFailed,
-				tuipack.WARN, "Bucket not found."))
+		h.app.Tui.Warn("Bucket not found.")
 		return fmt.Errorf("error while checking for bucket: %w", err)
 	}
 

@@ -11,7 +11,6 @@ import (
 	"github.com/oracle/oci-go-sdk/v65/objectstorage/transfer"
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/provider"
-	"github.com/orme292/s3packer/tuipack"
 )
 
 type OracleOperator struct {
@@ -74,7 +73,7 @@ func (oper *OracleOperator) BucketExists() (bool, error) {
 	}
 
 	logmsg := fmt.Sprintf("OCI returned [%s] code %d, msg: %s", t.String(), code, msg)
-	oper.App.Tui.SendOutput(tuipack.NewLogMsg(logmsg, tuipack.ScrnLfDefault, tuipack.INFO, logmsg))
+	oper.App.Tui.Info(logmsg)
 
 	return false, err
 
@@ -110,7 +109,7 @@ func (oper *OracleOperator) ObjectExists(obj provider.Object) (bool, error) {
 	}
 
 	logmsg := fmt.Sprintf("OCI returned [%s] code %d, msg: %s", t.String(), code, msg)
-	oper.App.Tui.SendOutput(tuipack.NewLogMsg(logmsg, tuipack.ScrnHelpMessage, tuipack.INFO, logmsg))
+	oper.App.Tui.Info(logmsg)
 
 	return true, err
 }

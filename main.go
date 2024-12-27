@@ -11,7 +11,6 @@ import (
 
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs"
-	"github.com/orme292/s3packer/tuipack"
 	flag "github.com/spf13/pflag"
 )
 
@@ -39,9 +38,8 @@ import (
 // TODO: Consider ErrorAs implementation and hard coding error messages in Const
 
 type appFlags struct {
-	profile  string
-	create   string
-	noscreen bool
+	profile string
+	create  string
 }
 
 /*
@@ -55,7 +53,6 @@ func getFlags() (appFlags, error) {
 
 	flag.StringVar(&flags.profile, "profile", "", "The filename of the profile you want to open.")
 	flag.StringVar(&flags.create, "create", "", "Create a new profile with the specified filename.")
-	flag.BoolVar(&flags.noscreen, "noscreen", false, "No fancy text effects, output logs as configured in the profile.")
 	flag.Parse()
 
 	if flags.create == "" && flags.profile == "" {
@@ -105,18 +102,11 @@ func main() {
 		log.Fatalf("Error loading profile: %v", err)
 	}
 
-	if flags.noscreen == true {
-		app.LogOpts.Screen = false
-		app.Tui.Output.Screen = false
-	}
-
 	startMessage(app)
 
-	if app.Tui.Output.Screen {
-		startWithScreen(app)
-	} else {
-		startWithoutScreen(app)
-	}
+	startSigChannel()
+
+	startPacker(app)
 
 	os.Exit(0)
 
@@ -125,12 +115,12 @@ func main() {
 func startMessage(app *conf.AppConfig) {
 
 	fmt.Printf("\ns3packer\n\n")
-	fmt.Printf("Logging [screen:%v] [file:%v] [console:%v]\n", app.LogOpts.Screen, app.LogOpts.File, app.LogOpts.Console)
+	fmt.Printf("Logging [file:%v] [console:%v]\n", app.LogOpts.File, app.LogOpts.Console)
 	time.Sleep(1 * time.Second)
 
 }
 
-func startWithoutScreen(app *conf.AppConfig) {
+func startSigChannel() {
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT)
@@ -139,40 +129,12 @@ func startWithoutScreen(app *conf.AppConfig) {
 		os.Exit(1)
 	}()
 
-	startPacker(app)
-
-}
-
-func startWithScreen(app *conf.AppConfig) {
-
-	go func() {
-		for {
-			if app.Tui.Screen != nil {
-				break
-			}
-		}
-		startPacker(app)
-	}()
-
-	_, err := app.Tui.Screen.Run()
-	if err != nil {
-		if app.Tui.Screen != nil {
-			app.Tui.Screen.ExitAltScreen()
-			app.Tui.ScreenQuit()
-		}
-		log.Fatalf("Couldn't start TUI.\n")
-	}
-
 }
 
 func startPacker(app *conf.AppConfig) {
 
 	stats, err := s3packs.Init(app)
 	if err != nil {
-		if app.Tui.Screen != nil {
-			app.Tui.Screen.ExitAltScreen()
-			app.Tui.ScreenQuit()
-		}
 		log.Printf("s3packer exited with error: %s\n\n", err.Error())
 		os.Exit(1)
 	}
@@ -180,18 +142,8 @@ func startPacker(app *conf.AppConfig) {
 	hrb := stats.ReadableString()
 	msg := fmt.Sprintf("%s uploaded, %s skipped", hrb[stats.ObjectsBytes],
 		hrb[stats.SkippedBytes])
-	app.Tui.SendOutput(tuipack.NewLogMsg(msg, tuipack.ScrnLfDefault, tuipack.INFO, msg))
-	app.Tui.SendOutput(tuipack.NewLogMsg(stats.String(), tuipack.ScrnLfDefault, tuipack.INFO, stats.String()))
-
-	if app.Tui.Output.Screen {
-		fmt.Printf("%s uploaded, %s skipped", hrb[stats.ObjectsBytes], hrb[stats.SkippedBytes])
-		fmt.Println(stats.String())
-	}
-
-	if app.Tui.Screen != nil {
-		app.Tui.Screen.ExitAltScreen()
-		app.Tui.ScreenQuit()
-	}
+	app.Tui.Info(msg)
+	app.Tui.Info(stats.String())
 
 	os.Exit(0)
 
