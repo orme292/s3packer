@@ -9,7 +9,6 @@ import (
 	s3aws "github.com/orme292/s3packer/s3packs/providers/aws"
 	s3linode "github.com/orme292/s3packer/s3packs/providers/linode"
 	s3oracle "github.com/orme292/s3packer/s3packs/providers/oracle"
-	"github.com/orme292/s3packer/tuipack"
 )
 
 func Init(app *conf.AppConfig) (*provider.Stats, error) {
@@ -29,9 +28,7 @@ func Init(app *conf.AppConfig) (*provider.Stats, error) {
 		return &provider.Stats{}, err
 	}
 
-	app.Tui.SendOutput(tuipack.NewLogMsg("Finished.", tuipack.ScrnLfCheck,
-		tuipack.INFO, "Finished"))
-	app.Tui.ToScreenHeader("s3packer is finished!")
+	app.Tui.Info("Finished.")
 
 	return handler.Stats, nil
 
