@@ -195,7 +195,7 @@ Objects:
 The default is `relative`.
 
 - `relative`: The key will be prepended with the relative path of the file on the local filesystem (individual files
-  specified in the profile will always end up at the root of the bucket, plus the `pathPrefix` and then `objectPrefix`).
+  specified in the profile will always end up at the root of the bucket, plus the `PathPrefix` and then `NamePrefix`).
 - `absolute`: The key will be prepended with the absolute path of the file on the local filesystem.
 
 **NamePrefix** <br/>
