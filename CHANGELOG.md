@@ -1,9 +1,16 @@
 ## CHANGELOG
-This is the Changelog. Between each version, major or minor, I'll document all changes, record every 
-bug fix, feature addition, or minor tweak. 
+
+This is the Changelog. Between each version I'll document changes, bug fixes, feature additions, and minor tweaks.
 
 ---
 
+### **1.5.3** (2024-12-27)
+
+- conf: removed the TUI interface and bubbletea
+- aws-go-sdk-v2 updated to latest
+- oci-go-sdk updated to latest (still v65)
+
+---
 ### **1.5.0** (2024-07-18)
 
 - conf: restructured and cleaned up the package
