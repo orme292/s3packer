@@ -13,19 +13,18 @@
 
 [![Jetbrains_OSS][jetbrains_logo]][jetbrains_oss_url] [![Jetbrains_GoLand][jetbrains_goland_logo]][jetbrains_goland_url]
 
-Special thanks to JetBrains! </br>
-**s3packer** is developed with support from the JetBrains Open Source program.
+Special thanks to JetBrains! **s3packer** is developed with help from JetBrains' Open Source program.
 
 ---
 ## About
 
-s3packer is a configurable yaml-based S3 storage upload and backup tool. Use YAML-based configs with s3packer that tell
-it what to upload, where to upload, how to name, and how to tag the objects. Redundancy is easier by using separate
-profiles for each provider. s3packer supports several AWS, OCI (Oracle Cloud), and Linode (Akamai).
+s3packer is an S3 / Object Storage upload and backup tool. It uses YAML-based configs that tell it what to upload, where
+to upload, how to name, and how to tag the objects. s3packer makes backup redundancy easier by using separate profiles
+for buckets and providers. Currently it supports AWS, OCI (Oracle Cloud), and Linode (Akamai).
 
 ---
 
-## Add Support for new Providers
+## Add Support for new Services with the Provider interfaces
 
 **You can build support for a custom provider by using the _s3packs/provider_ package interfaces. To implement your own
 provider:**
@@ -41,8 +40,8 @@ provider:**
 - Add new provider to the getProviderFunctions
   fn [s3packs/main.go](https://github.com/orme292/s3packer/blob/master/s3packs/main.go)
 
-See current provider code for implementation
-examples: [aws](https://github.com/orme292/s3packer/blob/master/s3packs/providers/aws), [oci](https://github.com/orme292/s3packer/blob/master/s3packs/providers/oci), [linode](https://github.com/orme292/s3packer/blob/master/s3packs/providers/linode)
+The documentation for this isn't great right now. But, you can see current provider code for implementation
+examples: [aws](https://github.com/orme292/s3packer/blob/master/s3packs/providers/aws), [oci](https://github.com/orme292/s3packer/tree/master/s3packs/providers/oracle), [linode](https://github.com/orme292/s3packer/blob/master/s3packs/providers/linode)
 
 ---
 
@@ -144,20 +143,23 @@ s3packer's configurable options
 | WalkDirs         | boolean           | true    | N        | Whether s3packer will walk subdirectories of dirs provided |
 | OverwriteObjects | always, never     | never   | N        | Whether overwrite objects that already exist in the bucket |
 
+<br/>
 <details>
 <summary>
-  MaxUpload considerations
+  **MaxUpload considerations**
 </summary>
 
-Some providers can struggle with a high number of simultaneous uploads. Generally, anywhere between 1 and 5 is safe,
-however providers like AWS have demonstrated the ability to handle up to 50, or even more.
+Be careful when you set MaxUploads. Some services struggle with anything more than 5. Exception being AWS which seems
+fine with 50-100 -- though, whether its faster to have a high MaxUploads value depends on your upload job.
 
-It's important to note that large files can be broken up into many parts which are then simultaneously uploaded. Part
-count, part size, and the large file threshold values are not configured by s3packer, unless otherwise called out.
+It's important to note that large files can be broken up into many parts which are then simultaneously uploaded.
+s3packer uses default values for part count, part size, and the large file threshold values, unless otherwise called
+out.
 
-For example, if you specify a MaxUploads value of 5, and s3packer tries to upload 5 large files that are each split into
-20 parts, then there would be 100 simultaneous uploads happening. If you specify a MaxUpload value of 50 and there are
-50 large files each split into 20 parts, then you could potentially have as many as 1,000 simultaneous uploads.
+An example of this would be: If you specify a MaxUploads value of 5, and s3packer tries to upload 5 large files that are
+each split into 20 parts, then there would be 100 simultaneous uploads happening. If you specify a MaxUpload value of 50
+and there are 50 large files each split into 20 parts, then you could potentially have as many as 1,000 simultaneous
+uploads.
 </details>
 
 ```yaml
@@ -266,7 +268,7 @@ Tagging:
 
 **Note on Checksum Tagging**<br/>
 Some providers have checksum validation on objects to verify that uploads are completed correctly. This checksum is
-calculated separately from that process and is only for your future reference.
+calculated separately from that process and is only for your reference.
 
 ---
 
@@ -291,8 +293,8 @@ Logging:
  ```
 
 **Notes on Level**<br/>
-This is `2` WARN by default. The setting is by severity, with 1 being least severe (INFO) and 5 being most severe (
-PANIC).
+Level is set to `2` (WARN) by default. The setting is by severity, with 1 being least severe (INFO) and 5 being most
+severe (PANIC).
 
 ---
 
@@ -300,21 +302,23 @@ PANIC).
 
 **Individual Files**
 
-If you’re uploading individual files, just remember that the prefix will be added to the start of the filenames and they’ll be uploaded right to the root of the bucket.
-Note that if you have multiple files with the same name (like if you have five ‘log.log’ files from different
-directories), they could be overwritten as you upload.
+If you’re uploading individual files, just remember that the prefix will be added to the start of each filename and
+they’ll be uploaded right to the root of the bucket (unless you specify custom _PathPrefix_. Note that if you have
+multiple files with the same name (like if you have five ‘log.log’ files from different directories), they could be
+overwritten as you upload.
 
 **Directories**
 
-When you’re uploading directories, all the subdirectories and files will be uploaded to the bucket as well. Processing
-directories with a large number of files can take some time as the checksums are calculated.
+When you’re uploading directories, when WalkDirs is set to true, then all the subdirectories and files will be uploaded
+to the bucket as well. Processing directories with a large number of files can take some time as the checksums are
+calculated and each directory entry is read.
 
 ---
 
 ### Issues & Suggestions
 
-If you run into any problems, errors, or have feature suggestions PLEASE feel free to open a new issue on
-[GitHub][issue_repo_url].
+If you run into problems, errors, or have feature suggestions, it would be great if you took the time to open a new
+issue on [GitHub][issue_repo_url].
 
 ---
 
@@ -334,9 +338,11 @@ If you run into any problems, errors, or have feature suggestions PLEASE feel fr
 
 [s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_linode.md
 
-[example1_url]:https://github.com/orme292/s3packer/blob/master/profiles/example1.yaml
-[example2_url]:https://github.com/orme292/s3packer/blob/master/profiles/example2.yaml
-[example3_url]:https://github.com/orme292/s3packer/blob/master/profiles/example3.yaml
+[example1_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_aws.yaml
+
+[example2_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_oci.yaml
+
+[example3_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_linode.yaml
 
 [go_version_img]: https://img.shields.io/github/go-mod/go-version/orme292/s3packer?style=for-the-badge&logo=go
 [go_report_img]: https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none
