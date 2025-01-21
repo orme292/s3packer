@@ -30,8 +30,9 @@ func NewAppConfig() *AppConfig {
 		Provider: &Provider{
 			Is:     ProviderNameNone,
 			AWS:    &ProviderAWS{},
-			OCI:    &ProviderOCI{},
+			Google: &ProviderGoogle{},
 			Linode: &ProviderLinode{},
+			OCI:    &ProviderOCI{},
 		},
 		Opts: &Opts{
 			MaxUploads:     1,

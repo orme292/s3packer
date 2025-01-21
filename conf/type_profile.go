@@ -23,14 +23,22 @@ type ProfileIncoming struct {
 		Storage string `yaml:"Storage"`
 	} `yaml:"AWS"`
 
-	OCI struct {
-		Compartment string `yaml:"Compartment"`
-		Storage     string `yaml:"Storage"`
-	} `yaml:"OCI"`
+	Google struct {
+		Project      string `yaml:"Project"`
+		LocationType string `yaml:"LocationType"`
+		Storage      string `yaml:"Storage"`
+		ACL          string `yaml:"ACL"`
+		ADC          string
+	} `yaml:"Google"`
 
 	Linode struct {
 		Region string `yaml:"Region"`
 	} `yaml:"Linode"`
+
+	OCI struct {
+		Compartment string `yaml:"Compartment"`
+		Storage     string `yaml:"Storage"`
+	} `yaml:"OCI"`
 
 	Bucket struct {
 		Create bool   `yaml:"Create"`
@@ -107,10 +115,14 @@ func (p *ProfileIncoming) loadSampleData() {
 	p.AWS.ACL = "private"
 	p.AWS.Storage = "intelligent_tiering"
 
+	p.Linode.Region = "us-lax-1"
+
+	p.Google.Project = "s3packer"
+	p.Google.LocationType = "region"
+	p.Google.Storage = "standard"
+
 	p.OCI.Compartment = "ocid1.compartment.oc1..aaaaaaaaa2qfwzyec6js1ua2ybtyyh3m39ze"
 	p.OCI.Storage = "standard"
-
-	p.Linode.Region = "us-lax-1"
 
 	p.Bucket.Create = true
 	p.Bucket.Region = "us-lax-1"

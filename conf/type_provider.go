@@ -12,6 +12,7 @@ const (
 	ProviderNameAWS    ProviderName = "aws"
 	ProviderNameOCI    ProviderName = "oci"
 	ProviderNameLinode ProviderName = "linode"
+	ProviderNameGoogle ProviderName = "google"
 )
 
 func (pn ProviderName) String() string {
@@ -23,6 +24,8 @@ func (pn ProviderName) String() string {
 // Fields:
 // - Is (ProviderName): The name of the provider. (e.g., "AWS", "OCI")
 // - AWS (*ProviderAWS): The configuration for AWS.
+// - Google (*ProviderGoogle): The configuration for Google Cloud.
+// - Linode (*ProviderLinode): The configuration for Akamai / Linode.
 // - OCI (*ProviderOCI): The configuration for OCI.
 // - Key (string): The provider key.
 // - Secret (string): The provider secret.
@@ -31,8 +34,9 @@ func (pn ProviderName) String() string {
 type Provider struct {
 	Is     ProviderName
 	AWS    *ProviderAWS
-	OCI    *ProviderOCI
+	Google *ProviderGoogle
 	Linode *ProviderLinode
+	OCI    *ProviderOCI
 }
 
 func (p *Provider) build(inc *ProfileIncoming) error {
@@ -48,13 +52,19 @@ func (p *Provider) build(inc *ProfileIncoming) error {
 		p.AWS = &ProviderAWS{}
 		return p.AWS.build(inc)
 
-	case ProviderNameOCI:
-		p.OCI = &ProviderOCI{}
-		return p.OCI.build(inc)
+	case ProviderNameGoogle:
+		p.Google = &ProviderGoogle{
+			ADC: inc.Provider.Profile,
+		}
+		return p.Google.build(inc)
 
 	case ProviderNameLinode:
 		p.Linode = &ProviderLinode{}
 		return p.Linode.build(inc)
+
+	case ProviderNameOCI:
+		p.OCI = &ProviderOCI{}
+		return p.OCI.build(inc)
 
 	default:
 		return fmt.Errorf("could not build profile: %v", ErrorProviderNotSpecified)
@@ -68,10 +78,13 @@ func (p *Provider) match(s string) {
 	switch tidyLowerString(s) {
 	case "aws", "amazon", "s3", "amazon s3":
 		p.Is = ProviderNameAWS
-	case "oci", "oracle", "oracle cloud":
-		p.Is = ProviderNameOCI
+	case "gcloud", "google", "google cloud", "google cloud storage":
+		p.Is = ProviderNameGoogle
 	case "akamai", "linode", "linode objects":
 		p.Is = ProviderNameLinode
+	case "oci", "oracle", "oracle cloud":
+		p.Is = ProviderNameOCI
+
 	default:
 		p.Is = ProviderNameNone
 	}

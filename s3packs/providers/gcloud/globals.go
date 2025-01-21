@@ -1,0 +1,5 @@
+package gcloud
+
+const (
+	EmptyString = ""
+)
