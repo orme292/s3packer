@@ -9,10 +9,11 @@ import (
 )
 
 type GoogleClient struct {
-	Ctx     context.Context
-	Storage *storage.Client
-	Bucket  *storage.BucketHandle
-	cfg     *googleCfg
+	Ctx         context.Context
+	Storage     *storage.Client
+	Bucket      *storage.BucketHandle
+	BucketAttrs *storage.BucketAttrs
+	cfg         *googleCfg
 }
 
 type googleCfg struct {
@@ -38,6 +39,7 @@ func (client *GoogleClient) getBucket(name string) {
 
 	b := client.Storage.Bucket(name)
 	client.Bucket = b
+	client.BucketAttrs, _ = b.Attrs(client.Ctx)
 
 }
 

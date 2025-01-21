@@ -1,7 +1,9 @@
 package gcloud
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -69,7 +71,7 @@ func (oper *GoogleOperator) BucketExists() (bool, error) {
 
 	// Why is there no function to check if a bucket exists?
 	_, err := oper.Cloud.Bucket.Attrs(oper.Cloud.Ctx)
-	if err == storage.ErrBucketNotExist {
+	if errors.Is(err, storage.ErrBucketNotExist) {
 		return false, fmt.Errorf("bucket not found")
 	}
 	if err != nil {
@@ -101,7 +103,7 @@ func (oper *GoogleOperator) ObjectExists(obj provider.Object) (bool, error) {
 	}
 
 	_, err := oper.Cloud.Bucket.Object(gcObj.key).Attrs(oper.Cloud.Ctx)
-	if err == storage.ErrObjectNotExist {
+	if errors.Is(err, storage.ErrObjectNotExist) {
 		return false, fmt.Errorf("object not found")
 	}
 	if err != nil {
@@ -125,9 +127,18 @@ func (oper *GoogleOperator) ObjectUpload(obj provider.Object) error {
 	}
 
 	wc := oper.Cloud.Bucket.Object(gcObj.key).NewWriter(oper.Cloud.Ctx)
-	// use the writer
+	defer func() {
+		if err := wc.Close(); err != nil {
+			oper.App.Tui.Warn(err.Error())
+		}
+	}()
+
+	if _, err := io.Copy(wc, gcObj.f); err != nil {
+		return fmt.Errorf("error uploading [%s]: %s", err.Error(), gcObj.key)
+	}
 
 	return nil
+
 }
 
 func (oper *GoogleOperator) GetObjectTags(key string) (map[string]string, error) {
