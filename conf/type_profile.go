@@ -27,7 +27,8 @@ type ProfileIncoming struct {
 		Project      string `yaml:"Project"`
 		LocationType string `yaml:"LocationType"`
 		Storage      string `yaml:"Storage"`
-		ACL          string `yaml:"ACL"`
+		BucketACL    string `yaml:"BucketACL"`
+		ObjectACL    string `yaml:"ObjectACL"`
 		ADC          string
 	} `yaml:"Google"`
 
@@ -120,6 +121,8 @@ func (p *ProfileIncoming) loadSampleData() {
 	p.Google.Project = "s3packer"
 	p.Google.LocationType = "region"
 	p.Google.Storage = "standard"
+	p.Google.BucketACL = "private"
+	p.Google.ObjectACL = "private"
 
 	p.OCI.Compartment = "ocid1.compartment.oc1..aaaaaaaaa2qfwzyec6js1ua2ybtyyh3m39ze"
 	p.OCI.Storage = "standard"

@@ -12,14 +12,14 @@ type CloudObject struct {
 
 	f *os.File
 
-	key string
-
-	tags string
+	key    string
+	tagMap map[string]string
 }
 
 func NewCloudObject(job *provider.Job) provider.Object {
 	return &CloudObject{
-		job: job,
+		job:    job,
+		tagMap: make(map[string]string),
 	}
 }
 
@@ -29,7 +29,10 @@ func (o *CloudObject) Generate() error {
 
 	o.key = o.job.Key
 
+	o.setTags(o.job.App.Tags)
+
 	return nil
+
 }
 
 func (o *CloudObject) Post() error { return o.f.Close() }
@@ -54,5 +57,13 @@ func (o *CloudObject) Pre() error {
 }
 
 func (o *CloudObject) setTags(input map[string]string) {
+
+	if len(input) != 0 {
+		o.tagMap = input
+	}
+
+	for key := range o.job.AppTags {
+		o.tagMap[key] = o.job.AppTags[key]
+	}
 
 }

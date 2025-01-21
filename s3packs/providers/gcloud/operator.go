@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/orme292/s3packer/conf"
@@ -46,10 +47,27 @@ func (oper *GoogleOperator) BucketCreate() error {
 
 	attrs := &storage.BucketAttrs{
 		Name:                       oper.App.Bucket.Name,
-		PredefinedACL:              oper.App.Provider.Google.ACL,
-		PredefinedDefaultObjectACL: oper.App.Provider.Google.ACL,
+		PredefinedACL:              oper.App.Provider.Google.BucketACL,
+		PredefinedDefaultObjectACL: oper.App.Provider.Google.BucketACL,
 		Location:                   oper.App.Bucket.Region,
 		StorageClass:               oper.App.Provider.Google.Storage,
+	}
+
+	if oper.App.Provider.Google.LocationType == conf.GCLocationTypeDual {
+		var locStr []string
+		locations := strings.Split(oper.App.Bucket.Region, ",")
+		for str := range locations {
+			locStr = append(locStr, strings.TrimSpace(locations[str]))
+		}
+
+		if len(locStr) != 2 {
+			return fmt.Errorf("dual location requires 2 locations")
+		}
+
+		attrs.CustomPlacementConfig = &storage.CustomPlacementConfig{
+			DataLocations: locStr,
+		}
+		attrs.Location = EmptyString
 	}
 
 	if err := oper.Cloud.Bucket.Create(oper.Cloud.Ctx, oper.App.Provider.Google.Project, attrs); err != nil {
@@ -126,15 +144,37 @@ func (oper *GoogleOperator) ObjectUpload(obj provider.Object) error {
 		return fmt.Errorf("file changed during upload: %s", gcObj.job.Metadata.FullPath())
 	}
 
-	wc := oper.Cloud.Bucket.Object(gcObj.key).NewWriter(oper.Cloud.Ctx)
-	defer func() {
-		if err := wc.Close(); err != nil {
-			oper.App.Tui.Warn(err.Error())
-		}
-	}()
+	var attempt int
+	maxAttempts := 5
+	backoff := time.Second
+	for {
 
-	if _, err := io.Copy(wc, gcObj.f); err != nil {
-		return fmt.Errorf("error uploading [%s]: %s", err.Error(), gcObj.key)
+		wc := oper.Cloud.Bucket.Object(gcObj.key).NewWriter(oper.Cloud.Ctx)
+		defer func() {
+			if err := wc.Close(); err != nil {
+				oper.App.Tui.Warn(err.Error())
+			}
+		}()
+
+		wc.ObjectAttrs = storage.ObjectAttrs{
+			Name:          gcObj.key,
+			PredefinedACL: oper.App.Provider.Google.ObjectACL,
+			Metadata:      gcObj.tagMap,
+		}
+
+		_, err := io.Copy(wc, gcObj.f)
+		if err == nil {
+			break
+		}
+
+		if attempt >= maxAttempts {
+			return fmt.Errorf("error uploading [%s]: %s", err.Error(), gcObj.key)
+		}
+
+		attempt++
+		dur := backoff * time.Duration(1<<attempt)
+		oper.App.Tui.Info("Retrying upload in ", dur, " seconds. Attempt ", attempt, " of ", maxAttempts, "")
+		time.Sleep(dur)
 	}
 
 	return nil
