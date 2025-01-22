@@ -13,7 +13,7 @@ jobs:
   quality-check:
     strategy:
       matrix:
-        go: [ 1.23.0 ]
+        go: [ 1.23.5 ]
         os: ['ubuntu-latest']
     runs-on: ${{ matrix.os }}
     steps:
