@@ -86,9 +86,9 @@ Version: 6
 
 Tell s3packer which service you're using
 
-| PROVIDER | Acceptable Values | Required | Description                        |
-|:---------|:------------------|:---------|:-----------------------------------|
-| Use      | aws, oci, linode  | Y        | name of provider you will be using |
+| PROVIDER | Acceptable Values        | Required | Description                                |
+|:---------|:-------------------------|:---------|:-------------------------------------------|
+| Use      | aws, google, linode, oci | Y        | name of service provider you will be using |
 
 ```yaml
 Provider:
@@ -96,7 +96,7 @@ Provider:
 ```
 
 ---
-Each provider needs their own special fields filled out.<br/>
+**Each provider needs their own special fields to configure.**<br/>
 SEE: [docs/general_config.md](https://github.com/orme292/s3packer/blob/master/docs/)
 
 ### **Bucket**
