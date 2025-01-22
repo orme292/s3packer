@@ -1,6 +1,6 @@
 module github.com/orme292/s3packer
 
-go 1.23.0
+go 1.23.5
 
 require (
 	cloud.google.com/go/storage v1.50.0
