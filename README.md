@@ -1,6 +1,7 @@
 # s3packer - A configurable profile-based S3 backup and upload tool.
 
-**CLI for Linux/MacOS**  **supports** Amazon S3 **|** Oracle Cloud Object Storage **|** Linode (Akamai) Object Storage
+**CLI for Linux/MacOS**  **supports** Amazon S3 **|** Google Cloud Storage **|** Linode (Akamai) Object Storage **|**
+Oracle Cloud Object Storage
 
 ---
 [![Go Version][go_version_img]][go_version_url]
@@ -55,13 +56,17 @@ See the [releases][releases_url] page...
 **s3packer** supports AWS S3, Oracle Cloud Object Storage (OCI), and Linode (Akamai) Object Storage.
 
 - AWS: [using_aws.md][s3packer_aws_readme_url]
-- OCI: [using_oci.md][s3packer_oci_readme_url]
+- Google: [using_gcloud.md][s3packer_gcloud_readme_url] (beta)
 - Linode: [using_linode.md][s3packer_akamai_readme_url]
+- OCI: [using_oci.md][s3packer_oci_readme_url]
 
 See the example profiles:
-- [example1.yaml][example1_url] (AWS)
-- [example2.yaml][example2_url] (OCI)
-- [example3.yaml][example3_url] (Linode/Akamai)
+
+- [example_aws.yaml][example_aws_url] (AWS)
+- [example_gcloud.yaml][example_gcloud_url] (Google Cloud)
+- [example_linode.yaml][example_linode_url] (Linode/Akamai)
+- [example_oci.yaml][example_oci_url] (OCI)
+
 ---
 
 ## How to Use
@@ -334,15 +339,18 @@ issue on [GitHub][issue_repo_url].
 
 [s3packer_aws_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_aws.md
 
+[s3packer_gcloud_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_gcloud.md
 [s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_oci.md
-
 [s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_linode.md
 
-[example1_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_aws.yaml
+[example_aws_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_aws.yaml
 
-[example2_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_oci.yaml
+[example_gcloud_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_gcloud.yaml
 
-[example3_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_linode.yaml
+[example_linode_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_linode.yaml
+
+[example_oci_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_oci.yaml
+
 
 [go_version_img]: https://img.shields.io/github/go-mod/go-version/orme292/s3packer?style=for-the-badge&logo=go
 [go_report_img]: https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none

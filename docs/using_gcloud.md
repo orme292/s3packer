@@ -18,7 +18,7 @@ credentials file. Use this in the **Profile** field under **Provider**.
 | Provider | Acceptable Values | Required | Description                              |
 |:---------|:------------------|:---------|:-----------------------------------------|
 | Use      | google            | Y        | Tell s3packer to use Google Cloud        |
-| Profile  | any string        | Y        | The path to a Google Cloud adc JSON file |
+| Profile  | any string        | Y        | The path to a Google Cloud ADC JSON file |
 
 ```yaml
 Provider:
@@ -26,39 +26,102 @@ Provider:
   Profile: "/Users/forrest/.config/gcloud/application_default_credentials.json"
 ```
 
----
+#### Use an AWS API Key/Secret pair to authenticate
 
-### Storage and ACL Options
-
-Configure your object ACLs and the storage type.
+| Provider     | Acceptable Values                 | Required | Description                                          |
+|:-------------|:----------------------------------|:---------|:-----------------------------------------------------|
+| Project      | any string                        | N        | Must be populated for s3packer to create a bucket    |
+| LocationType | region, multi-region, dual-region | N        | The replication by location type for created buckets |
+| Storage      | Google Cloud Storage Class        | N        | The storage class to assign to created buckets       |
+| BucketACL    | Predefined Bucket ACL             | N        | A predefined ACL to apply to created buckets         |
+| ObjectACL    | Predefined Object ACL             | Y        | A predefined ACL to                                  |
 
 ```yaml
-AWS:
-  ACL: "private"
-  Storage: "ONEZONE_IA"
+Google:
+  Project: "MyOrganizationProject"
+  LocationType: "region"
+  Storage: "standard"
+  BucketACL: "projectPrivate"
+  ObjectACL: "projectPrivate"
+```
+---
+
+### Location Type
+
+Configure your bucket's default regional replication type
+
+```yaml
+Google:
+  LocationType: "region"
 ```
 
-**ACL** <br/>
+**LocationType** <br/>
+The default is "region", but any of the following are valid:
+
+- `region`
+- `dual-region`
+- `multi-region`
+
+When specifying `dual-region` as the `LocationType`, the `Bucket`.`Region` field should contain two regions separated by
+a single space. For example, `"US-EAST1 US-EAST4"`. You cannot use a predefined dual-region name.
+
+When specifying `multi-region` as the `LocationType`, the `Bucket`.`Region` field should contain one of the predefined
+multi-region names:
+
+- `"US"`
+- `"EU"`
+- `"ASIA"`
+
+### Bucket and Object ACL Options
+
+Configure your bucket's ACL using predefined rulesets.
+
+```yaml
+Google:
+  BucketACL: "private"
+  ObjectACL: "private"
+```
+
+**BucketACL** <br/>
 The default is `private`, but you can use any canned ACL:
 
-- `public-read`
-- `public-read-write`
-- `authenticated-read`
-- `aws-exec-read`
-- `bucket-owner-read`
-- `bucket-owner-full-control`
-- `log-delivery-write`
+- `authenticatedRead`
+- `private`
+- `projectPrivate`
+- `publicRead`
+- `publicReadWrite`
 
-Read more about ACLs here: [https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html][s3_acl_url]
+Read more about location types here: [Google Cloud Bucket Locations](https://cloud.google.com/storage/docs/locations)
 
-**Storage** <br/>
-The default is `STANDARD`, but you can use any of the following storage classes:
+**ObjectACL** <br/>
+The default is `private`, but you can use any canned ACL:
+
+- `authenticatedRead`
+- `bucketOwnerFullControl`
+- `bucketOwnerRead`
+- `private`
+- `projectPrivate`
+- `publicRead`
+
+Read more about ACLs
+here: [Google Cloud Predefined ACLs](https://cloud.google.com/storage/docs/access-control/lists#predefined-acl)
+
+### Storage Classes
+
+Configure your bucket's default storage class.
+
+```yaml
+Google:
+  Storage: "STANDARD"
+```
+
+**Storage Class** <br/>
+The default is `STANDARD`, but the following are all valid options:
 
 - `STANDARD`
-- `STANDARD_IA`
-- `ONEZONE_IA`
-- `INTELLIGENT_TIERING`
-- `GLACIER`
-- `DEEP_ARCHIVE`
+- `NEARLINE`
+- `COLDLINE`
+- `ARCHIVE`
 
----
+Read more about the available storage classes
+here: [Google Cloud Storage Classes](https://cloud.google.com/storage/docs/storage-classes)
