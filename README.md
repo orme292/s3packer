@@ -56,7 +56,7 @@ See the [releases][releases_url] page...
 **s3packer** supports AWS S3, Oracle Cloud Object Storage (OCI), and Linode (Akamai) Object Storage.
 
 - AWS: [using_aws.md][s3packer_aws_readme_url]
-- Google: [using_gcloud.md][s3packer_gcloud_readme_url] (beta)
+- Google: [using_gcloud.md][s3packer_gcloud_readme_url] **(experimental)**
 - Linode: [using_linode.md][s3packer_akamai_readme_url]
 - OCI: [using_oci.md][s3packer_oci_readme_url]
 

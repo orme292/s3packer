@@ -1,6 +1,7 @@
 # s3packer - A configurable profile-based S3 backup and upload tool.
 
-**CLI for Linux/MacOS**  **supports** Amazon S3 **|** Oracle Cloud Object Storage **|** Linode (Akamai) Object Storage
+**CLI for Linux/MacOS**  **supports** Amazon S3 **|** Google Cloud Storage **|** Linode (Akamai) Object Storage
+**|** Oracle Cloud Object Storage
 
 ---
 
