@@ -7,6 +7,7 @@ import (
 	"github.com/orme292/s3packer/conf"
 	"github.com/orme292/s3packer/s3packs/provider"
 	s3aws "github.com/orme292/s3packer/s3packs/providers/aws"
+	s3gcloud "github.com/orme292/s3packer/s3packs/providers/gcloud"
 	s3linode "github.com/orme292/s3packer/s3packs/providers/linode"
 	s3oracle "github.com/orme292/s3packer/s3packs/providers/oracle"
 )
@@ -39,6 +40,9 @@ func getProviderFunctions(name conf.ProviderName) (provider.OperGenFunc, provide
 	switch name {
 	case conf.ProviderNameAWS:
 		return s3aws.NewAwsOperator, s3aws.NewAwsObject, nil
+
+	case conf.ProviderNameGoogle:
+		return s3gcloud.NewGCloudOperator, s3gcloud.NewCloudObject, nil
 
 	case conf.ProviderNameLinode:
 		return s3linode.NewLinodeOperator, s3linode.NewLinodeObject, nil

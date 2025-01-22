@@ -50,7 +50,7 @@ func (h *Handler) Init() error {
 		return err
 	}
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 2)
 
 	h.queue.start()
 

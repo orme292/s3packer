@@ -4,6 +4,18 @@ This is the Changelog. Between each version I'll document changes, bug fixes, fe
 
 ---
 
+### **1.6.0** (2025-01-21)
+
+- conf: added gcloud provider and defaults
+- conf: added gcloud options, types, and globals
+- s3packs: removed types.go (unused)
+- s3packs/provider: added support for the Google Cloud provider
+- s3packs/providers/gcloud: added new provider with experience support for Google Cloud
+- docs: add google cloud config doc
+- docs: update README with google cloud information
+- profiles: add sample google profile
+
+---
 ### **1.5.3** (2024-12-27)
 
 - conf: removed the TUI interface and bubbletea

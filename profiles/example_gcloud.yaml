@@ -1,0 +1,43 @@
+---
+Version: 5
+Provider:
+  Use: oci
+  Profile: default
+Google:
+  Project: "s3packer"
+  LocationType: "dual-region"
+  Storage: "standard"
+  BucketACL: "private"
+  ObjectACL: "private"
+Bucket:
+  Create: true
+  Name: MyBackupBucket
+  Region: "US-EAST1 US-EAST4"
+Options:
+  MaxUploads: 1
+  FollowSymlinks: false
+  WalkDirs: true
+  OverwriteObjects: never
+Tagging:
+  OriginPath: true
+  ChecksumSHA256: true
+Tags:
+  Author: Forrest Gump
+  Title: Letters to Jenny
+Objects:
+  NamingType: relative
+  NamePrefix: backup-
+  PathPrefix: /backups/april/2023
+  OmitRootDir: true
+Logging:
+  Level: 4
+  Console: true
+  File: true
+  Logfile: /var/log/backups/s3packer.log
+Files:
+  - /documents/to_jenny/letter_1.doc
+  - /documents/to_jenny/letter_2.doc
+  - /documents/to_jenny/letter_3.doc
+Dirs:
+  - /documents/from_jenny
+  - /documents/stock_certificates

@@ -30,8 +30,9 @@ func NewAppConfig() *AppConfig {
 		Provider: &Provider{
 			Is:     ProviderNameNone,
 			AWS:    &ProviderAWS{},
-			OCI:    &ProviderOCI{},
+			Google: &ProviderGoogle{},
 			Linode: &ProviderLinode{},
+			OCI:    &ProviderOCI{},
 		},
 		Opts: &Opts{
 			MaxUploads:     1,
@@ -118,6 +119,30 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 	ac.Dirs = inc.Dirs
 	ac.Skip = inc.Skip
 
+	ac.setGoogleExceptions()
+
 	return nil
+
+}
+
+func (ac *AppConfig) setGoogleExceptions() {
+
+	if ac.Provider.Is == ProviderNameGoogle {
+
+		fmt.Println("Google Cloud Storage support is experimental")
+		ac.Tui.Warn("Google Cloud Storage support is experimental")
+
+		if ac.Opts.MaxUploads > 1 {
+			ac.Opts.MaxUploads = 1
+			ac.Tui.Warn("s3packer doesn't support parallel uploads with Google Cloud Storage")
+		}
+
+		if ac.Bucket.Create == true {
+			if ac.Provider.Google.Project == Empty {
+				ac.Tui.Fatal("You have bucket creation enabled, but no project specified.")
+			}
+		}
+
+	}
 
 }
