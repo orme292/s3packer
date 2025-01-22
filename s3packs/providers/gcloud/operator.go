@@ -150,11 +150,6 @@ func (oper *GoogleOperator) ObjectUpload(obj provider.Object) error {
 	for {
 
 		wc := oper.Cloud.Bucket.Object(gcObj.key).NewWriter(oper.Cloud.Ctx)
-		defer func() {
-			if err := wc.Close(); err != nil {
-				oper.App.Tui.Warn(err.Error())
-			}
-		}()
 
 		wc.ObjectAttrs = storage.ObjectAttrs{
 			Name:          gcObj.key,
@@ -171,10 +166,15 @@ func (oper *GoogleOperator) ObjectUpload(obj provider.Object) error {
 			return fmt.Errorf("error uploading [%s]: %s", err.Error(), gcObj.key)
 		}
 
+		if err := wc.Close(); err != nil {
+			oper.App.Tui.Warn(err.Error())
+		}
+
 		attempt++
 		dur := backoff * time.Duration(1<<attempt)
 		oper.App.Tui.Info("Retrying upload in ", dur, " seconds. Attempt ", attempt, " of ", maxAttempts, "")
 		time.Sleep(dur)
+
 	}
 
 	return nil
