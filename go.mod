@@ -4,7 +4,7 @@ go 1.23.5
 
 require (
 	cloud.google.com/go/storage v1.50.0
-	github.com/aws/aws-sdk-go-v2 v1.32.8
+	github.com/aws/aws-sdk-go-v2 v1.33.0
 	github.com/aws/aws-sdk-go-v2/config v1.28.10
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.51
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.35
@@ -56,7 +56,6 @@ require (
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.0 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
