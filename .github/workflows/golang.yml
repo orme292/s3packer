@@ -1,6 +1,7 @@
 ---
 name: Code Quality and Vulnerability Check
 on:
+  workflow_dispatch:
   push:
     paths: ['**.go']
   pull_request:
