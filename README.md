@@ -25,35 +25,16 @@ for buckets and providers. Currently it supports AWS, OCI (Oracle Cloud), and Li
 
 ---
 
-## Add Support for new Services with the Provider interfaces
-
-**You can build support for a custom provider by using the _s3packs/provider_ package interfaces. To implement your own
-provider:**
-
-- Create a new package under s3packs/providers (e.g. s3packs/providers/azure). Use a simple name prefixed with s3,
-  like "s3azure", as the package name.
-- Implement the operator and object interface (
-  see: [s3packs/provider/interfaces.go](https://github.com/orme292/s3packer/blob/master/s3packs/provider/interfaces.go))
-- Implement the generator function interfaces (OperGenFunc, ObjectGenFunc)
-- Add the required configuration code
-  - see: [conf/type_provider.go](https://github.com/orme292/s3packer/blob/master/conf/type_provider.go)
-  - see example: [conf/provider_aws.go](https://github.com/orme292/s3packer/blob/master/conf/provider_aws.go)
-- Add new provider to the getProviderFunctions
-  fn [s3packs/main.go](https://github.com/orme292/s3packer/blob/master/s3packs/main.go)
-
-The documentation for this isn't great right now. But, you can see current provider code for implementation
-examples: [aws](https://github.com/orme292/s3packer/blob/master/s3packs/providers/aws), [oci](https://github.com/orme292/s3packer/tree/master/s3packs/providers/oracle), [linode](https://github.com/orme292/s3packer/blob/master/s3packs/providers/linode)
-
----
-
 ## Download
 
 See the [releases][releases_url] page...
 
 ---
-## Providers
 
-**s3packer** supports AWS S3, Oracle Cloud Object Storage (OCI), and Linode (Akamai) Object Storage.
+## Service Provider Support
+
+**s3packer** supports AWS S3, Google Cloud Storage, Oracle Cloud Object Storage (OCI), and Linode (Akamai) Object
+Storage.
 
 - AWS: [using_aws.md][s3packer_aws_readme_url]
 - Google: [using_gcloud.md][s3packer_gcloud_readme_url] **(experimental)**
@@ -148,25 +129,6 @@ s3packer's configurable options
 | WalkDirs         | boolean           | true    | N        | Whether s3packer will walk subdirectories of dirs provided |
 | OverwriteObjects | always, never     | never   | N        | Whether overwrite objects that already exist in the bucket |
 
-<br/>
-<details>
-<summary>
-  **MaxUpload considerations**
-</summary>
-
-Be careful when you set MaxUploads. Some services struggle with anything more than 5. Exception being AWS which seems
-fine with 50-100 -- though, whether its faster to have a high MaxUploads value depends on your upload job.
-
-It's important to note that large files can be broken up into many parts which are then simultaneously uploaded.
-s3packer uses default values for part count, part size, and the large file threshold values, unless otherwise called
-out.
-
-An example of this would be: If you specify a MaxUploads value of 5, and s3packer tries to upload 5 large files that are
-each split into 20 parts, then there would be 100 simultaneous uploads happening. If you specify a MaxUpload value of 50
-and there are 50 large files each split into 20 parts, then you could potentially have as many as 1,000 simultaneous
-uploads.
-</details>
-
 ```yaml
 Options:
   MaxUploads: 1
@@ -174,6 +136,22 @@ Options:
   WalkDirs: true
   OverwriteObjects: "never"
 ```
+
+### **MaxUploads (Experimental)**
+
+**The suggested setting for `MaxUploads` is `1`.**
+
+Be careful when you set `MaxUploads` as some services struggle with anything more than `1`. The notable exception being
+AWS which seems fine with 50-100 -- though, whether its faster to have a high `MaxUploads` value depends on your upload
+job.
+
+Large files can be broken up into many parts which are then simultaneously uploaded. s3packer uses default SDK values
+for part count, part size, and the large file threshold values, unless otherwise called out.
+
+An example of this would be: If you specify a MaxUploads value of 5, and s3packer tries to upload 5 large files that are
+each split into 20 parts, then there would be 100 simultaneous uploads happening. If you specify a MaxUpload value of 50
+and there are 50 large files each split into 20 parts, then you could potentially have as many as 1,000 simultaneous
+uploads.
 
 ---
 
