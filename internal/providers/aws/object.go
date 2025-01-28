@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/orme292/s3packer/s3packs/provider"
+	"github.com/orme292/s3packer/internal/provider"
 )
 
 type AwsObject struct {

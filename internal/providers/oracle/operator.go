@@ -9,8 +9,8 @@ import (
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/objectstorage"
 	"github.com/oracle/oci-go-sdk/v65/objectstorage/transfer"
-	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/provider"
+	"github.com/orme292/s3packer/internal/conf"
+	"github.com/orme292/s3packer/internal/provider"
 )
 
 type OracleOperator struct {

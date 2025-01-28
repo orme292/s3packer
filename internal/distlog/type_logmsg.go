@@ -1,4 +1,4 @@
-package tuipack
+package distlog
 
 import (
 	"fmt"

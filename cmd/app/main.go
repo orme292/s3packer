@@ -9,8 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs"
+	"github.com/orme292/s3packer/internal/conf"
 	flag "github.com/spf13/pflag"
 )
 
@@ -133,7 +132,7 @@ func startSigChannel() {
 
 func startPacker(app *conf.AppConfig) {
 
-	stats, err := s3packs.Init(app)
+	stats, err := appInit(app)
 	if err != nil {
 		log.Printf("s3packer exited with error: %s\n\n", err.Error())
 		os.Exit(1)

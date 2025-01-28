@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/orme292/s3packer/conf"
+	"github.com/orme292/s3packer/internal/conf"
 	sw "github.com/orme292/symwalker"
 )
 

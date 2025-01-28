@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/provider"
+	"github.com/orme292/s3packer/internal/conf"
+	"github.com/orme292/s3packer/internal/provider"
 )
 
 type GoogleOperator struct {

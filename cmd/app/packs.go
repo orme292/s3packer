@@ -1,18 +1,18 @@
-package s3packs
+package main
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/provider"
-	s3aws "github.com/orme292/s3packer/s3packs/providers/aws"
-	s3gcloud "github.com/orme292/s3packer/s3packs/providers/gcloud"
-	s3linode "github.com/orme292/s3packer/s3packs/providers/linode"
-	s3oracle "github.com/orme292/s3packer/s3packs/providers/oracle"
+	"github.com/orme292/s3packer/internal/conf"
+	"github.com/orme292/s3packer/internal/provider"
+	s3aws "github.com/orme292/s3packer/internal/providers/aws"
+	s3gcloud "github.com/orme292/s3packer/internal/providers/gcloud"
+	s3linode "github.com/orme292/s3packer/internal/providers/linode"
+	s3oracle "github.com/orme292/s3packer/internal/providers/oracle"
 )
 
-func Init(app *conf.AppConfig) (*provider.Stats, error) {
+func appInit(app *conf.AppConfig) (*provider.Stats, error) {
 
 	operFn, objFn, err := getProviderFunctions(app.Provider.Is)
 	if err != nil {

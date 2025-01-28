@@ -45,7 +45,7 @@ See the example profiles:
 
 - [example_aws.yaml][example_aws_url] (AWS)
 - [example_gcloud.yaml][example_gcloud_url] (Google Cloud)
-- [example_linode.yaml][example_linode_url] (Linode/Akamai)
+- [example_linode.yaml][example_linode_url] (Linode)
 - [example_oci.yaml][example_oci_url] (OCI)
 
 ---
@@ -55,7 +55,7 @@ See the example profiles:
 To start a session with an existing profile, just type in the following command:
 
 ```bash
-$ s3packer --profile="myprofile.yaml"
+$ s3p --profile="myprofile.yaml"
 ```
 
 ---
@@ -65,7 +65,7 @@ $ s3packer --profile="myprofile.yaml"
 s3packer can create a base profile to help get you started. To create one, use the `--create` flag:
 
 ```bash
-$ s3packer --create="my-new-profile.yaml"
+$ s3p --create="my-new-profile.yaml"
 ```
 
 ---
@@ -321,13 +321,13 @@ issue on [GitHub][issue_repo_url].
 [s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_oci.md
 [s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_linode.md
 
-[example_aws_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_aws.yaml
+[example_aws_url]:https://github.com/orme292/s3packer/blob/master/docs/sample/example_aws.yaml
 
-[example_gcloud_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_gcloud.yaml
+[example_gcloud_url]:https://github.com/orme292/s3packer/blob/master/docs/sample/example_gcloud.yaml
 
-[example_linode_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_linode.yaml
+[example_linode_url]:https://github.com/orme292/s3packer/blob/master/docs/sample/example_linode.yaml
 
-[example_oci_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_oci.yaml
+[example_oci_url]:https://github.com/orme292/s3packer/blob/master/docs/sample/example_oci.yaml
 
 
 [go_version_img]: https://img.shields.io/github/go-mod/go-version/orme292/s3packer?style=for-the-badge&logo=go

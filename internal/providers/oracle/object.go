@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/orme292/s3packer/s3packs/provider"
+	"github.com/orme292/s3packer/internal/provider"
 )
 
 type OracleObject struct {

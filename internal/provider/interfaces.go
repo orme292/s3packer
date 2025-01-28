@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"github.com/orme292/s3packer/conf"
+	"github.com/orme292/s3packer/internal/conf"
 )
 
 type Operator interface {

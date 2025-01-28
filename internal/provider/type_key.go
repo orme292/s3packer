@@ -5,7 +5,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/orme292/s3packer/conf"
+	"github.com/orme292/s3packer/internal/conf"
 )
 
 type ObjectKey struct {

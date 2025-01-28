@@ -3,7 +3,7 @@ package conf
 import (
 	"fmt"
 
-	"github.com/orme292/s3packer/tuipack"
+	"github.com/orme292/s3packer/internal/distlog"
 	"github.com/rs/zerolog"
 )
 
@@ -17,7 +17,7 @@ type LogOpts struct {
 
 func (lo *LogOpts) build(inc *ProfileIncoming) error {
 
-	lo.Level = tuipack.ParseLevel(inc.Logging.Level)
+	lo.Level = distlog.ParseLevel(inc.Logging.Level)
 	lo.Console = inc.Logging.Console
 	lo.File = inc.Logging.File
 	lo.Logfile = inc.Logging.Logfile

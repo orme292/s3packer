@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/orme292/objectify"
-	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/tuipack"
+	"github.com/orme292/s3packer/internal/conf"
+	"github.com/orme292/s3packer/internal/distlog"
 )
 
 type worker struct {
@@ -250,7 +250,7 @@ func (w *worker) statusMessage(done chan bool, name string, interval int) {
 		case <-done:
 			return
 		case <-ticker.C:
-			w.app.Tui.RouteLogMsg(tuipack.INFO, fmt.Sprintf("Still uploading %s", name))
+			w.app.Tui.RouteLogMsg(distlog.INFO, fmt.Sprintf("Still uploading %s", name))
 		}
 	}
 }

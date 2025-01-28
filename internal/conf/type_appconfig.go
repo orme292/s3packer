@@ -3,7 +3,7 @@ package conf
 import (
 	"fmt"
 
-	"github.com/orme292/s3packer/tuipack"
+	"github.com/orme292/s3packer/internal/distlog"
 	"github.com/rs/zerolog"
 )
 
@@ -20,7 +20,7 @@ type AppConfig struct {
 	Dirs     []string
 	Skip     []string
 
-	Tui *tuipack.LogBot
+	Tui *distlog.LogBot
 }
 
 // NewAppConfig returns a new AppConfig object with preconfigured defaults.
@@ -58,9 +58,9 @@ func NewAppConfig() *AppConfig {
 			File:    false,
 			Logfile: "/var/log/s3p.log",
 		},
-		Tui: &tuipack.LogBot{
+		Tui: &distlog.LogBot{
 			Level:   zerolog.WarnLevel,
-			Output:  &tuipack.LogOutput{},
+			Output:  &distlog.LogOutput{},
 			Logfile: "/var/log/s3p.log",
 		},
 	}
