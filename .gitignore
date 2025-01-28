@@ -1,9 +1,7 @@
-s3packer
 .idea/
 *.log
-/scripts/
-/s3pack-old/*
-/profiles/test_profile*
-/playground/
-/terraform/
-/bin/*
+scripts/
+docs/test/*
+playground/
+terraform/
+bin/*
