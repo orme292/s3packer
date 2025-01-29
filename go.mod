@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.73.2
 	github.com/aws/smithy-go v1.22.1
 	github.com/google/uuid v1.6.0
-	github.com/oracle/oci-go-sdk/v65 v65.81.1
+	github.com/oracle/oci-go-sdk/v65 v65.82.0
 	github.com/orme292/objectify v0.3.3
 	github.com/orme292/symwalker v0.2.2
 	github.com/rs/zerolog v1.33.0
@@ -56,7 +56,6 @@ require (
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.0 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
