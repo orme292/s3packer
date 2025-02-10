@@ -8,8 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/orme292/s3packer/internal/conf"
-	"github.com/orme292/s3packer/internal/provider"
+
+	"s3p/internal/conf"
+	"s3p/internal/provider"
 )
 
 type AwsOperator struct {

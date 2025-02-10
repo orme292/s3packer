@@ -1,4 +1,4 @@
-module github.com/orme292/s3packer
+module s3p
 
 go 1.23.5
 
@@ -15,6 +15,7 @@ require (
 	github.com/orme292/objectify v0.3.3
 	github.com/orme292/symwalker v0.2.2
 	github.com/rs/zerolog v1.33.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	google.golang.org/api v0.214.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -56,7 +57,7 @@ require (
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.0 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

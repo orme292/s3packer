@@ -9,7 +9,7 @@ import (
 )
 
 type Builder struct {
-	filename string
+	Filename string
 	inc      *ProfileIncoming
 	ac       *AppConfig
 }
@@ -22,7 +22,7 @@ func NewBuilder(path string) *Builder {
 	}
 
 	return &Builder{
-		filename: fpath,
+		Filename: fpath,
 		inc:      NewProfile(),
 	}
 
@@ -30,7 +30,7 @@ func NewBuilder(path string) *Builder {
 
 func (b *Builder) FromYaml() (*AppConfig, error) {
 
-	err := b.inc.LoadFromYaml(b.filename)
+	err := b.inc.LoadFromYaml(b.Filename)
 	if err != nil {
 		return b.ac, err
 	}
@@ -55,12 +55,12 @@ func (b *Builder) YamlOut() error {
 		return err
 	}
 
-	_, err = canCreate(b.filename)
+	_, err = canCreate(b.Filename)
 	if err != nil {
 		return err
 	}
 
-	f, err := os.Create(b.filename)
+	f, err := os.Create(b.Filename)
 	defer f.Close()
 	if err != nil {
 		return err

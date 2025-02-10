@@ -3,8 +3,8 @@ package conf
 import (
 	"fmt"
 
-	"github.com/orme292/s3packer/internal/distlog"
 	"github.com/rs/zerolog"
+	"s3p/internal/distlog"
 )
 
 // LogOpts contains the logging configuration, but not an instance of logbot.

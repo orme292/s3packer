@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/orme292/s3packer/internal/conf"
 	sw "github.com/orme292/symwalker"
+
+	"s3p/internal/conf"
 )
 
 type queue struct {

@@ -7,8 +7,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/orme292/s3packer/conf"
-	"github.com/orme292/s3packer/s3packs/provider"
+
+	"s3p/internal/conf"
+	"s3p/internal/provider"
 )
 
 type LinodeOperator struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/orme292/s3packer/internal/conf"
+	"s3p/internal/conf"
 )
 
 type Handler struct {

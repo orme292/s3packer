@@ -7,8 +7,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/orme292/objectify"
-	"github.com/orme292/s3packer/internal/conf"
-	"github.com/orme292/s3packer/internal/distlog"
+
+	"s3p/internal/conf"
+	"s3p/internal/distlog"
 )
 
 type worker struct {
