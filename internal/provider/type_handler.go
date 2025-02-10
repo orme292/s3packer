@@ -68,7 +68,7 @@ func (h *Handler) createBucket() error {
 
 	if h.supports.BucketCreate && h.app.Bucket.Create {
 
-		h.app.Tui.Info("Creating bucket")
+		h.app.Log.Info("Creating bucket")
 
 		err := h.oper.BucketCreate()
 		if err != nil {
@@ -83,7 +83,7 @@ func (h *Handler) createBucket() error {
 			return fmt.Errorf("created bucket but couldn't verify it exists")
 		}
 
-		h.app.Tui.Info("Bucket Created")
+		h.app.Log.Info("Bucket Created")
 
 	}
 
@@ -96,7 +96,7 @@ func (h *Handler) verifyBucket() error {
 	// Check if bucket exists. If it does not, create it.
 	exists, err := h.oper.BucketExists()
 	if err != nil && err.Error() != "bucket not found" {
-		h.app.Tui.Warn("Bucket not found.")
+		h.app.Log.Warn("Bucket not found.")
 		return fmt.Errorf("error while checking for bucket: %w", err)
 	}
 

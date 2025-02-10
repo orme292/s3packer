@@ -33,7 +33,7 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		if mode.IsDir() {
 
 			msg := fmt.Sprintf("Walking %s", file)
-			app.Tui.Info(msg)
+			app.Log.Info(msg)
 
 			opts := sw.NewSymConf(file,
 				sw.WithoutFiles(),
@@ -42,7 +42,7 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 
 			results, err := sw.SymWalker(opts)
 			if err != nil {
-				app.Tui.Error(msg)
+				app.Log.Error(msg)
 				continue
 			}
 
@@ -56,7 +56,7 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 		} else {
 
 			msg := fmt.Sprintf("Reading %s", file)
-			app.Tui.Info(msg)
+			app.Log.Info(msg)
 
 			j := newWorker(app, file, EmptyPath, false, true, JobStatusQueued, oper, objFn)
 			q.workers = append(q.workers, j)

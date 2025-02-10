@@ -126,7 +126,7 @@ func (oper *GoogleOperator) ObjectExists(obj provider.Object) (bool, error) {
 		return false, fmt.Errorf("object not found")
 	}
 	if err != nil {
-		oper.App.Tui.Error(err.Error())
+		oper.App.Log.Error(err.Error())
 		return true, fmt.Errorf("error trying to find object: %s", err.Error())
 	}
 
@@ -168,12 +168,12 @@ func (oper *GoogleOperator) ObjectUpload(obj provider.Object) error {
 		}
 
 		if err := wc.Close(); err != nil {
-			oper.App.Tui.Warn(err.Error())
+			oper.App.Log.Warn(err.Error())
 		}
 
 		attempt++
 		dur := backoff * time.Duration(1<<attempt)
-		oper.App.Tui.Info("Retrying upload in ", dur, " seconds. Attempt ", attempt, " of ", maxAttempts, "")
+		oper.App.Log.Info("Retrying upload in ", dur, " seconds. Attempt ", attempt, " of ", maxAttempts, "")
 		time.Sleep(dur)
 
 	}

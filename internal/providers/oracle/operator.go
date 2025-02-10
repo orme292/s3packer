@@ -74,7 +74,7 @@ func (oper *OracleOperator) BucketExists() (bool, error) {
 	}
 
 	logmsg := fmt.Sprintf("OCI returned [%s] code %d, msg: %s", t.String(), code, msg)
-	oper.App.Tui.Info(logmsg)
+	oper.App.Log.Info(logmsg)
 
 	return false, err
 
@@ -110,7 +110,7 @@ func (oper *OracleOperator) ObjectExists(obj provider.Object) (bool, error) {
 	}
 
 	logmsg := fmt.Sprintf("OCI returned [%s] code %d, msg: %s", t.String(), code, msg)
-	oper.App.Tui.Info(logmsg)
+	oper.App.Log.Info(logmsg)
 
 	return true, err
 }

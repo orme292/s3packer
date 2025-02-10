@@ -74,7 +74,7 @@ func (w *worker) scan() {
 
 			if job.Metadata.Mode != objectify.EntModeRegular {
 				msg := fmt.Sprintf("Skipping %s [invalid file format: %s]", job.Metadata.FullPath(), job.Metadata.Mode.String())
-				w.app.Tui.Warn(msg)
+				w.app.Log.Warn(msg)
 				job.setStatus(JobStatusSkipped, fmt.Errorf("not a valid file: %s", job.Metadata.Mode.String()))
 				return job, nil
 			}
@@ -83,7 +83,7 @@ func (w *worker) scan() {
 			if err != nil {
 				_ = job.Object.Destroy()
 				msg := fmt.Sprintf("Failed on %s [could not build object]", job.Metadata.FullPath())
-				w.app.Tui.Warn(msg)
+				w.app.Log.Warn(msg)
 				job.setStatus(JobStatusFailed, fmt.Errorf("unable to build data object: %s", err))
 				return job, nil
 			}
@@ -93,14 +93,14 @@ func (w *worker) scan() {
 				if ex && err != nil {
 					_ = job.Object.Destroy()
 					msg := fmt.Sprintf("Existing object check failed for %s", job.Metadata.FullPath())
-					w.app.Tui.Warn(msg)
+					w.app.Log.Warn(msg)
 					job.setStatus(JobStatusFailed, fmt.Errorf("unable to check if object exists: %s\n", err))
 					return job, nil
 				}
 				if ex {
 					_ = job.Object.Destroy()
 					msg := fmt.Sprintf("Skipping %s [object already exists]", job.Metadata.FullPath())
-					w.app.Tui.Warn(msg)
+					w.app.Log.Warn(msg)
 					job.setStatus(JobStatusSkipped, fmt.Errorf("object already exists"))
 					return job, nil
 				}
@@ -110,7 +110,7 @@ func (w *worker) scan() {
 			if err != nil {
 				_ = job.Object.Destroy()
 				msg := fmt.Sprintf("Object prepare failed for %s", job.Metadata.FullPath())
-				w.app.Tui.Warn(msg)
+				w.app.Log.Warn(msg)
 				job.setStatus(JobStatusFailed, fmt.Errorf("could not initialize object: %s\n", err))
 				return job, nil
 			}
@@ -119,7 +119,7 @@ func (w *worker) scan() {
 			if err != nil {
 				_ = job.Object.Destroy()
 				msg := fmt.Sprintf("Upload Failed: %v", err)
-				w.app.Tui.Error(msg)
+				w.app.Log.Error(msg)
 				job.setStatus(JobStatusFailed, fmt.Errorf("could not upload object: %s\n", err))
 				return job, nil
 			}
@@ -149,7 +149,7 @@ func (w *worker) scan() {
 	if w.isDir {
 
 		msg := fmt.Sprintf("Reading directory %s...", w.path)
-		w.app.Tui.Info(msg)
+		w.app.Log.Info(msg)
 
 		files, err := objectify.Path(w.path, sets)
 		if err != nil {
@@ -157,7 +157,7 @@ func (w *worker) scan() {
 				return
 			}
 			msg = fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
-			w.app.Tui.Error(msg)
+			w.app.Log.Error(msg)
 			return
 		} else if len(files) == 0 {
 			return // there are times when objectify returns no error and no file entries.
@@ -171,7 +171,7 @@ func (w *worker) scan() {
 		}
 
 		msg = fmt.Sprintf("Uploading directory %s...", w.path)
-		w.app.Tui.Info(msg)
+		w.app.Log.Info(msg)
 
 		for {
 
@@ -209,9 +209,9 @@ func (w *worker) scan() {
 				}
 
 				if w.stats.Objects != 0 {
-					w.app.Tui.Info(fmt.Sprintf("Upload Complete [%s]", w.path))
+					w.app.Log.Info(fmt.Sprintf("Upload Complete [%s]", w.path))
 				} else {
-					w.app.Tui.Warn(fmt.Sprintf("No uploads [%s]", w.path))
+					w.app.Log.Warn(fmt.Sprintf("No uploads [%s]", w.path))
 				}
 
 				break
@@ -229,7 +229,7 @@ func (w *worker) scan() {
 				return
 			}
 			msg := fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
-			w.app.Tui.Error(msg)
+			w.app.Log.Error(msg)
 			return
 		}
 
@@ -251,7 +251,7 @@ func (w *worker) statusMessage(done chan bool, name string, interval int) {
 		case <-done:
 			return
 		case <-ticker.C:
-			w.app.Tui.RouteLogMsg(distlog.INFO, fmt.Sprintf("Still uploading %s", name))
+			w.app.Log.RouteLogMsg(distlog.INFO, fmt.Sprintf("Still uploading %s", name))
 		}
 	}
 }

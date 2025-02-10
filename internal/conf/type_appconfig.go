@@ -20,7 +20,7 @@ type AppConfig struct {
 	Dirs     []string
 	Skip     []string
 
-	Tui *distlog.LogBot
+	Log *distlog.LogBot
 }
 
 // NewAppConfig returns a new AppConfig object with preconfigured defaults.
@@ -58,7 +58,7 @@ func NewAppConfig() *AppConfig {
 			File:    false,
 			Logfile: "/var/log/s3p.log",
 		},
-		Tui: &distlog.LogBot{
+		Log: &distlog.LogBot{
 			Level:   zerolog.WarnLevel,
 			Output:  &distlog.LogOutput{},
 			Logfile: "/var/log/s3p.log",
@@ -76,10 +76,10 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 		return err
 	}
 
-	ac.Tui.Level = ac.LogOpts.Level
-	ac.Tui.Output.Console = ac.LogOpts.Console
-	ac.Tui.Output.File = ac.LogOpts.File
-	ac.Tui.Logfile = ac.LogOpts.Logfile
+	ac.Log.Level = ac.LogOpts.Level
+	ac.Log.Output.Console = ac.LogOpts.Console
+	ac.Log.Output.File = ac.LogOpts.File
+	ac.Log.Logfile = ac.LogOpts.Logfile
 
 	err = ac.Provider.build(inc)
 	if err != nil {
@@ -130,16 +130,16 @@ func (ac *AppConfig) setGoogleExceptions() {
 	if ac.Provider.Is == ProviderNameGoogle {
 
 		fmt.Println("Google Cloud Storage support is experimental")
-		ac.Tui.Warn("Google Cloud Storage support is experimental")
+		ac.Log.Warn("Google Cloud Storage support is experimental")
 
 		if ac.Opts.MaxUploads > 1 {
 			ac.Opts.MaxUploads = 1
-			ac.Tui.Warn("s3packer doesn't support parallel uploads with Google Cloud Storage")
+			ac.Log.Warn("s3packer doesn't support parallel uploads with Google Cloud Storage")
 		}
 
 		if ac.Bucket.Create == true {
 			if ac.Provider.Google.Project == Empty {
-				ac.Tui.Fatal("You have bucket creation enabled, but no project specified.")
+				ac.Log.Fatal("You have bucket creation enabled, but no project specified.")
 			}
 		}
 
