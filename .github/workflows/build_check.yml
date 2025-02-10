@@ -43,13 +43,13 @@ jobs:
 
       # Compile Binaries
       - name: Build Linux ARM64 Artifact
-        run: GOOS=linux GOOARCH=arm64 go build -o ./bin/s3p-linux-arm64 .
+        run: GOOS=linux GOOARCH=arm64 go build -o ./bin/s3p-linux-arm64 cmd/main.go
 
       - name: Build Linux AMD64 Artifact
-        run: GOOS=linux GOOARCH=amd64 go build -o ./bin/s3p-linux-amd64 .
+        run: GOOS=linux GOOARCH=amd64 go build -o ./bin/s3p-linux-amd64 cmd/main.go
 
       - name: Build MacOS ARM64 Artifact
-        run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/s3p-mac-arm64 .
+        run: GOOS=darwin GOOARCH=arm64 go build -o ./bin/s3p-mac-arm64 cmd/main.go
 
       - name: Build MacOS AMD64 Artifact
-        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/s3p-mac-amd64 .
+        run: GOOS=darwin GOOARCH=amd64 go build -o ./bin/s3p-mac-amd64 cmd/main.go
