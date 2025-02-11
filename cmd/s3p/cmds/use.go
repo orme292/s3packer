@@ -31,8 +31,6 @@ func addUseCmd() {
 
 func useProfile(cmd *cobra.Command, args []string) {
 
-	startSigWatcher()
-
 	filename, err := cmd.Flags().GetString(UseProfileFilenameFlag)
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("Failed to retrieve '%s' flag: %v", UseProfileFilenameFlag, err))
@@ -44,7 +42,7 @@ func useProfile(cmd *cobra.Command, args []string) {
 		log.Fatalf("Failed to load profile: %v", err)
 	}
 
-	fmt.Printf("\ns3packer\n\n")
+	fmt.Printf("\ns3p\n\n")
 	fmt.Printf("Logging [file:%v] [console:%v]\n", app.LogOpts.File, app.LogOpts.Console)
 	time.Sleep(1 * time.Second)
 

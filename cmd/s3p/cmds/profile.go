@@ -7,13 +7,12 @@ import (
 
 var profileCmd = &cobra.Command{
 	Use:   "profile",
-	Short: "create or view an upload profile",
-	Long:  "create or view an upload profile to configure s3p to upload files to a specific object storage service",
+	Short: "create an empty upload profile",
+	Long:  "create an empty profile that can be used as baseline for multiple configurations",
 }
 
 func addProfileCmd() {
-	profileCmd.AddCommand(profile.CreateProfileCmd)
-	profileCmd.AddCommand(profile.CreateSampleProfile)
+	profileCmd.AddCommand(profile.SampleProfile)
 
 	rootCmd.AddCommand(profileCmd)
 }

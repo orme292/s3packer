@@ -28,6 +28,8 @@ func Execute() {
 func init() {
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 
+	startSigWatcher()
+
 	addProfileCmd()
 	addUseCmd()
 

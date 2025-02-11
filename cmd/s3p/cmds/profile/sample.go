@@ -8,8 +8,8 @@ import (
 	"s3p/internal/conf"
 )
 
-var CreateSampleProfile = &cobra.Command{
-	Use:   "create-sample",
+var SampleProfile = &cobra.Command{
+	Use:   "sample",
 	Short: "create an upload profile with sample values",
 	Long:  "create an upload profile with the sample configuration and service authentication values",
 	Run:   createSampleProfile,
