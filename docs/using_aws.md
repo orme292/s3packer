@@ -1,4 +1,4 @@
-# s3packer - A configurable profile-based S3 backup and upload tool.
+# s3p - A configurable profile-based S3 backup and upload tool.
 
 **CLI for Linux/MacOS**  **supports** Amazon S3 **|** Google Cloud Storage **|** Linode (Akamai) Object Storage
 **|** Oracle Cloud Object Storage
@@ -15,7 +15,7 @@ AWS requires some authentication fields to be filled in before files can be uplo
 
 | Provider | Acceptable Values | Required | Description                                                        |
 |:---------|:------------------|:---------|:-------------------------------------------------------------------|
-| Use      | aws               | Y        | Tell s3packer to use AWS                                           |
+| Use      | aws               | Y        | Tell s3p to use AWS                                                |
 | Profile  | any string        | Y        | The profile name to pull auth details from, see ~/.aws/credentials |
 
 ```yaml
@@ -28,7 +28,7 @@ Provider:
 
 | Provider | Acceptable Values | Required | Description                                  |
 |:---------|:------------------|:---------|:---------------------------------------------|
-| Use      | aws               | Y        | Tell s3packer to use AWS                     |
+| Use      | aws               | Y        | Tell s3p to use AWS                          |
 | Key      | any string        | Y        | The api key used to authenticate with AWS    |
 | Secret   | any string        | Y        | The api secret used to authenticate with AWS |
 

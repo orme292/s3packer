@@ -1,4 +1,4 @@
-# s3packer - A configurable profile-based S3 backup and upload tool.
+# s3p - A configurable profile-based S3 backup and upload tool.
 
 **CLI for Linux/MacOS**  **supports** Amazon S3 **|** Google Cloud Storage **|** Linode (Akamai) Object Storage
 **|** Oracle Cloud Object Storage
@@ -9,14 +9,14 @@
 
 ### Providers settings
 
-**s3packer** uses object storage access keys to authenticate with Linode. You can find and generate access keys in the
+**s3p** uses object storage access keys to authenticate with Linode. You can find and generate access keys in the
 Cloud Manager. For info on generating new access keys, check out the [Linode Object Storage Guide][akamai_auth_url].
 
 #### Use a LinodeObjects API Key/Secret pair to authenticate
 
 | Provider | Acceptable Values | Required | Description                                            |
 |:---------|:------------------|:---------|:-------------------------------------------------------|
-| Use      | linode            | Y        | Tell s3packer to use Linode                            |
+| Use      | linode            | Y        | Tell s3p to use Linode                                 |
 | Key      | any string        | Y        | The api key used to authenticate with LinodeObjects    |
 | Secret   | any string        | Y        | The api secret used to authenticate with LinodeObjects |
 
@@ -31,7 +31,7 @@ Provider:
 
 ### LinodeObjects Region
 
-Specify a region (separate from the Bucket heading) that s3packer can use to generate the LinodeObjects endpoint
+Specify a region (separate from the Bucket heading) that s3p can use to generate the LinodeObjects endpoint
 
 ```yaml
 Linode:
@@ -46,7 +46,7 @@ listed in the region dropdown. You can also check Linode's documentation for a l
 
 ### ACLs
 
-LinodeObjects has support for ACLs, but they aren't supported by s3packer. All created buckets and objects will use the
+LinodeObjects has support for ACLs, but they aren't supported by s3p. All created buckets and objects will use the
 default canned AWS ACL `public-read`
 
 ---
