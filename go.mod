@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.54
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.52
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.73.2
-	github.com/aws/smithy-go v1.22.1
+	github.com/aws/smithy-go v1.22.2
 	github.com/google/uuid v1.6.0
 	github.com/oracle/oci-go-sdk/v65 v65.81.1
 	github.com/orme292/objectify v0.3.3
