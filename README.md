@@ -55,7 +55,7 @@ See the example profiles:
 To start a session with an existing profile, just type in the following command:
 
 ```bash
-$ s3p --profile="myprofile.yaml"
+$ s3p use -f "my-custom-profile.yml"
 ```
 
 ---
@@ -65,7 +65,7 @@ $ s3p --profile="myprofile.yaml"
 s3packer can create a base profile to help get you started. To create one, use the `--create` flag:
 
 ```bash
-$ s3p --create="my-new-profile.yaml"
+$ s3p profile sample --filename "new-profile.yml"
 ```
 
 ---
