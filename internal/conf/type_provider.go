@@ -2,6 +2,10 @@ package conf
 
 import (
 	"fmt"
+	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // ProviderName subtype, for quickly matching providers
@@ -16,7 +20,16 @@ const (
 )
 
 func (pn ProviderName) String() string {
-	return string(pn)
+	return strings.ToLower(string(pn))
+}
+
+func (pn ProviderName) Title() string {
+	caser := cases.Title(language.English)
+	return caser.String(string(pn))
+}
+
+func (pn ProviderName) Match(s string) bool {
+	return pn.String() == s
 }
 
 // Provider represents the configuration for a provider.
@@ -25,7 +38,7 @@ func (pn ProviderName) String() string {
 // - Is (ProviderName): The name of the provider. (e.g., "AWS", "OCI")
 // - AWS (*ProviderAWS): The configuration for AWS.
 // - Google (*ProviderGoogle): The configuration for Google Cloud.
-// - Linode (*ProviderLinode): The configuration for Akamai / Linode.
+// - Linode (*ProviderLinode): The configuration for Linode.
 // - OCI (*ProviderOCI): The configuration for OCI.
 // - Key (string): The provider key.
 // - Secret (string): The provider secret.
@@ -76,15 +89,14 @@ func (p *Provider) build(inc *ProfileIncoming) error {
 func (p *Provider) match(s string) {
 
 	switch tidyLowerString(s) {
-	case "aws", "amazon", "s3", "amazon s3":
+	case ProviderNameAWS.String(), "amazon", "s3", "amazon s3":
 		p.Is = ProviderNameAWS
-	case "gcloud", "google", "google cloud", "google cloud storage":
+	case ProviderNameGoogle.String(), "gcloud", "google cloud", "google cloud storage":
 		p.Is = ProviderNameGoogle
-	case "akamai", "linode", "linode objects":
+	case ProviderNameLinode.String(), "akamai", "linode objects":
 		p.Is = ProviderNameLinode
-	case "oci", "oracle", "oracle cloud":
+	case ProviderNameOCI.String(), "oracle", "oracle cloud":
 		p.Is = ProviderNameOCI
-
 	default:
 		p.Is = ProviderNameNone
 	}

@@ -49,7 +49,7 @@ type ProfileIncoming struct {
 
 	Options struct {
 		MaxUploads       int    `yaml:"MaxUploads"`
-		FollowSymlinks   bool   `yaml:"FollowSymlinks"` // TODO: Add Support
+		FollowSymlinks   bool   `yaml:"FollowSymlinks"`
 		WalkDirs         bool   `yaml:"WalkDirs"`
 		OverwriteObjects string `yaml:"OverwriteObjects"`
 	} `yaml:"Options"`
