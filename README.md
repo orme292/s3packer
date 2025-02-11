@@ -1,4 +1,4 @@
-# s3packer - A configurable profile-based S3 backup and upload tool.
+# s3p - A configurable profile-based S3 backup and upload tool.
 
 **CLI for Linux/MacOS**  **supports** Amazon S3 **|** Google Cloud Storage **|** Linode (Akamai) Object Storage **|**
 Oracle Cloud Object Storage
@@ -14,13 +14,13 @@ Oracle Cloud Object Storage
 
 [![Jetbrains_OSS][jetbrains_logo]][jetbrains_oss_url] [![Jetbrains_GoLand][jetbrains_goland_logo]][jetbrains_goland_url]
 
-Special thanks to JetBrains! **s3packer** is developed with help from JetBrains' Open Source program.
+Special thanks to JetBrains! **s3p** is developed with help from JetBrains' Open Source program.
 
 ---
 ## About
 
-s3packer is an S3 / Object Storage upload and backup tool. It uses YAML-based configs that tell it what to upload, where
-to upload, how to name, and how to tag the objects. s3packer makes backup redundancy easier by using separate profiles
+s3p is an S3 / Object Storage upload and backup tool. It uses YAML-based configs that tell it what to upload, where to
+upload, how to name, and how to tag the objects. s3p makes backup redundancy easier by using separate profiles
 for buckets and providers. Currently it supports AWS, OCI (Oracle Cloud), and Linode (Akamai).
 
 ---
@@ -33,7 +33,7 @@ See the [releases][releases_url] page...
 
 ## Service Provider Support
 
-**s3packer** supports AWS S3, Google Cloud Storage, Oracle Cloud Object Storage (OCI), and Linode (Akamai) Object
+**s3p** supports AWS S3, Google Cloud Storage, Oracle Cloud Object Storage (OCI), and Linode (Akamai) Object
 Storage.
 
 - AWS: [using_aws.md][s3packer_aws_readme_url]
@@ -45,7 +45,7 @@ See the example profiles:
 
 - [example_aws.yaml][example_aws_url] (AWS)
 - [example_gcloud.yaml][example_gcloud_url] (Google Cloud)
-- [example_linode.yaml][example_linode_url] (Linode/Akamai)
+- [example_linode.yaml][example_linode_url] (Linode)
 - [example_oci.yaml][example_oci_url] (OCI)
 
 ---
@@ -55,36 +55,28 @@ See the example profiles:
 To start a session with an existing profile, just type in the following command:
 
 ```bash
-$ s3packer --profile="myprofile.yaml"
+~$ s3p use -f "my-custom-profile.yml"
 ```
 
 ---
 
 ## Creating a new Profile
 
-s3packer can create a base profile to help get you started. To create one, use the `--create` flag:
+s3p can create a base profile to help get you started. To create one, use the `--create` flag:
 
 ```bash
-$ s3packer --create="my-new-profile.yaml"
+~$ s3p profile sample --filename "new-profile.yml"
 ```
 
 ---
 
 ## Setting up a Profile
 
-s3packer profiles are written in YAML. To set one up, you just need to fill out a few fields before you can get started.
-
-### **Version**<br/>
-
-```yaml
-Version: 6
-```
-
----
+s3p profiles are written in YAML. To set one up, you just need to fill out a few fields before you can get started.
 
 ### **Provider**
 
-Tell s3packer which service you're using
+Tell s3p which service you're using
 
 | PROVIDER | Acceptable Values        | Required | Description                                |
 |:---------|:-------------------------|:---------|:-------------------------------------------|
@@ -101,11 +93,11 @@ SEE: [docs/general_config.md](https://github.com/orme292/s3packer/blob/master/do
 
 ### **Bucket**
 
-Tell s3packer where the bucket is and whether to create it
+Tell s3p where the bucket is and whether to create it
 
 | BUCKET | Acceptable Values | Default | Required | Description                                                  |
 |:-------|:------------------|:--------|:---------|:-------------------------------------------------------------|
-| Create | boolean           | false   | F        | Whether s3packer should create the bucket if it is not found |
+| Create | boolean           | false   | F        | Whether s3p should create the bucket if it is not found      |
 | Name   | any string        |         | Y        | The name of the bucket                                       |
 | Region | any string        |         | Y        | The region that the bucket is or will be in, e.g. eu-north-1 |
 
@@ -120,13 +112,13 @@ Bucket:
 
 ### **Options**
 
-s3packer's configurable options
+s3p's configurable options
 
 | OPTIONS          | Acceptable Values | Default | Required | Description                                                |
 |:-----------------|:------------------|:--------|:---------|:-----------------------------------------------------------|
 | MaxUploads       | any integer       | 1       | N        | The number of simultaneous uploads, at least 1.            |
 | FollowSymlinks   | boolean           | false   | N        | Whether to follow symlinks under dirs provided             |
-| WalkDirs         | boolean           | true    | N        | Whether s3packer will walk subdirectories of dirs provided |
+| WalkDirs         | boolean           | true    | N        | Whether s3p will walk subdirectories of dirs provided      |
 | OverwriteObjects | always, never     | never   | N        | Whether overwrite objects that already exist in the bucket |
 
 ```yaml
@@ -145,10 +137,10 @@ Be careful when you set `MaxUploads` as some services struggle with anything mor
 AWS which seems fine with 50-100 -- though, whether its faster to have a high `MaxUploads` value depends on your upload
 job.
 
-Large files can be broken up into many parts which are then simultaneously uploaded. s3packer uses default SDK values
+Large files can be broken up into many parts which are then simultaneously uploaded. s3p uses default SDK values
 for part count, part size, and the large file threshold values, unless otherwise called out.
 
-An example of this would be: If you specify a MaxUploads value of 5, and s3packer tries to upload 5 large files that are
+An example of this would be: If you specify a MaxUploads value of 5, and s3p tries to upload 5 large files that are
 each split into 20 parts, then there would be 100 simultaneous uploads happening. If you specify a MaxUpload value of 50
 and there are 50 large files each split into 20 parts, then you could potentially have as many as 1,000 simultaneous
 uploads.
@@ -157,11 +149,11 @@ uploads.
 
 ### **Objects**
 
-s3packer's configurable options for object name and renaming
+s3p's configurable options for object name and renaming
 
 | OBJECTS     | Acceptable Values  | Default | Required | Description                                                                              |
 |:------------|:-------------------|:--------|:---------|:-----------------------------------------------------------------------------------------|
-| NamingType  | absolute, relative |         | Y        | the method s3packer uses to name objects that it uploads                                 |
+| NamingType  | absolute, relative |         | Y        | the method s3p uses to name objects that it uploads                                      |
 | NamePrefix  | any string         |         | N        | The string that will be prefixed to the object's "file" name                             |
 | PathPrefix  | any string         |         | N        | a string path that will be prefixed to the object's "file" name and "path" name          |
 | OmitRootDir | boolean            | True    | N        | whether the relative root of a provided directory will be added to the objects path name |
@@ -194,8 +186,8 @@ something like `/backups/monthly`, the file will be uploaded to `/backups/monthl
 
 ### **Files, Dirs**
 
-Tells s3packer what you want to upload. You can specify directories or individual files. When you specify a directory,
-s3packer will **NOT** traverse subdirectories, unless configured to. You must specify one or the other.
+Tells s3p what you want to upload. You can specify directories or individual files. When you specify a directory, s3p
+will **NOT** traverse subdirectories, unless configured to. You must specify one or the other.
 
 | FILES | Required | Description                                         |
 |:------|:---------|:----------------------------------------------------|
@@ -238,10 +230,10 @@ Tags:
 
 Options related to object tagging (dependent on whether the provider supports object tagging)
 
-| TAGOPTIONS     | Acceptable Values | Default | Required | Description                                                                           |
-|:---------------|:------------------|:--------|:---------|:--------------------------------------------------------------------------------------|
-| OriginPath     | boolean           | False   | N        | Whether s3packer will tag the object with the original absolute path of the file      |
-| ChecksumSHA256 | boolean           | False   | N        | Whether s3packer will tag the object with the sha256 checksum of the file as uploaded |
+| TAGOPTIONS     | Acceptable Values | Default | Required | Description                                                                      |
+|:---------------|:------------------|:--------|:---------|:---------------------------------------------------------------------------------|
+| OriginPath     | boolean           | False   | N        | Whether s3p will tag the object with the original absolute path of the file      |
+| ChecksumSHA256 | boolean           | False   | N        | Whether s3p will tag the object with the sha256 checksum of the file as uploaded |
 
 ```yaml
 Tagging:
@@ -321,13 +313,13 @@ issue on [GitHub][issue_repo_url].
 [s3packer_oci_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_oci.md
 [s3packer_akamai_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_linode.md
 
-[example_aws_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_aws.yaml
+[example_aws_url]:https://github.com/orme292/s3packer/blob/master/docs/sample/example_aws.yaml
 
-[example_gcloud_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_gcloud.yaml
+[example_gcloud_url]:https://github.com/orme292/s3packer/blob/master/docs/sample/example_gcloud.yaml
 
-[example_linode_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_linode.yaml
+[example_linode_url]:https://github.com/orme292/s3packer/blob/master/docs/sample/example_linode.yaml
 
-[example_oci_url]:https://github.com/orme292/s3packer/blob/master/profiles/example_oci.yaml
+[example_oci_url]:https://github.com/orme292/s3packer/blob/master/docs/sample/example_oci.yaml
 
 
 [go_version_img]: https://img.shields.io/github/go-mod/go-version/orme292/s3packer?style=for-the-badge&logo=go

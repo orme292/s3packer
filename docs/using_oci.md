@@ -1,4 +1,4 @@
-# s3packer - A configurable profile-based S3 backup and upload tool.
+# s3p - A configurable profile-based S3 backup and upload tool.
 
 **CLI for Linux/MacOS**  **supports** Amazon S3 **|** Google Cloud Storage **|** Linode (Akamai) Object Storage
 **|** Oracle Cloud Object Storage
@@ -9,14 +9,14 @@
 
 ### Providers settings
 
-**s3packer** handles OCI authentication using the config generated with the OCI-CLI. You can specify a profile that's
+**s3p** handles OCI authentication using the config generated with the OCI-CLI. You can specify a profile that's
 already set up in your `~/.oci/config` file.
 
 For info on installing and configuring the OCI-CLI, see the [Oracle Cloud documentation][oci_cli_url].
 
 | Provider | Acceptable Values | Required | Description                                          |
 |:---------|:------------------|:---------|:-----------------------------------------------------|
-| Use      | oci               | Y        | Tell s3packer to use Oracle OCI                      |
+| Use      | oci               | Y        | Tell s3p to use Oracle OCI                           |
 | Profile  | any string        | Y        | The oci-cli profile name to use, see `~/.oci/config` |
 
 ```yaml
@@ -29,13 +29,13 @@ Provider:
 
 ### OCI Compartment
 
-Under the OCI heading, specify a compartment. It is only required if s3packer has to create a bucket. If s3packer is
+Under the OCI heading, specify a compartment. It is only required if s3p has to create a bucket. If s3p is
 creating the bucket and no compartment is specified, it will create the bucket in the tenancy's root compartment.
 
-| OCI         | Acceptable Values | Required | Description                                                                          |
-|:------------|:------------------|:---------|:-------------------------------------------------------------------------------------|
-| Compartment | OCID              | N        | The OCID of the compartment that s3packer would create a bucket in, if configured to |
-| Storage     | see below         | N        | The storage tier that will be specified when uploading objects                       |
+| OCI         | Acceptable Values | Required | Description                                                                     |
+|:------------|:------------------|:---------|:--------------------------------------------------------------------------------|
+| Compartment | OCID              | N        | The OCID of the compartment that s3p would create a bucket in, if configured to |
+| Storage     | see below         | N        | The storage tier that will be specified when uploading objects                  |
 
 ```yaml
 OCI:
@@ -70,7 +70,7 @@ Tags:
 ```
 
 **SPECIAL NOTE ABOUT OCI TAGS**<br/>
-All OCI tags are prefixed with the string "opc-meta-". s3packer does and the OCI SDK do this automatically, so DO NOT
+All OCI tags are prefixed with the string "opc-meta-". s3p does and the OCI SDK do this automatically, so DO NOT
 add this to your tag keys.
 
 

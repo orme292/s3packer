@@ -4,6 +4,47 @@ This is the Changelog. Between each version I'll document changes, bug fixes, fe
 
 ---
 
+### **1.6.5** (2025-02-11)
+
+- project: repo now uses the internal/pkg project layout
+- project: s3packer now referred to as s3p, repo name will change later
+- profiles: moved to docs/samples/
+- conf: moved to internal/conf
+- tuipack: moved to internal/distlog
+- s3packs/provider: moved to internal/provider
+- s3packs/pack_{aws,gcloud,linode,oracle}: moved to internal/providers/{aws,gcloud,linode,oracle}
+- main: removed and merged with cmd/s3p
+- cmd: added
+- cmd/s3p: added
+- docs: refer to s3packer as s3p
+- pkgs: added
+- internal: added
+- internal/conf: added
+- internal/distlog: added
+- internal/providers/aws: added
+- internal/providers/gcloud: added
+- internal/providers/linode: added
+- internal/providers/oracle: added
+- cmd/s3p: now uses cobra to allow for future expansion
+- internal/conf: adds methods to the ProviderName type
+- internal/conf: exports Filename from Builder
+- internal/conf: all references to tui/tuipack change to log/distlog
+- internal/providers/{aws,gcloud,linode,oracle}: use internal/conf and internal/distlog
+- README: s3packer now referred to as s3p
+- README: update docs to reflect the new cli structure
+- README: updated links to sample profiles
+
+#### Up Next:
+
+- testing
+- s3p will support running from command line without a profile
+- download from buckets
+- compare bucket to local paths
+- simplify the configuration
+- support system wide default configuration
+
+---
+
 ### **1.6.0** (2025-01-21)
 
 - conf: added gcloud provider and defaults
