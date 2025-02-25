@@ -79,11 +79,9 @@ func (p *Provider) build(inc *ProfileIncoming) error {
 		p.OCI = &ProviderOCI{}
 		return p.OCI.build(inc)
 
-	default:
-		return fmt.Errorf("could not build profile: %v", ErrorProviderNotSpecified)
-
 	}
 
+	return fmt.Errorf("unknown error building profile: %v", ErrorProviderNotSpecified)
 }
 
 func (p *Provider) match(s string) {

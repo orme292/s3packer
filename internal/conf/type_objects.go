@@ -35,13 +35,10 @@ func (o *Objects) build(inc *ProfileIncoming) error {
 
 	case NamingAbsolute.String(), "abs":
 		o.NamingType = NamingAbsolute
-
 	case NamingRelative.String(), "rel":
 		o.NamingType = NamingRelative
-
 	default:
 		o.NamingType = NamingNone
-
 	}
 
 	o.NamePrefix = strings.TrimPrefix(inc.Objects.NamePrefix, "/")

@@ -13,13 +13,46 @@ type ProviderGoogle struct {
 	ADC          string
 }
 
+var googleObjectACLs = map[string]string{
+	GCObjectACLAuthenticatedRead: GCObjectACLAuthenticatedRead,
+	GCObjectACLPrivate:           GCObjectACLPrivate,
+	GCObjectACLPublicRead:        GCObjectACLPublicRead,
+	GCObjectACLProjectPrivate:    GCObjectACLProjectPrivate,
+	GCObjectACLBucketOwnerFull:   GCObjectACLBucketOwnerFull,
+	GCObjectACLBucketOwnerRead:   GCObjectACLBucketOwnerRead,
+}
+
+var googleBucketACLs = map[string]string{
+	GCBucketACLAuthenticatedRead: GCBucketACLAuthenticatedRead,
+	GCBucketACLPrivate:           GCBucketACLPrivate,
+	GCBucketACLPublicRead:        GCBucketACLPublicRead,
+	GCBucketACLPublicReadWrite:   GCBucketACLPublicReadWrite,
+	GCBucketACLProjectPrivate:    GCBucketACLProjectPrivate,
+}
+
+var googleStorageClass = map[string]string{
+	GCStorageStandard: GCStorageStandard,
+	GCStorageNearline: GCStorageNearline,
+	GCStorageColdline: GCStorageColdline,
+	GCStorageArchive:  GCStorageArchive,
+}
+
+var googleLocationType = map[string]string{
+	GCLocationTypeRegion: GCLocationTypeRegion,
+	GCLocationTypeDual:   GCLocationTypeDual,
+	GCLocationTypeMulti:  GCLocationTypeMulti,
+}
+
 func (gc *ProviderGoogle) build(inc *ProfileIncoming) error {
 
 	gc.Project = inc.Google.Project
 
-	_ = gc.validate()
+	err := gc.validate()
+	if err != nil {
+		return err
+	}
 
-	err := gc.matchObjectACL(inc.Google.ObjectACL)
+	err = gc.matchObjectACL(inc.Google.ObjectACL)
 	if err != nil {
 		return err
 	}
@@ -44,15 +77,7 @@ func (gc *ProviderGoogle) build(inc *ProfileIncoming) error {
 
 func (gc *ProviderGoogle) matchBucketACL(acl string) error {
 
-	bucketCannedACLs := map[string]string{
-		GCBucketACLAuthenticatedRead: GCBucketACLAuthenticatedRead,
-		GCBucketACLPrivate:           GCBucketACLPrivate,
-		GCBucketACLPublicRead:        GCBucketACLPublicRead,
-		GCBucketACLPublicReadWrite:   GCBucketACLPublicReadWrite,
-		GCBucketACLProjectPrivate:    GCBucketACLProjectPrivate,
-	}
-
-	validAcl, ok := bucketCannedACLs[tidyLowerString(acl)]
+	validAcl, ok := googleBucketACLs[tidyLowerString(acl)]
 	if !ok {
 		gc.BucketACL = GCBucketACLPrivate
 		return fmt.Errorf("%s %q", InvalidGCBucketACL, acl)
@@ -65,16 +90,7 @@ func (gc *ProviderGoogle) matchBucketACL(acl string) error {
 
 func (gc *ProviderGoogle) matchObjectACL(acl string) error {
 
-	objectCannedACL := map[string]string{
-		GCObjectACLAuthenticatedRead: GCObjectACLAuthenticatedRead,
-		GCObjectACLPrivate:           GCObjectACLPrivate,
-		GCObjectACLPublicRead:        GCObjectACLPublicRead,
-		GCObjectACLProjectPrivate:    GCObjectACLProjectPrivate,
-		GCObjectACLBucketOwnerFull:   GCObjectACLBucketOwnerFull,
-		GCObjectACLBucketOwnerRead:   GCObjectACLBucketOwnerRead,
-	}
-
-	validAcl, ok := objectCannedACL[tidyLowerString(acl)]
+	validAcl, ok := googleObjectACLs[tidyLowerString(acl)]
 	if !ok {
 		gc.ObjectACL = GCObjectACLPrivate
 		return fmt.Errorf("%s %q", InvalidGCObjectACL, acl)
@@ -87,14 +103,7 @@ func (gc *ProviderGoogle) matchObjectACL(acl string) error {
 
 func (gc *ProviderGoogle) matchStorageClass(class string) error {
 
-	storageClass := map[string]string{
-		GCStorageStandard: GCStorageStandard,
-		GCStorageNearline: GCStorageNearline,
-		GCStorageColdline: GCStorageColdline,
-		GCStorageArchive:  GCStorageArchive,
-	}
-
-	validClass, ok := storageClass[tidyUpperString(class)]
+	validClass, ok := googleStorageClass[tidyUpperString(class)]
 	if !ok {
 		gc.Storage = GCStorageStandard
 		return fmt.Errorf("%s %q", InvalidStorageClass, class)
@@ -107,13 +116,7 @@ func (gc *ProviderGoogle) matchStorageClass(class string) error {
 
 func (gc *ProviderGoogle) matchLocationType(tp string) error {
 
-	locationType := map[string]string{
-		GCLocationTypeRegion: GCLocationTypeRegion,
-		GCLocationTypeDual:   GCLocationTypeDual,
-		GCLocationTypeMulti:  GCLocationTypeMulti,
-	}
-
-	validType, ok := locationType[tidyLowerString(tp)]
+	validType, ok := googleLocationType[tidyLowerString(tp)]
 	if !ok {
 		gc.LocationType = GCLocationTypeRegion
 		return fmt.Errorf("%s %q", InvalidGCLocationType, tp)
@@ -125,6 +128,10 @@ func (gc *ProviderGoogle) matchLocationType(tp string) error {
 }
 
 func (gc *ProviderGoogle) validate() error {
+
+	if gc.Project == Empty {
+		return fmt.Errorf("project name cannot be empty")
+	}
 
 	if gc.ObjectACL == Empty {
 		gc.ObjectACL = GCObjectACLPrivate

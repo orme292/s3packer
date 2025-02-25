@@ -1,0 +1,21 @@
+---
+name: Tests
+on:
+  workflow_dispatch:
+  push:
+    paths: [ '**.go' ]
+
+jobs:
+  run-test:
+    strategy:
+      matrix:
+        go: [ 1.23.5 ]
+        os: [ 'ubuntu-latest' ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Test
+        run: go test ./internal/conf

@@ -15,6 +15,26 @@ type ProviderLinode struct {
 	ObjectACL types.ObjectCannedACL
 }
 
+var linodeEndpointsMap = map[string]string{
+	LinodeRegionAmsterdam:  LinodeClusterAmsterdam,
+	LinodeRegionAtlanta:    LinodeClusterAtlanta,
+	LinodeRegionChennai:    LinodeClusterChennai,
+	LinodeRegionChicago:    LinodeClusterChicago,
+	LinodeRegionFrankfurt:  LinodeClusterFrankfurt,
+	LinodeRegionJakarta:    LinodeClusterJakarta,
+	LinodeRegionLosAngeles: LinodeClusterLosAngeles,
+	LinodeRegionMiami:      LinodeClusterMiami,
+	LinodeRegionMilan:      LinodeClusterMilan,
+	LinodeRegionNewark:     LinodeClusterNewark,
+	LinodeRegionOsaka:      LinodeClusterOsaka,
+	LinodeRegionParis:      LinodeClusterParis,
+	LinodeRegionSaoPaulo:   LinodeClusterSaoPaulo,
+	LinodeRegionSeattle:    LinodeClusterSeattle,
+	LinodeRegionSingapore:  LinodeClusterSingapore,
+	LinodeRegionStockholm:  LinodeClusterStockholm,
+	LinodeRegionAshburn:    LinodeClusterAshburn,
+}
+
 func (l *ProviderLinode) build(inc *ProfileIncoming) error {
 
 	err := l.matchRegion(inc.Linode.Region)
@@ -33,26 +53,6 @@ func (l *ProviderLinode) build(inc *ProfileIncoming) error {
 }
 
 func (l *ProviderLinode) matchRegion(region string) error {
-
-	linodeEndpointsMap := map[string]string{
-		LinodeRegionAmsterdam:  LinodeClusterAmsterdam,
-		LinodeRegionAtlanta:    LinodeClusterAtlanta,
-		LinodeRegionChennai:    LinodeClusterChennai,
-		LinodeRegionChicago:    LinodeClusterChicago,
-		LinodeRegionFrankfurt:  LinodeClusterFrankfurt,
-		LinodeRegionJakarta:    LinodeClusterJakarta,
-		LinodeRegionLosAngeles: LinodeClusterLosAngeles,
-		LinodeRegionMiami:      LinodeClusterMiami,
-		LinodeRegionMilan:      LinodeClusterMilan,
-		LinodeRegionNewark:     LinodeClusterNewark,
-		LinodeRegionOsaka:      LinodeClusterOsaka,
-		LinodeRegionParis:      LinodeClusterParis,
-		LinodeRegionSaoPaulo:   LinodeClusterSaoPaulo,
-		LinodeRegionSeattle:    LinodeClusterSeattle,
-		LinodeRegionSingapore:  LinodeClusterSingapore,
-		LinodeRegionStockholm:  LinodeClusterStockholm,
-		LinodeRegionAshburn:    LinodeClusterAshburn,
-	}
 
 	endpoint, ok := linodeEndpointsMap[tidyLowerString(region)]
 	if !ok {

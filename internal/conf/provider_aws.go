@@ -24,6 +24,28 @@ type ProviderAWS struct {
 	AwsChecksumMode      types.ChecksumMode
 }
 
+var awsCannedACLs = map[string]types.ObjectCannedACL{
+	AwsACLPrivate:                types.ObjectCannedACLPrivate,
+	AwsACLPublicRead:             types.ObjectCannedACLPublicRead,
+	AwsACLPublicReadWrite:        types.ObjectCannedACLPublicReadWrite,
+	AwsACLAuthenticatedRead:      types.ObjectCannedACLAuthenticatedRead,
+	AwsACLAwsExecRead:            types.ObjectCannedACLAwsExecRead,
+	AwsACLBucketOwnerRead:        types.ObjectCannedACLBucketOwnerRead,
+	AwsACLBucketOwnerFullControl: types.ObjectCannedACLBucketOwnerFullControl,
+}
+
+var awsStorageClasses = map[string]types.StorageClass{
+	AwsClassStandard:           types.StorageClassStandard,
+	AwsClassReducedRedundancy:  types.StorageClassReducedRedundancy,
+	AwsClassGlacier:            types.StorageClassGlacier,
+	AwsClassStandardIA:         types.StorageClassStandardIa,
+	AwsClassOneZoneIA:          types.StorageClassOnezoneIa,
+	AwsClassIntelligentTiering: types.StorageClassIntelligentTiering,
+	AwsClassGlacierIR:          types.StorageClassGlacier,
+	AwsClassDeepArchive:        types.StorageClassDeepArchive,
+	AwsClassSnow:               types.StorageClassGlacier,
+}
+
 func (aws *ProviderAWS) build(inc *ProfileIncoming) error {
 
 	err := aws.matchACL(inc.AWS.ACL)
@@ -50,16 +72,6 @@ func (aws *ProviderAWS) build(inc *ProfileIncoming) error {
 // awsMatchACL will match the ACL string to the AWS ACL type. The constant values above are used to match the string.
 func (aws *ProviderAWS) matchACL(acl string) error {
 
-	awsCannedACLs := map[string]types.ObjectCannedACL{
-		AwsACLPrivate:                types.ObjectCannedACLPrivate,
-		AwsACLPublicRead:             types.ObjectCannedACLPublicRead,
-		AwsACLPublicReadWrite:        types.ObjectCannedACLPublicReadWrite,
-		AwsACLAuthenticatedRead:      types.ObjectCannedACLAuthenticatedRead,
-		AwsACLAwsExecRead:            types.ObjectCannedACLAwsExecRead,
-		AwsACLBucketOwnerRead:        types.ObjectCannedACLBucketOwnerRead,
-		AwsACLBucketOwnerFullControl: types.ObjectCannedACLBucketOwnerFullControl,
-	}
-
 	validAcl, ok := awsCannedACLs[tidyLowerString(acl)]
 	if !ok {
 		aws.ACL = types.ObjectCannedACLPrivate
@@ -75,18 +87,6 @@ func (aws *ProviderAWS) matchACL(acl string) error {
 // used to match the string.
 func (aws *ProviderAWS) matchStorage(class string) error {
 
-	awsStorageClasses := map[string]types.StorageClass{
-		AwsClassStandard:           types.StorageClassStandard,
-		AwsClassReducedRedundancy:  types.StorageClassReducedRedundancy,
-		AwsClassGlacier:            types.StorageClassGlacier,
-		AwsClassStandardIA:         types.StorageClassStandardIa,
-		AwsClassOneZoneIA:          types.StorageClassOnezoneIa,
-		AwsClassIntelligentTiering: types.StorageClassIntelligentTiering,
-		AwsClassGlacierIR:          types.StorageClassGlacier,
-		AwsClassDeepArchive:        types.StorageClassDeepArchive,
-		AwsClassSnow:               types.StorageClassGlacier,
-	}
-
 	validClass, ok := awsStorageClasses[tidyUpperString(class)]
 	if !ok {
 		aws.Storage = types.StorageClassStandard
@@ -100,14 +100,14 @@ func (aws *ProviderAWS) matchStorage(class string) error {
 
 func (aws *ProviderAWS) validate() error {
 
+	if aws.Profile == Empty && aws.Key == Empty && aws.Secret == Empty {
+		return fmt.Errorf("bad AWS config: %v", ErrorAWSAuthNeeded)
+	}
 	if aws.Profile != Empty && (aws.Key != Empty || aws.Secret != Empty) {
 		return fmt.Errorf("bad AWS config: %v", ErrorAWSProfileAndKeys)
 	}
 	if aws.Profile == Empty && (aws.Key == Empty || aws.Secret == Empty) {
 		return fmt.Errorf("bad AWS config: %v", ErrorAWSMissingAuth)
-	}
-	if aws.Profile == Empty && aws.Key == Empty && aws.Secret == Empty {
-		return fmt.Errorf("bad AWS config: %v", ErrorAWSAuthNeeded)
 	}
 
 	return nil

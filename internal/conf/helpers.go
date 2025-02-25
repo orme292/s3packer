@@ -9,7 +9,6 @@ import (
 )
 
 func canCreate(path string) (bool, error) {
-
 	filename := expandHome(path)
 
 	filename, err := filepath.Abs(filename)
@@ -31,7 +30,6 @@ func canCreate(path string) (bool, error) {
 	}
 
 	return false, fmt.Errorf("file %s already exists", filename)
-
 }
 
 func expandHome(path string) string {
