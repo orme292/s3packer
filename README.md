@@ -308,7 +308,7 @@ issue on [GitHub][issue_repo_url].
 [releases_url]: https://github.com/orme292/s3packer/releases
 [issue_repo_url]: https://github.com/orme292/s3packer/issues/new/choose
 
-[go_version_url]: https://golang.org/doc/go1.23
+[go_version_url]: https://golang.org/doc/go1.24
 [go_report_url]: https://goreportcard.com/report/github.com/orme292/s3packer
 [repo_license_url]: https://github.com/orme292/s3packer/blob/master/LICENSE
 [go_tests_url]: https://img.shields.io/github/actions/workflow/status/orme292/s3packer/tests.yml?style=for-the-badge&label=Tests
