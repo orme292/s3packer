@@ -2,7 +2,12 @@
 name: Compile Test
 
 on:
+  pull_request:
+    branches: [ master ]
+    types: [ opened ]
+
   push:
+    paths: [ '**.go' ]
     branches-ignore:
       - master
 
@@ -15,7 +20,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.5
+          go-version: 1.24.0
           check-latest: true
 
       - name: Go Format

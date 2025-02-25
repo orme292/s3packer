@@ -36,6 +36,10 @@ func ParseLevel(n any) zerolog.Level {
 		return WARN
 	}
 
+	if lvl == zerolog.NoLevel {
+		return WARN
+	}
+
 	return lvl
 
 }

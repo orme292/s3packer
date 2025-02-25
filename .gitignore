@@ -2,6 +2,6 @@
 *.log
 scripts/
 docs/test/*
-playground/
+test/
 terraform/
 bin/*

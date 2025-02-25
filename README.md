@@ -1,4 +1,4 @@
-# s3p - A configurable profile-based S3 backup and upload tool.
+# s3p - A configurable profile-based object backup and upload tool.
 
 **CLI for Linux/MacOS**  **supports** Amazon S3 **|** Google Cloud Storage **|** Linode (Akamai) Object Storage **|**
 Oracle Cloud Object Storage
@@ -8,20 +8,26 @@ Oracle Cloud Object Storage
 [![Go Report Card][go_report_img]][go_report_url]
 [![Repo License][repo_license_img]][repo_license_url]
 
-[![Code Quality](https://github.com/orme292/s3packer/actions/workflows/golang.yml/badge.svg)](https://github.com/orme292/s3packer/actions/workflows/golang.yml)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/orme292/s3packer/tests.yml?style=for-the-badge&label=Tests&labelColor=blue)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/orme292/s3packer/quality.yml?style=for-the-badge&label=Vulnerabilities&labelColor=blue)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/orme292/s3packer/compile.yml?style=for-the-badge&label=Compiles&labelColor=blue)
+
+
+
+
 
 ---
 
 [![Jetbrains_OSS][jetbrains_logo]][jetbrains_oss_url] [![Jetbrains_GoLand][jetbrains_goland_logo]][jetbrains_goland_url]
 
-Special thanks to JetBrains! **s3p** is developed with help from JetBrains' Open Source program.
+Special thanks to JetBrains! **s3p** was developed with help from JetBrains' Open Source program.
 
 ---
 ## About
 
 s3p is an S3 / Object Storage upload and backup tool. It uses YAML-based configs that tell it what to upload, where to
 upload, how to name, and how to tag the objects. s3p makes backup redundancy easier by using separate profiles
-for buckets and providers. Currently it supports AWS, OCI (Oracle Cloud), and Linode (Akamai).
+for buckets and providers. Currently, it supports AWS, Google Cloud, Linode (Akamai), OCI (Oracle Cloud).
 
 ---
 
@@ -302,9 +308,11 @@ issue on [GitHub][issue_repo_url].
 [releases_url]: https://github.com/orme292/s3packer/releases
 [issue_repo_url]: https://github.com/orme292/s3packer/issues/new/choose
 
-[go_version_url]: https://golang.org/doc/go1.23
+[go_version_url]: https://golang.org/doc/go1.24
 [go_report_url]: https://goreportcard.com/report/github.com/orme292/s3packer
 [repo_license_url]: https://github.com/orme292/s3packer/blob/master/LICENSE
+[go_tests_url]: https://img.shields.io/github/actions/workflow/status/orme292/s3packer/tests.yml?style=for-the-badge&label=Tests
+
 [s3_acl_url]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl
 
 [s3packer_aws_readme_url]: https://github.com/orme292/s3packer/blob/master/docs/using_aws.md
