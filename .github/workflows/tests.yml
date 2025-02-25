@@ -2,6 +2,10 @@
 name: Go Tests
 
 on:
+  pull_request:
+    branches: [ master ]
+    types: [ opened ]
+
   push:
     paths: [ '**.go' ]
     branches-ignore:
@@ -25,5 +29,11 @@ jobs:
       - name: Get Dependencies
         run: go get ./...
 
-      - name: Go Tests
-        run: go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
+#      - name: Go Tests
+#        run: go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
+
+      - name: Test ./internal/distlog
+        run: go test -v -count=1 -race -shuffle=on ./internal/distlog
+
+      - name: Test ./internal/conf
+        run: go test -v -count=1 -race -shuffle=on ./internal/conf

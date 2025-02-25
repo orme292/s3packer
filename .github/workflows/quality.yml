@@ -2,6 +2,10 @@
 name: Vulnerability Check
 
 on:
+  pull_request:
+    branches: [ master ]
+    types: [ opened ]
+
   push:
     paths: [ '**.go' ]
     branches-ignore:

@@ -2,7 +2,12 @@
 name: Compile Test
 
 on:
+  pull_request:
+    branches: [ master ]
+    types: [ opened ]
+
   push:
+    paths: [ '**.go' ]
     branches-ignore:
       - master
 
