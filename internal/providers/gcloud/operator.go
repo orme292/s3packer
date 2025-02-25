@@ -173,7 +173,7 @@ func (oper *GoogleOperator) ObjectUpload(obj provider.Object) error {
 
 		attempt++
 		dur := backoff * time.Duration(1<<attempt)
-		oper.App.Log.Info("Retrying upload in ", dur, " seconds. Attempt ", attempt, " of ", maxAttempts, "")
+		oper.App.Log.Info("Retrying upload in %d seconds. Attempt %d of %d", dur, attempt, maxAttempts)
 		time.Sleep(dur)
 
 	}
