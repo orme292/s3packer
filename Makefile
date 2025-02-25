@@ -11,4 +11,5 @@ build: install
 run: build
 
 test: install build
+	@go test ./internal/conf
 	@./bin/mac/s3p use -f "docs/test/test_profile_aws.yaml"

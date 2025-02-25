@@ -2,7 +2,6 @@ package conf
 
 import (
 	"fmt"
-	"log"
 )
 
 // Overwrite type is a string enum of the supported overwrite methods. OverwriteChecksum is not implemented.
@@ -39,13 +38,8 @@ func (o *Opts) build(inc *ProfileIncoming) error {
 	case OverwriteNever.String(), "no", "false":
 		o.Overwrite = OverwriteNever
 
-	// checksum not supported yet
-	case Empty:
-		return fmt.Errorf("bad options config: %s", InvalidOverwriteMethod)
-
 	default:
-		o.Overwrite = OverwriteNever
-
+		o.Overwrite = ""
 	}
 
 	return o.validate()
@@ -55,7 +49,6 @@ func (o *Opts) build(inc *ProfileIncoming) error {
 func (o *Opts) validate() error {
 
 	if o.MaxUploads <= 0 {
-		log.Printf("here")
 		return fmt.Errorf("MaxUploads must be at least 1")
 	}
 	if o.Overwrite != OverwriteChecksum && o.Overwrite != OverwriteNever && o.Overwrite != OverwriteAlways {

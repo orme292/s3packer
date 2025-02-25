@@ -126,7 +126,6 @@ func (ac *AppConfig) ImportFromProfile(inc *ProfileIncoming) error {
 }
 
 func (ac *AppConfig) setGoogleExceptions() {
-
 	if ac.Provider.Is == ProviderNameGoogle {
 
 		fmt.Println("Google Cloud Storage support is experimental")
@@ -136,13 +135,5 @@ func (ac *AppConfig) setGoogleExceptions() {
 			ac.Opts.MaxUploads = 1
 			ac.Log.Warn("s3packer doesn't support parallel uploads with Google Cloud Storage")
 		}
-
-		if ac.Bucket.Create == true {
-			if ac.Provider.Google.Project == Empty {
-				ac.Log.Fatal("You have bucket creation enabled, but no project specified.")
-			}
-		}
-
 	}
-
 }

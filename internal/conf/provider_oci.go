@@ -16,6 +16,18 @@ type ProviderOCI struct {
 	PutStorage objectstorage.PutObjectStorageTierEnum
 }
 
+var ociStorageTiersMap = map[string]objectstorage.StorageTierEnum{
+	OracleStorageTierStandard:         objectstorage.StorageTierStandard,
+	OracleStorageTierInfrequentAccess: objectstorage.StorageTierInfrequentAccess,
+	OracleStorageTierArchive:          objectstorage.StorageTierArchive,
+}
+
+var ociPutStorageTiersMap = map[string]objectstorage.PutObjectStorageTierEnum{
+	OracleStorageTierStandard:         objectstorage.PutObjectStorageTierStandard,
+	OracleStorageTierInfrequentAccess: objectstorage.PutObjectStorageTierInfrequentaccess,
+	OracleStorageTierArchive:          objectstorage.PutObjectStorageTierArchive,
+}
+
 func (oci *ProviderOCI) build(inc *ProfileIncoming) error {
 
 	err := oci.matchStorage(inc.OCI.Storage)
@@ -38,20 +50,7 @@ func (oci *ProviderOCI) build(inc *ProfileIncoming) error {
 // The constant values above are used to match the string.
 func (oci *ProviderOCI) matchStorage(tier string) error {
 
-	// TODO: implement a title caser using golang.org/x/text/cases
 	tier = strings.ToLower(strings.TrimSpace(tier))
-
-	ociStorageTiersMap := map[string]objectstorage.StorageTierEnum{
-		OracleStorageTierStandard:         objectstorage.StorageTierStandard,
-		OracleStorageTierInfrequentAccess: objectstorage.StorageTierInfrequentAccess,
-		OracleStorageTierArchive:          objectstorage.StorageTierArchive,
-	}
-
-	ociPutStorageTiersMap := map[string]objectstorage.PutObjectStorageTierEnum{
-		OracleStorageTierStandard:         objectstorage.PutObjectStorageTierStandard,
-		OracleStorageTierInfrequentAccess: objectstorage.PutObjectStorageTierInfrequentaccess,
-		OracleStorageTierArchive:          objectstorage.PutObjectStorageTierArchive,
-	}
 
 	storeTier, ok := ociStorageTiersMap[tier]
 	if !ok {
