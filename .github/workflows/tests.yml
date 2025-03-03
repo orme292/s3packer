@@ -8,8 +8,8 @@ on:
 
   push:
     paths: [ '**.go' ]
-    branches-ignore:
-      - master
+    branches:
+      - '**'
 
 jobs:
   test:
