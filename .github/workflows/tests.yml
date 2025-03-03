@@ -37,3 +37,6 @@ jobs:
 
       - name: Test ./internal/conf
         run: go test -v -count=1 -race -shuffle=on ./internal/conf
+
+      - name: Test ./internal/provider
+        run: go test -v -count=1 -race -shuffle=on ./internal/provider
