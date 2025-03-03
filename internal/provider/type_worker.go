@@ -72,9 +72,8 @@ func (w *worker) scan() {
 			job.setStatus(JobStatusWaiting, nil)
 			job.Object = w.objFn(job)
 
-			if job.Metadata.Mode != objectify.EntModeRegular {
-				msg := fmt.Sprintf("Skipping %s [invalid file format: %s]", job.Metadata.FullPath(), job.Metadata.Mode.String())
-				w.app.Log.Warn(msg)
+			if job.Metadata.Mode != objectify.EntModeRegular && job.Metadata.Mode != objectify.EntModeLink {
+				w.app.Log.Warn("Skipping %s [invalid file format: %s]", job.Metadata.FullPath(), job.Metadata.Mode.String())
 				job.setStatus(JobStatusSkipped, fmt.Errorf("not a valid file: %s", job.Metadata.Mode.String()))
 				return job, nil
 			}
@@ -82,8 +81,7 @@ func (w *worker) scan() {
 			err := job.Object.Generate()
 			if err != nil {
 				_ = job.Object.Destroy()
-				msg := fmt.Sprintf("Failed on %s [could not build object]", job.Metadata.FullPath())
-				w.app.Log.Warn(msg)
+				w.app.Log.Warn("Failed on %s [could not build object]", job.Metadata.FullPath())
 				job.setStatus(JobStatusFailed, fmt.Errorf("unable to build data object: %s", err))
 				return job, nil
 			}
@@ -92,15 +90,13 @@ func (w *worker) scan() {
 				ex, err := w.oper.ObjectExists(job.Object)
 				if ex && err != nil {
 					_ = job.Object.Destroy()
-					msg := fmt.Sprintf("Existing object check failed for %s", job.Metadata.FullPath())
-					w.app.Log.Warn(msg)
+					w.app.Log.Warn("Existing object check failed for %s", job.Metadata.FullPath())
 					job.setStatus(JobStatusFailed, fmt.Errorf("unable to check if object exists: %s\n", err))
 					return job, nil
 				}
 				if ex {
 					_ = job.Object.Destroy()
-					msg := fmt.Sprintf("Skipping %s [object already exists]", job.Metadata.FullPath())
-					w.app.Log.Warn(msg)
+					w.app.Log.Warn("Skipping %s [object already exists]", job.Metadata.FullPath())
 					job.setStatus(JobStatusSkipped, fmt.Errorf("object already exists"))
 					return job, nil
 				}
@@ -109,8 +105,7 @@ func (w *worker) scan() {
 			err = job.Object.Pre()
 			if err != nil {
 				_ = job.Object.Destroy()
-				msg := fmt.Sprintf("Object prepare failed for %s", job.Metadata.FullPath())
-				w.app.Log.Warn(msg)
+				w.app.Log.Warn("Object prepare failed for %s", job.Metadata.FullPath())
 				job.setStatus(JobStatusFailed, fmt.Errorf("could not initialize object: %s\n", err))
 				return job, nil
 			}
@@ -118,8 +113,7 @@ func (w *worker) scan() {
 			err = w.oper.ObjectUpload(job.Object)
 			if err != nil {
 				_ = job.Object.Destroy()
-				msg := fmt.Sprintf("Upload Failed: %v", err)
-				w.app.Log.Error(msg)
+				w.app.Log.Error("Upload Failed: %v", err)
 				job.setStatus(JobStatusFailed, fmt.Errorf("could not upload object: %s\n", err))
 				return job, nil
 			}
@@ -148,16 +142,14 @@ func (w *worker) scan() {
 
 	if w.isDir {
 
-		msg := fmt.Sprintf("Reading directory %s...", w.path)
-		w.app.Log.Info(msg)
+		w.app.Log.Info("Reading path %s...", w.path)
 
 		files, err := objectify.Path(w.path, sets)
 		if err != nil {
 			if strings.Contains(err.Error(), "StartingPath has no non-directory entries") {
 				return
 			}
-			msg = fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
-			w.app.Log.Error(msg)
+			w.app.Log.Error("Error reading path %s: %s", w.path, err.Error())
 			return
 		} else if len(files) == 0 {
 			return // there are times when objectify returns no error and no file entries.
@@ -170,8 +162,7 @@ func (w *worker) scan() {
 
 		}
 
-		msg = fmt.Sprintf("Uploading directory %s...", w.path)
-		w.app.Log.Info(msg)
+		w.app.Log.Info("Uploading directory %s...", w.path)
 
 		for {
 
@@ -209,9 +200,9 @@ func (w *worker) scan() {
 				}
 
 				if w.stats.Objects != 0 {
-					w.app.Log.Info(fmt.Sprintf("Upload Complete [%s]", w.path))
+					w.app.Log.Info("Upload Complete [%s]", w.path)
 				} else {
-					w.app.Log.Warn(fmt.Sprintf("No uploads [%s]", w.path))
+					w.app.Log.Warn("No uploads [%s]", w.path)
 				}
 
 				break
@@ -228,8 +219,7 @@ func (w *worker) scan() {
 			if strings.Contains(err.Error(), "StartingPath has no non-directory entries") {
 				return
 			}
-			msg := fmt.Sprintf("Error reading directory %s: %s", w.path, err.Error())
-			w.app.Log.Error(msg)
+			w.app.Log.Error("Error reading path %s: %s", w.path, err.Error())
 			return
 		}
 

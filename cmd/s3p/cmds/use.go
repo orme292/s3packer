@@ -30,7 +30,6 @@ func addUseCmd() {
 }
 
 func useProfile(cmd *cobra.Command, args []string) {
-
 	filename, err := cmd.Flags().GetString(UseProfileFilenameFlag)
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("Failed to retrieve '%s' flag: %v", UseProfileFilenameFlag, err))
@@ -42,8 +41,8 @@ func useProfile(cmd *cobra.Command, args []string) {
 		log.Fatalf("Failed to load profile: %v", err)
 	}
 
-	fmt.Printf("\ns3p\n\n")
-	fmt.Printf("Logging [file:%v] [console:%v]\n", app.LogOpts.File, app.LogOpts.Console)
+	fmt.Printf("\ns3p\n")
+	fmt.Printf("Using %s and bucket %q\n\n", app.Provider.Is.Title(), app.Bucket)
 	time.Sleep(1 * time.Second)
 
 	stats, err := appInit(app)
@@ -62,7 +61,6 @@ func useProfile(cmd *cobra.Command, args []string) {
 }
 
 func appInit(app *conf.AppConfig) (*provider.Stats, error) {
-
 	operFn, objFn, err := getProviderFunctions(app.Provider.Is)
 	if err != nil {
 		return nil, errors.New("unable to find the correct provider")
@@ -81,38 +79,28 @@ func appInit(app *conf.AppConfig) (*provider.Stats, error) {
 	app.Log.Info("Finished.")
 
 	return handler.Stats, nil
-
 }
 
 func getProviderFunctions(name conf.ProviderName) (provider.OperGenFunc, provider.ObjectGenFunc, error) {
-
 	switch name {
 	case conf.ProviderNameAWS:
 		return s3aws.NewAwsOperator, s3aws.NewAwsObject, nil
-
 	case conf.ProviderNameGoogle:
 		return s3gcloud.NewGCloudOperator, s3gcloud.NewCloudObject, nil
-
 	case conf.ProviderNameLinode:
 		return s3linode.NewLinodeOperator, s3linode.NewLinodeObject, nil
-
 	case conf.ProviderNameOCI:
 		return s3oracle.NewOracleOperator, s3oracle.NewOracleObject, nil
-
 	default:
 		return nil, nil, fmt.Errorf("unable to determine the provider")
-
 	}
-
 }
 
 func startSigWatcher() {
-
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT)
 	go func() {
 		<-sig
 		os.Exit(0)
 	}()
-
 }

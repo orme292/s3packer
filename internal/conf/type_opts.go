@@ -29,6 +29,8 @@ type Opts struct {
 func (o *Opts) build(inc *ProfileIncoming) error {
 
 	o.MaxUploads = inc.Options.MaxUploads
+	o.WalkDirs = inc.Options.WalkDirs
+	o.FollowSymlinks = inc.Options.FollowSymlinks
 
 	switch tidyLowerString(inc.Options.OverwriteObjects) {
 
