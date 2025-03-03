@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/orme292/objectify"
 	"s3p/internal/provider"
 )
 
@@ -47,7 +48,14 @@ func (o *LinodeObject) Pre() error {
 		return fmt.Errorf("file no longer accessible")
 	}
 
-	f, err := os.Open(o.job.Metadata.FullPath())
+	var target string
+	if o.job.Metadata.Mode == objectify.EntModeLink {
+		target = o.job.Metadata.TargetFinal
+	} else {
+		target = o.job.Metadata.FullPath()
+	}
+
+	f, err := os.Open(target)
 	if err != nil {
 		fmt.Printf("Error opening file %s: %s\n", o.job.Metadata.FullPath(), err)
 		return err

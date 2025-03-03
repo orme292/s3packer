@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"sync"
 
 	sw "github.com/orme292/symwalker"
@@ -32,17 +31,22 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 
 		if mode.IsDir() {
 
-			msg := fmt.Sprintf("Walking %s", file)
-			app.Log.Info(msg)
+			app.Log.Info("Walking %s", file)
 
 			opts := sw.NewSymConf(file,
 				sw.WithoutFiles(),
 				sw.WithDepth(sw.INFINITE),
 			)
+			if app.Opts.WalkDirs == false {
+				opts.Depth = 1
+			}
+			if app.Opts.FollowSymlinks == true {
+				opts.FollowSymlinks = true
+			}
 
 			results, err := sw.SymWalker(opts)
 			if err != nil {
-				app.Log.Error(msg)
+				app.Log.Error("Error walking: %v", err)
 				continue
 			}
 
@@ -55,8 +59,7 @@ func newQueue(paths pathModeMap, app *conf.AppConfig, oper Operator, objFn Objec
 
 		} else {
 
-			msg := fmt.Sprintf("Reading %s", file)
-			app.Log.Info(msg)
+			app.Log.Info("Reading %s", file)
 
 			j := newWorker(app, file, EmptyPath, false, true, JobStatusQueued, oper, objFn)
 			q.workers = append(q.workers, j)

@@ -138,7 +138,7 @@ func (oper *OracleOperator) ObjectUpload(obj provider.Object) error {
 	oobj.setTagsWithWorkaround(oobj.job.Metadata.SizeBytes)
 	response, err := oper.Oracle.manager.UploadFile(context.Background(), transfer.UploadFileRequest{
 		UploadRequest: request,
-		FilePath:      oobj.job.Metadata.FullPath(),
+		FilePath:      oobj.filename,
 	})
 	if err != nil {
 		return err

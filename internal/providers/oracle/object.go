@@ -5,11 +5,14 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/orme292/objectify"
 	"s3p/internal/provider"
 )
 
 type OracleObject struct {
 	job *provider.Job
+
+	filename string
 
 	key    string
 	bucket string
@@ -35,6 +38,12 @@ func (o *OracleObject) Generate() error {
 	o.tags = make(map[string]string)
 	o.key = o.job.Key
 	o.bucket = o.job.App.Bucket.Name
+
+	if o.job.Metadata.Mode == objectify.EntModeLink {
+		o.filename = o.job.Metadata.TargetFinal
+	} else {
+		o.filename = o.job.Metadata.FullPath()
+	}
 
 	o.setTags()
 	return nil

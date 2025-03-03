@@ -146,7 +146,7 @@ func TestRouteLogMsg_File(t *testing.T) {
 	lb.Output.Console = false
 	lb.Output.File = true
 
-	msg := "route file test"
+	msg := "route message test"
 	lb.SetLogLevel(zerolog.InfoLevel)
 	lb.RouteLogMsg(zerolog.InfoLevel, msg)
 
