@@ -69,10 +69,10 @@ func (oper *testOperator) BucketDelete() error {
 
 func (oper *testOperator) ObjectDelete(key string) error {
 	for _, k := range oper.state.uploaded {
-		if (*k).name == key && k.exists == true {
-			(*k).exists = false
+		if k.name == key && k.exists == true {
+			k.exists = false
 		}
-		if (*k).name == key && (*k).exists == false {
+		if k.name == key && k.exists == false {
 			return fmt.Errorf("object already deleted")
 		}
 	}
@@ -86,8 +86,8 @@ func (oper *testOperator) ObjectExists(obj Object) (bool, error) {
 	}
 
 	for _, k := range oper.state.uploaded {
-		if (*k).name == tObj.key {
-			if (*k).exists == true {
+		if k.name == tObj.key {
+			if k.exists == true {
 				return true, nil
 			} else {
 				return false, fmt.Errorf("object exists but was deleted")
@@ -126,9 +126,9 @@ func (oper *testOperator) ObjectUpload(obj Object) error {
 
 func (oper *testOperator) GetObjectTags(key string) (map[string]string, error) {
 	for _, k := range oper.state.uploaded {
-		if (*k).name == key {
-			if (*k).exists == true {
-				return (*k).tags, nil
+		if k.name == key {
+			if k.exists == true {
+				return k.tags, nil
 			} else {
 				return nil, fmt.Errorf("object does not exist")
 			}
