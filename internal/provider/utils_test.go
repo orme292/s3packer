@@ -19,7 +19,7 @@ func getHomeDir() string {
 	if err == nil {
 		return usr.HomeDir
 	}
-	return filepath.Join("/home", os.Getenv("USER"))
+	return filepath.Join("home", os.Getenv("USER"))
 }
 
 func getFiveFiles() []string {
