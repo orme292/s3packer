@@ -149,8 +149,8 @@ github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/
 github.com/mattn/go-isatty v0.0.19/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
-github.com/oracle/oci-go-sdk/v65 v65.81.1 h1:JYc47bk8n/MUchA2KHu1ggsCQzlJZQLJ+tTKfOho00E=
-github.com/oracle/oci-go-sdk/v65 v65.81.1/go.mod h1:IBEV9l1qBzUpo7zgGaRUhbB05BVfcDGYRFBCPlTcPp0=
+github.com/oracle/oci-go-sdk/v65 v65.85.0 h1:lRMFVgTCZhl7IzP0fXHIROFGWlIoVZMGIGr96Aai2eE=
+github.com/oracle/oci-go-sdk/v65 v65.85.0/go.mod h1:IBEV9l1qBzUpo7zgGaRUhbB05BVfcDGYRFBCPlTcPp0=
 github.com/orme292/objectify v0.3.3 h1:pJi1tVVISirH5hfwGg+JbkNwFGz8iKBHbVyJF7xrHWs=
 github.com/orme292/objectify v0.3.3/go.mod h1:3+eIByxdnnMDiJ2cjByPvAttulndjAjzITugTdEo1X4=
 github.com/orme292/symwalker v0.2.2 h1:GcU7K8szoNdRep+7RE7im1gQezg1z0IliHx/A6KvYeU=
